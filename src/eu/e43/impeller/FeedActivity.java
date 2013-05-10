@@ -174,6 +174,26 @@ public class FeedActivity extends Activity implements FeedService.Listener, OnIt
     	startActivity(new Intent(this, SettingsActivity.class));
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                openSettings(item);
+                return true;
+                
+            case R.id.action_refresh:
+                refresh(item);
+                return true;
+                
+            case R.id.action_sign_out:
+            	signOut(item);
+            	return true;
+                
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+    
 	@Override
 	public void onItemClick(AdapterView<?> list, View view, int pos, long id) {
 		JSONObject act = (JSONObject) m_adapter.getItem(pos);

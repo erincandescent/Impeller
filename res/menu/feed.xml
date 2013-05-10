@@ -4,8 +4,8 @@
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/action_settings" android:onClick="openSettings"/>
-    <item android:id="@+id/signOut" android:title="@string/action_sign_out" android:onClick="signOut" android:menuCategory="system" android:visible="true"></item>
-    <item android:id="@+id/refresh" android:menuCategory="container" android:title="@string/action_refresh" android:visible="true" android:icon="@drawable/ic_menu_refresh" android:onClick="refresh" android:showAsAction="always"></item>
+        android:title="@string/action_settings"/>
+    <item android:id="@+id/action_sign_out" android:title="@string/action_sign_out" android:menuCategory="system" android:visible="true"></item>
+    <item android:id="@+id/action_refresh" android:menuCategory="container" android:title="@string/action_refresh" android:visible="true" android:icon="@drawable/ic_menu_refresh" android:showAsAction="always"></item>
 
 </menu>
