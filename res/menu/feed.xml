@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_settings" android:onClick="openSettings"/>
+    <item android:id="@+id/signOut" android:title="@string/action_sign_out" android:onClick="signOut" android:menuCategory="system" android:visible="true"></item>
+    <item android:id="@+id/refresh" android:menuCategory="container" android:title="@string/action_refresh" android:visible="true" android:icon="@drawable/ic_menu_refresh" android:onClick="refresh" android:showAsAction="always"></item>
+
+</menu>
