@@ -45,6 +45,8 @@ import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 public class FeedService extends Service {
+	private static final String CLEAR_UNREAD_INTENT = "eu.e43.impeller.FeedService.ClearUnread";
+
 	public interface Listener {
 		public void updateStarted(FeedService feed);
 		public void feedUpdated(FeedService feed, int items);
@@ -107,23 +109,22 @@ public class FeedService extends Service {
 		m_listeners = new ArrayList<Listener>();
 		m_unreadCount = 0;
 		
+		m_prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		m_items = new ArrayList<JSONObject>();
+		m_pollInterval = Integer.parseInt(m_prefs.getString("sync_frequency", "15")) * 60;
+
 		m_notify = new Notification.Builder(this);
 		m_notify.setSmallIcon(R.drawable.ic_launcher);
 		m_notify.setContentTitle("New updates");
-		m_notify.setContentText("Yay?");
-		m_notify.setNumber(0);
+		m_notify.setContentText("(Missing caption)");
 		m_notify.setAutoCancel(true);
+		Intent clearIntent = new Intent(CLEAR_UNREAD_INTENT, null, this, FeedService.class);
+		m_notify.setDeleteIntent(PendingIntent.getService(this, 0, clearIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+
 		Intent feedIntent = new Intent(Intent.ACTION_MAIN, null, this, FeedActivity.class);
 		feedIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 		m_notify.setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, feedIntent, PendingIntent.FLAG_UPDATE_CURRENT));
-		m_notificationManager.notify("Feed", 0, m_notify.getNotification());
-		m_prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		m_items = new ArrayList<JSONObject>();
-		
-		m_pollInterval = Integer.parseInt(m_prefs.getString("sync_frequency", "15")) * 60;
-		
-		System.out.println(m_prefs.getAll());
-		
+
 		bindService(new Intent(this, OAuthService.class), new ServiceConnection() {
 			@Override
 			public void onServiceConnected(ComponentName name, IBinder bind) {						
@@ -166,7 +167,13 @@ public class FeedService extends Service {
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		return START_REDELIVER_INTENT;
+		if(CLEAR_UNREAD_INTENT.equals(intent.getAction())) {
+			synchronized(this) { m_unreadCount = 0; }
+
+			return START_NOT_STICKY;
+		} else {
+			return START_REDELIVER_INTENT;
+		}
 	}
 	
 	public void addListener(Listener l) {
