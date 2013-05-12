@@ -18,11 +18,9 @@ package eu.e43.impeller;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
-
 import android.content.Context;
-import android.net.Uri;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,25 +28,29 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
+
 public class ActivityAdapter extends BaseAdapter {
-	FeedService 			m_feed;
-	FeedService.Listener 	m_listener;
+	static final String TAG = "ActivityAdapter";
+	
+	Feed 					m_feed;
+	Feed.Listener       	m_listener;
 	Context					m_ctx;
 	View					m_view;
 	
-	public ActivityAdapter(Context ctx, FeedService feed) {
+	public ActivityAdapter(Context ctx, Feed feed) {
 		m_feed = feed;
 		m_ctx  = ctx;
-		m_listener = new FeedService.Listener() {
+		m_listener = new Feed.Listener() {
 			
 			@Override
-			public void feedUpdated(FeedService feed, int items) {
-				System.err.println("Feed updated! " + feed.getItemCount());
+			public void feedUpdated(Feed feed, int items) {
+				Log.i(TAG, "Feed updated! " + feed.getItemCount());
 				notifyDataSetChanged();
 			}
 
 			@Override
-			public void updateStarted(FeedService feed) {}			
+			public void updateStarted(Feed feed) {}			
 		};
 		
 		m_feed.addListener(m_listener);

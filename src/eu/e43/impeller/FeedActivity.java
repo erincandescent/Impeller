@@ -15,9 +15,12 @@
 
 package eu.e43.impeller;
 
-import org.json.JSONException;
+import java.net.URI;
+
 import org.json.JSONObject;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -26,6 +29,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,13 +37,16 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
+import eu.e43.impeller.account.Authenticator;
 
-public class FeedActivity extends Activity implements FeedService.Listener, OnItemClickListener {
+public class FeedActivity extends Activity implements Feed.Listener, OnItemClickListener {
+	static final String TAG = "FeedActivity";
+	
 	private final class FeedConnection implements ServiceConnection {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder bind) {
 			System.out.println("Bound feed");
-			m_feed    = ((FeedService.LocalBinder) bind).getService();
+			m_feed    = (Feed) bind;
 			m_adapter = new ActivityAdapter(FeedActivity.this, m_feed);
 			
 			m_feed.addListener(FeedActivity.this);
@@ -56,35 +63,20 @@ public class FeedActivity extends Activity implements FeedService.Listener, OnIt
 			m_feed = null;
 		}
 	}
-
-	private final class OAuthConnection implements ServiceConnection {
-		@Override
-		public void onServiceConnected(ComponentName comp, IBinder bind) {
-			m_oauth = ((OAuthService.LocalBinder)bind).getService();
-			tryAuthorize();
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName arg0) {
-			m_oauth = null;
-		}
-	}
 	
-	public void updateStarted(FeedService feed)
+	public void updateStarted(Feed feed)
 	{
 		Toast.makeText(this, "Update started", Toast.LENGTH_SHORT).show();
 	}
 	
-	public void feedUpdated(FeedService feed, int items)
+	public void feedUpdated(Feed feed, int items)
 	{
 		Toast.makeText(this, "Updated, " + items + " new notifications", Toast.LENGTH_SHORT).show();
 	}
 
-	OAuthConnection	m_oauthConn 	= null;
-	FeedConnection	m_feedConn  	= null;
+	FeedConnection	m_feedConn  	= new FeedConnection();
 
-	OAuthService 	m_oauth	    	= null;
-	FeedService 	m_feed      	= null;
+	Feed        	m_feed      	= null;
 	ActivityAdapter	m_adapter   	= null;
 	private Intent 	m_feedIntent	= null;
 
@@ -100,54 +92,50 @@ public class FeedActivity extends Activity implements FeedService.Listener, OnIt
         ListView lv = (ListView) findViewById(R.id.activity_list);
         lv.setOnItemClickListener(this);
         
-        beginAuthorize();
+        String[] accountTypes = new String[] { Authenticator.ACCOUNT_TYPE };
+        String[] features = new String[0];
+        Bundle extras = new Bundle();
+        Intent chooseIntent = AccountManager.newChooseAccountIntent(null, null, accountTypes, false, null, "", features, extras);
+        this.startActivityForResult(chooseIntent, 0);
     }
     
     @Override
     protected void onDestroy() {
     	if(m_feedConn != null)
     		unbindService(m_feedConn);
-    	if(m_oauthConn != null)
-    		unbindService(m_oauthConn);
     	
     	super.onDestroy();
     }
 
-    private void beginAuthorize() {
-    	m_oauthConn = new OAuthConnection();
-        if(!bindService(new Intent(this, OAuthService.class), m_oauthConn, BIND_AUTO_CREATE)) {
-        	throw new RuntimeException("Unable to bind OAuth service");
-        }
-    }
-    
-    private void tryAuthorize() {
-		if(!m_oauth.isAuthorized()) {
-			startActivityForResult(new Intent(FeedActivity.this, LoginActivity.class), 0);
-		} else {
-			onAuthorized();
-		}
-    }
-    
-	private void onAuthorized() {
-		try {
-			this.setTitle(m_oauth.whoAmI().optString("displayName") + "'s feed");
-		} catch(JSONException ex) {}
-		
-		
-		m_feedConn = new FeedConnection();
-		startService(m_feedIntent);
-		if(!bindService(m_feedIntent, m_feedConn, BIND_AUTO_CREATE)) {
-			throw new RuntimeException("Unable to bind Feed service");
-		}
-	}
-    
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(resultCode == 0)
-			tryAuthorize();
-		else
+		if(resultCode == RESULT_OK) {
+			String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+			String accountType = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
+			Log.i(TAG, "Logged in " + accountName);
+			
+			Account acct = new Account(accountName, accountType);
+			AccountManager am = AccountManager.get(this);
+
+			String host     = am.getUserData(acct, "host");
+			String username = am.getUserData(acct, "username");
+			
+			Uri.Builder b = new Uri.Builder();
+			b.scheme("https");
+			b.authority(host);
+			b.appendPath("api");
+			b.appendPath("user");
+			b.appendPath(username);
+			b.appendPath("inbox");
+			b.appendPath("major");
+		
+			Intent feedIntent = new Intent(Intent.ACTION_VIEW, b.build(), this, FeedService.class);
+			feedIntent.putExtra("account", acct);
+			Log.i(TAG, "Loading feed " + feedIntent);
+			bindService(feedIntent, m_feedConn, BIND_AUTO_CREATE);
+		} else {
 			finish();
+		}
 	}
-	
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -159,15 +147,6 @@ public class FeedActivity extends Activity implements FeedService.Listener, OnIt
     public void refresh(MenuItem itm) {
     	if(m_feed != null)
     		m_feed.pollNow();
-    }
-    
-    public void signOut(MenuItem itm) {
-    	unbindService(m_feedConn);
-    	m_feedConn = null;
-    	stopService(m_feedIntent);
-    	
-    	m_oauth.signOut();
-    	tryAuthorize();
     }
     
     public void openSettings(MenuItem itm) {
@@ -184,10 +163,6 @@ public class FeedActivity extends Activity implements FeedService.Listener, OnIt
             case R.id.action_refresh:
                 refresh(item);
                 return true;
-                
-            case R.id.action_sign_out:
-            	signOut(item);
-            	return true;
                 
             default:
                 return super.onOptionsItemSelected(item);

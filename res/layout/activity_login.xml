@@ -45,7 +45,7 @@
         <LinearLayout
             style="@style/LoginFormContainer"
             android:orientation="vertical" >
-
+            
             <EditText
                 android:id="@+id/id"
                 android:layout_width="match_parent"
