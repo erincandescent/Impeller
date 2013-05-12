@@ -8,5 +8,6 @@
     <string name="action_refresh">Refresh</string>
     <string name="title_activity_action">ActionActivity</string>
     <string name="posted_by">Posted by</string>
+    <string name="title_activity_object">Object</string>
 
 </resources>

@@ -97,6 +97,7 @@ public class OAuth {
 			conn.connect();
 		
 			if(conn.getResponseCode() == 200) {
+				Log.v(TAG, "Fetch complete");
 				return conn;
 			} else if(conn.getResponseCode() / 100 == 3) {
 				// Redirect

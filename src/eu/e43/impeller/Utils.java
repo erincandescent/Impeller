@@ -22,8 +22,12 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+
+import android.util.Base64;
 
 public class Utils {
 
@@ -76,4 +80,33 @@ public class Utils {
 		}
 	 }
 
+	public static byte[] sha1(String text) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-1");
+			md.update(text.getBytes("utf-8"), 0, text.length());
+			return md.digest();
+		} catch(NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		} catch(UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+    }
+	
+	private static final char[] HEX_DIGITS = new char[] {
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+		'a', 'b', 'c', 'd', 'e', 'f'
+	};
+	
+	public static String sha1Hex(String text) {
+		byte[] sha = sha1(text);
+		char[] hex = new char[sha.length * 2];
+		
+		for(int i = 0; i < sha.length; i++) {
+			hex[2 * i + 0] = HEX_DIGITS[sha[i]        & 0x0F];
+			hex[2 * i + 1] = HEX_DIGITS[(sha[1] >> 4) & 0x0F];
+		}
+		
+		return new String(hex);
+	}
+	
 }

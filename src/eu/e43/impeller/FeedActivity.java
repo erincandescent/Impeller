@@ -18,17 +18,12 @@ package eu.e43.impeller;
 import org.json.JSONObject;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,15 +32,22 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
-import eu.e43.impeller.account.Authenticator;
 
-public class FeedActivity extends Activity implements Feed.Listener, OnItemClickListener {
+public class FeedActivity extends ActivityWithAccount implements Feed.Listener, OnItemClickListener {
 	static final String TAG = "FeedActivity";
 	FeedConnection		m_feedConn  		= new FeedConnection();
-	AccountManager  	m_accountManager	= null;
 	Feed        		m_feed      		= null;
 	ActivityAdapter		m_adapter   		= null;
-	SharedPreferences 	m_prefs				= null;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		startService(new Intent(this, FeedService.class));
+		
+		setContentView(R.layout.activity_feed);
+	    ListView lv = (ListView) findViewById(R.id.activity_list);
+	    lv.setOnItemClickListener(this);
+	}
 	
 	private final class FeedConnection implements ServiceConnection {
 		@Override
@@ -80,36 +82,6 @@ public class FeedActivity extends Activity implements Feed.Listener, OnItemClick
 	}
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-    	super.onCreate(savedInstanceState);
-    	PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
-    	m_prefs = PreferenceManager.getDefaultSharedPreferences(this);
-    	m_accountManager = AccountManager.get(this);
-    	setContentView(R.layout.activity_feed);
-        ListView lv = (ListView) findViewById(R.id.activity_list);
-        lv.setOnItemClickListener(this);
-        
-        String accountName = m_prefs.getString("accountName", null);
-        if(accountName != null) {
-        	Account[] accts = m_accountManager.getAccountsByType(Authenticator.ACCOUNT_TYPE);
-        	for(Account a : accts) {
-        		if(a.name == accountName) {
-        			gotAccount(a);
-        			return;
-        		}
-        	}
-        }
-        
-        // No account saved or account is invalid
-        // Request a new account from the user
-        String[] accountTypes = new String[] { Authenticator.ACCOUNT_TYPE };
-        String[] features = new String[0];
-        Bundle extras = new Bundle();
-        Intent chooseIntent = AccountManager.newChooseAccountIntent(null, null, accountTypes, false, null, "", features, extras);
-        this.startActivityForResult(chooseIntent, 0);
-    }
-    
-    @Override
     protected void onDestroy() {
     	if(m_feedConn != null)
     		unbindService(m_feedConn);
@@ -117,36 +89,9 @@ public class FeedActivity extends Activity implements Feed.Listener, OnItemClick
     	super.onDestroy();
     }
 
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(resultCode == RESULT_OK) {
-			String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-			String accountType = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
-			Log.i(TAG, "Logged in " + accountName);
-			
-			Editor e = m_prefs.edit();
-			e.putString("accountName", accountName);
-			e.apply();
-			
-			gotAccount(new Account(accountName, accountType));
-		} else {
-			finish();
-		}
-	}
-	
-	private void gotAccount(Account acct) {
-		String host     = m_accountManager.getUserData(acct, "host");
-		String username = m_accountManager.getUserData(acct, "username");
-		
-		Uri.Builder b = new Uri.Builder();
-		b.scheme("https");
-		b.authority(host);
-		b.appendPath("api");
-		b.appendPath("user");
-		b.appendPath(username);
-		b.appendPath("inbox");
-		b.appendPath("major");
-	
-		Intent feedIntent = new Intent(Intent.ACTION_VIEW, b.build(), this, FeedService.class);
+	protected void gotAccount(Account acct) {
+		Uri uri = Feed.getMainFeedUri(this, acct);
+		Intent feedIntent = new Intent(Intent.ACTION_VIEW, uri, this, FeedService.class);
 		feedIntent.putExtra("account", acct);
 		Log.i(TAG, "Loading feed " + feedIntent);
 		bindService(feedIntent, m_feedConn, BIND_AUTO_CREATE);
@@ -194,12 +139,12 @@ public class FeedActivity extends Activity implements Feed.Listener, OnItemClick
 		if(url == null) {
 			JSONObject obj = act.optJSONObject("object");
 			if(obj != null) {
-				url = obj.optString("url");
+				url = obj.optString("id");
 			}
 		}
 		
 		if(url != null) {
-			startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+			startActivity(new Intent(ObjectActivity.ACTION, Uri.parse(url)));
 		}
 	}
     
