@@ -15,8 +15,6 @@
 
 package eu.e43.impeller;
 
-import java.net.URI;
-
 import org.json.JSONObject;
 
 import android.accounts.Account;
@@ -25,6 +23,8 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -41,6 +41,11 @@ import eu.e43.impeller.account.Authenticator;
 
 public class FeedActivity extends Activity implements Feed.Listener, OnItemClickListener {
 	static final String TAG = "FeedActivity";
+	FeedConnection		m_feedConn  		= new FeedConnection();
+	AccountManager  	m_accountManager	= null;
+	Feed        		m_feed      		= null;
+	ActivityAdapter		m_adapter   		= null;
+	SharedPreferences 	m_prefs				= null;
 	
 	private final class FeedConnection implements ServiceConnection {
 		@Override
@@ -74,24 +79,29 @@ public class FeedActivity extends Activity implements Feed.Listener, OnItemClick
 		Toast.makeText(this, "Updated, " + items + " new notifications", Toast.LENGTH_SHORT).show();
 	}
 
-	FeedConnection	m_feedConn  	= new FeedConnection();
-
-	Feed        	m_feed      	= null;
-	ActivityAdapter	m_adapter   	= null;
-	private Intent 	m_feedIntent	= null;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
     	PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
-    	
-    	m_feedIntent = new Intent(this, FeedService.class);
-    	
-        setContentView(R.layout.activity_feed);
-        
+    	m_prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    	m_accountManager = AccountManager.get(this);
+    	setContentView(R.layout.activity_feed);
         ListView lv = (ListView) findViewById(R.id.activity_list);
         lv.setOnItemClickListener(this);
         
+        String accountName = m_prefs.getString("accountName", null);
+        if(accountName != null) {
+        	Account[] accts = m_accountManager.getAccountsByType(Authenticator.ACCOUNT_TYPE);
+        	for(Account a : accts) {
+        		if(a.name == accountName) {
+        			gotAccount(a);
+        			return;
+        		}
+        	}
+        }
+        
+        // No account saved or account is invalid
+        // Request a new account from the user
         String[] accountTypes = new String[] { Authenticator.ACCOUNT_TYPE };
         String[] features = new String[0];
         Bundle extras = new Bundle();
@@ -113,28 +123,33 @@ public class FeedActivity extends Activity implements Feed.Listener, OnItemClick
 			String accountType = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
 			Log.i(TAG, "Logged in " + accountName);
 			
-			Account acct = new Account(accountName, accountType);
-			AccountManager am = AccountManager.get(this);
-
-			String host     = am.getUserData(acct, "host");
-			String username = am.getUserData(acct, "username");
+			Editor e = m_prefs.edit();
+			e.putString("accountName", accountName);
+			e.apply();
 			
-			Uri.Builder b = new Uri.Builder();
-			b.scheme("https");
-			b.authority(host);
-			b.appendPath("api");
-			b.appendPath("user");
-			b.appendPath(username);
-			b.appendPath("inbox");
-			b.appendPath("major");
-		
-			Intent feedIntent = new Intent(Intent.ACTION_VIEW, b.build(), this, FeedService.class);
-			feedIntent.putExtra("account", acct);
-			Log.i(TAG, "Loading feed " + feedIntent);
-			bindService(feedIntent, m_feedConn, BIND_AUTO_CREATE);
+			gotAccount(new Account(accountName, accountType));
 		} else {
 			finish();
 		}
+	}
+	
+	private void gotAccount(Account acct) {
+		String host     = m_accountManager.getUserData(acct, "host");
+		String username = m_accountManager.getUserData(acct, "username");
+		
+		Uri.Builder b = new Uri.Builder();
+		b.scheme("https");
+		b.authority(host);
+		b.appendPath("api");
+		b.appendPath("user");
+		b.appendPath(username);
+		b.appendPath("inbox");
+		b.appendPath("major");
+	
+		Intent feedIntent = new Intent(Intent.ACTION_VIEW, b.build(), this, FeedService.class);
+		feedIntent.putExtra("account", acct);
+		Log.i(TAG, "Loading feed " + feedIntent);
+		bindService(feedIntent, m_feedConn, BIND_AUTO_CREATE);
 	}
 
     @Override
