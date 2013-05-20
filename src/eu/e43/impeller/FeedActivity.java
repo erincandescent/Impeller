@@ -49,6 +49,13 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
 	    lv.setOnItemClickListener(this);
 	}
 	
+	@Override
+    protected void onResume() {
+		super.onResume();
+		if(m_feed != null)
+			m_feed.clearUnread();
+	}
+	
 	private final class FeedConnection implements ServiceConnection {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder bind) {

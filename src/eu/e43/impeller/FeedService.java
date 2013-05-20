@@ -19,13 +19,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import eu.e43.impeller.account.Authenticator;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
@@ -33,6 +35,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.util.Log;
+import eu.e43.impeller.account.Authenticator;
 
 public class FeedService extends Service implements OnAccountsUpdateListener {
 	private static final String CLEAR_UNREAD_INTENT = "eu.e43.impeller.FeedService.ClearUnread";
@@ -56,20 +59,6 @@ public class FeedService extends Service implements OnAccountsUpdateListener {
 		m_h = new Handler(m_hThread.getLooper());
 		m_feeds = new HashMap<Uri, Feed>();
 		Log.i(TAG, "Starting");
-		
-		/*
-		m_notify = new Notification.Builder(this);
-		m_notify.setSmallIcon(R.drawable.ic_launcher);
-		m_notify.setContentTitle("New updates");
-		m_notify.setContentText("(Missing caption)");
-		m_notify.setAutoCancel(true);
-		Intent clearIntent = new Intent(CLEAR_UNREAD_INTENT, null, this, FeedService.class);
-		m_notify.setDeleteIntent(PendingIntent.getService(this, 0, clearIntent, PendingIntent.FLAG_UPDATE_CURRENT));
-
-		Intent feedIntent = new Intent(Intent.ACTION_MAIN, null, this, FeedActivity.class);
-		feedIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-		m_notify.setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, feedIntent, PendingIntent.FLAG_UPDATE_CURRENT));
-		*/
 	}
 	
 	@Override
@@ -103,21 +92,78 @@ public class FeedService extends Service implements OnAccountsUpdateListener {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.i(TAG, "onStartCommand " + intent);
-		
+			
 		if(!m_started) {
 			m_started = true;
 			m_accountManager.addOnAccountsUpdatedListener(this, null, true);
 		}
 		
+		if(CLEAR_UNREAD_INTENT.equals(intent.getAction())) {
+			Account a = (Account) intent.getParcelableExtra("account");
+			AccountFeedConnection c = m_accountFeeds.get(a);
+			if(c != null) {
+				c.m_feed.clearUnread();
+			}
+		}
+		
 		return START_REDELIVER_INTENT;
 	}
 
-	/** Does nothing. Exists to keep the Feed alive */
-	private class AccountFeedConnection implements ServiceConnection {
+	/** Keeps feed alive and listens for updates to display notifications */
+	private class AccountFeedConnection implements ServiceConnection, Feed.Listener {
+		Account 				m_acct;
+		Feed 					m_feed;
+		Notification.Builder 	m_notify;
+		
+		AccountFeedConnection(Account acct) {
+			m_acct = acct;
+		}
+		
 		@Override
-		public void onServiceConnected(ComponentName name, IBinder bind) {}
+		public void onServiceConnected(ComponentName name, IBinder bind) {
+			m_feed = (Feed) bind;
+			
+			Intent clearIntent = new Intent(CLEAR_UNREAD_INTENT, null, FeedService.this, FeedService.class);
+			clearIntent.putExtra("account", m_acct);
+			
+			Intent feedIntent = new Intent(Intent.ACTION_MAIN, null, FeedService.this, FeedActivity.class);
+			feedIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+			feedIntent.putExtra("account", m_acct);
+			
+			m_notify = new Notification.Builder(FeedService.this);
+			m_notify.setSmallIcon(R.drawable.ic_launcher);
+			m_notify.setContentTitle("New updates");
+			m_notify.setContentText(m_acct.name);
+			m_notify.setAutoCancel(true);
+			
+			m_notify.setDeleteIntent(PendingIntent.getService(FeedService.this, 0, clearIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+			m_notify.setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, feedIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+			
+			m_feed.addListener(this);
+			if(m_feed.getUnreadCount() != 0)
+				feedUpdated(m_feed, m_feed.getUnreadCount());
+		}
+		
 		@Override
-		public void onServiceDisconnected(ComponentName name) {}
+		public void onServiceDisconnected(ComponentName name) {
+			m_feed.removeListener(this);
+			m_feed = null;
+		}
+		
+		@Override
+		public void updateStarted(Feed feed) {}
+		
+		@SuppressWarnings("deprecation")
+		@Override
+		public void feedUpdated(Feed feed, int items) {
+			if(items != 0) {
+				m_notify.setNumber(items);
+				// 	getNotification() -> build() in Jelly Bean and later
+				Notification n = m_notify.getNotification();
+				NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+				nm.notify(m_acct.name, 0, n);
+			}
+		}
 	}
 	
 	@Override
@@ -137,7 +183,7 @@ public class FeedService extends Service implements OnAccountsUpdateListener {
 				Log.i(TAG, "Binding feed for new account: " + a.name);
 				Intent i = new Intent(Intent.ACTION_VIEW, Feed.getMainFeedUri(this, a), this, FeedService.class);
 				i.putExtra("account", a);
-				AccountFeedConnection conn = new AccountFeedConnection();
+				AccountFeedConnection conn = new AccountFeedConnection(a);
 				bindService(i, conn, BIND_AUTO_CREATE);
 				m_accountFeeds.put(a,  conn);
 			}

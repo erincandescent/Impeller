@@ -122,6 +122,13 @@ public class Feed extends Binder {
 		}
 	}
 	
+	public int getUnreadCount()
+	{
+		synchronized(this) {
+			return m_unreadCount;
+		}
+	}
+	
 	public JSONObject getItem(int idx)
 	{
 		synchronized(this) {
@@ -222,5 +229,11 @@ public class Feed extends Binder {
 	private void enqueuePoll()
 	{
 		if(m_pollInterval > 0) m_h.postDelayed(m_pollFeedR, m_pollInterval * 1000);
+	}
+
+	public void clearUnread() {
+		synchronized(this) {
+			m_unreadCount = 0;
+		}
 	}
 }
