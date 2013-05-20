@@ -70,7 +70,7 @@ public class CommentAdapter extends BaseAdapter {
 				UrlImageViewHelper.setUrlDrawable(authorImage, image.optString("url"));
 			commentMeta.setText("By " + author.optString("displayName") + " at " + comment.optString("published"));
 		}
-		commentBody.setText(Html.fromHtml(comment.optString("content")));
+		PumpHtml.setFromHtml(commentBody, comment.optString("content"));
 		
 		return v;
 	}

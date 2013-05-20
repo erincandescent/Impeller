@@ -20,16 +20,21 @@
             android:id="@+id/description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Small Text"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:text="Description"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
         
         <TextView
             android:id="@+id/caption"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Large Text"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:text="Caption"
+            android:textAppearance="?android:attr/textAppearanceMedium" />            
 
+        <!--<WebView
+        	android:id="@+id/caption"
+        	android:layout_width="match_parent"
+        	android:layout_height="wrap_content" />-->
+        
     </LinearLayout>
 
 </LinearLayout>

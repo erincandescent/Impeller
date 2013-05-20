@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -127,17 +128,21 @@ public class ActivityAdapter extends BaseAdapter {
 		        v = vi.inflate(R.layout.post_view, null);
 		    }
 
-		    TextView  caption     = (TextView) v.findViewById(R.id.caption);
-		    TextView  description = (TextView) v.findViewById(R.id.description);
+		    TextView   caption    = (TextView)   v.findViewById(R.id.caption);
+		    TextView  description = (TextView)  v.findViewById(R.id.description);
 		    ImageView image       = (ImageView) v.findViewById(R.id.image);
 		    
+			description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
 		    try {
-		    	caption.setText(Html.fromHtml(json.getJSONObject("object").optString("content", "(Missing post content)")));
-				description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
+		    	JSONObject obj = json.getJSONObject("object");
+		    	String content = obj.getString("content");
+		    	
+		    	PumpHtml.setFromHtml(caption, content);
 				
 				UrlImageViewHelper.setUrlDrawable(image, getImage(json.getJSONObject("actor")));
 			} catch (JSONException e) {
-				caption.setText(e.getMessage());
+				caption.setText(Html.fromHtml(e.getLocalizedMessage()));
+				//caption.loadData(e.getLocalizedMessage(), "text/plain", "utf-8");
 			}
 		    break;
 		    
