@@ -50,9 +50,12 @@ public class PumpHtml implements UrlImageViewCallback, ImageGetter {
 
 	@Override
 	public void onLoaded(ImageView imageView, Bitmap loadedBitmap, String url, boolean loadedFromCache) {
-		m_outstanding--;
-		Log.v(TAG, "onLoaded(" + url + ") -> " + m_outstanding + " outstanding");
-		if(m_outstanding == 0) parse();
+		if(!loadedFromCache && loadedBitmap != null) {
+			// If loadedBitmal == null, then an error occured loading. Never let m_outstanding descend to null
+			m_outstanding--;
+			Log.v(TAG, "onLoaded(" + url + ") -> " + m_outstanding + " outstanding");
+			if(m_outstanding == 0) parse();
+		}
 	}
 
 }
