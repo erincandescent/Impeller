@@ -174,6 +174,7 @@ public class FeedService extends Service implements OnAccountsUpdateListener {
 			if(!accounts.contains(e.getKey())) {
 				Log.i(TAG, "Unbinding feed for account change: " + e.getKey().name);
 				unbindService(e.getValue());
+				accounts.remove(e.getKey());
 			}
 		}
 
