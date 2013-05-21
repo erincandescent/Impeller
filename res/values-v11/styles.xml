@@ -7,5 +7,6 @@
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
         <!-- API 11 theme customizations can go here. -->
     </style>
+    <style parent="android:Theme.Holo.Light.Dialog" name="AppDialogTheme"></style>
 
 </resources>
