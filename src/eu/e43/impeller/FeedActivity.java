@@ -131,6 +131,10 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
                 refresh(item);
                 return true;
                 
+            case R.id.action_post:
+		startActivity(new Intent(this, PostActivity.class));
+		return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }

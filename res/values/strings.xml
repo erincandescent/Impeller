@@ -9,5 +9,8 @@
     <string name="title_activity_action">ActionActivity</string>
     <string name="posted_by">Posted by</string>
     <string name="title_activity_object">Object</string>
+    <string name="title_activity_post">New post</string>
+    <string name="post_button">Post</string>
+    <string name="action_post">New Post</string>
 
 </resources>

@@ -84,6 +84,16 @@
             android:enabled="true"
             android:exported="false" >
         </service>
+
+        <activity
+            android:name="eu.e43.impeller.PostActivity"
+            android:label="@string/title_activity_post"
+            android:theme="@style/AppDialogTheme"
+            android:parentActivityName="eu.e43.impeller.FeedActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="eu.e43.impeller.FeedActivity" />
+        </activity>
     </application>
 
 </manifest>
