@@ -101,13 +101,14 @@ public class ObjectActivity extends ActivityWithAccount {
 	}
 	
 	private void onGotObject(JSONObject obj) {
+		Log.v(TAG, "onGotObject(" + obj.toString() + ")");
 		ListView comments = new ListView(this);
 		
         LayoutInflater vi = LayoutInflater.from(this);
         LinearLayout container = (LinearLayout) vi.inflate(R.layout.activity_object, null);
         comments.addHeaderView(container);
+        setContentView(comments);
 		
-		setContentView(comments);
 		ImageView authorIcon   = (ImageView)    findViewById(R.id.actorImage);
 		TextView titleView     = (TextView)     findViewById(R.id.actorName);
 		TextView dateView      = (TextView)     findViewById(R.id.objectDate);
