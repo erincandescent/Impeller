@@ -155,7 +155,7 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
 		}
 		
 		if(url != null) {
-			startActivity(new Intent(ObjectActivity.ACTION, Uri.parse(url)));
+			startActivity(new Intent(ObjectActivity.ACTION, Uri.parse(url), this, ObjectActivity.class));
 		}
 	}
     
