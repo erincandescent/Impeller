@@ -62,8 +62,6 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 			act.put("verb", "post");
 			act.put("object", obj);
 			
-			m_content.setText(act.toString());
-			
 			PostTask t = new PostTask();
 			t.execute(act.toString());
 		} catch(Exception ex) {
