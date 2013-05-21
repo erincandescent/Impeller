@@ -57,7 +57,7 @@ public class Feed extends Binder {
 		@Override public void run() { pollFeed(); }
 	};
 	
-	public static Uri getMainFeedUri(Context ctx, Account user) {
+	public static Uri getFeedUri(Context ctx, Account user, String... feed) {
 		AccountManager am = AccountManager.get(ctx);
 		String host     = am.getUserData(user, "host");
 		String username = am.getUserData(user, "username");
@@ -68,10 +68,15 @@ public class Feed extends Binder {
 		b.appendPath("api");
 		b.appendPath("user");
 		b.appendPath(username);
-		b.appendPath("inbox");
-		b.appendPath("major");
-		
+		for(String s : feed) {
+			b.appendPath(s);
+		}
+
 		return b.build();
+	}
+	
+	public static Uri getMainFeedUri(Context ctx, Account user) {
+		return getFeedUri(ctx, user, "inbox", "major");
 	}
 	
 	public Feed(FeedService svc, Handler h, Account acct, Uri uri) {
