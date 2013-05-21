@@ -40,6 +40,7 @@
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateVisible" >
         </activity>
+        
         <activity
             android:name="eu.e43.impeller.SettingsActivity"
             android:label="@string/title_activity_settings"
@@ -69,13 +70,13 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="eu.e43.impeller.FeedActivity" />
-            
+
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT"/>
 				<action android:name="eu.e43.impeller.SHOW_OBJECT" />
 				<data android:scheme="http"  />
 				<data android:scheme="https" />
-				<data android:scheme="acct"  /> 
+				<data android:scheme="acct"  />
             </intent-filter>
         </activity>
 
@@ -93,6 +94,11 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="eu.e43.impeller.FeedActivity" />
+            
+			<intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
         </activity>
     </application>
 

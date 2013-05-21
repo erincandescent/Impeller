@@ -27,6 +27,8 @@ import eu.e43.impeller.account.OAuth;
 
 public class PostActivity extends ActivityWithAccount implements OnClickListener {
 	private static final String TAG = "PostActivity";
+	// EXTRA_HTML_TEXT is a 4.2 feature
+	private static final String EXTRA_HTML_TEXT = "android.intent.extra.HTML_TEXT";
 	
 	Button   m_postBtn;
 	TextView m_content;
@@ -40,6 +42,15 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 		m_content = (TextView) findViewById(R.id.content);
 		m_postBtn = (Button) findViewById(R.id.post);
 		m_postBtn.setOnClickListener(this);
+		
+		Intent intent = getIntent();
+		if(Intent.ACTION_SEND.equals(intent.getAction())) {
+			if(intent.hasExtra(EXTRA_HTML_TEXT)) {
+				PumpHtml.setFromHtml(m_content, intent.getStringExtra(EXTRA_HTML_TEXT));
+			} else {
+				m_content.setText(intent.getCharSequenceExtra(Intent.EXTRA_TEXT));
+			}
+		}
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) { return true; }
