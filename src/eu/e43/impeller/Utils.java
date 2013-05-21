@@ -27,8 +27,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.util.Base64;
-
 public class Utils {
 
 	static public String readAll(Reader r) throws IOException {

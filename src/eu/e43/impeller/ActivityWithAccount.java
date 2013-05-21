@@ -9,9 +9,6 @@ import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ListView;
-import eu.e43.impeller.Feed.Listener;
 import eu.e43.impeller.account.Authenticator;
 
 public abstract class ActivityWithAccount extends Activity {

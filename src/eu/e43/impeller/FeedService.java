@@ -44,7 +44,6 @@ public class FeedService extends Service implements OnAccountsUpdateListener {
 	private AccountManager			m_accountManager;
 	private HandlerThread 			m_hThread;
 	private Handler       			m_h;
-	private Handler					m_mH;
 	private Map<Uri, Feed>			m_feeds;
 	private Map<Account, AccountFeedConnection>
 									m_accountFeeds;

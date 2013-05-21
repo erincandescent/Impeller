@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="CutPasteId">
+        <ignore path="src\eu\e43\impeller\ActivityAdapter.java" />
+    </issue>
+</lint>
