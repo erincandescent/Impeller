@@ -35,6 +35,8 @@ public class ObjectActivity extends ActivityWithAccount {
 	private CacheConnection 	m_cacheConn;
 	private ObjectCache 		m_cache;
 	private GetObjectTask 		m_getObjectTask;
+	private JSONObject			m_object;
+	private CommentAdapter		m_commentAdapter;
 
 	private class CacheConnection implements ServiceConnection {
 		@Override
@@ -64,7 +66,7 @@ public class ObjectActivity extends ActivityWithAccount {
 		cacheIntent.putExtra("account", a);
 		bindService(cacheIntent, m_cacheConn, BIND_AUTO_CREATE);
 	}
-
+	
 	@Override
 	protected void onDestroy() {
 		if(m_cacheConn != null) {
@@ -92,22 +94,44 @@ public class ObjectActivity extends ActivityWithAccount {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case android.R.id.home:
-			// This ID represents the Home or Up button. In the case of this
-			// activity, the Up button is shown. Use NavUtils to allow users
-			// to navigate up one level in the application structure. For
-			// more details, see the Navigation pattern on Android Design:
-			//
-			// http://developer.android.com/design/patterns/navigation.html#up-vs-back
-			//
-			NavUtils.navigateUpFromSameTask(this);
-			return true;
+			case android.R.id.home:
+				// This ID represents the Home or Up button. In the case of this
+				// activity, the Up button is shown. Use NavUtils to allow users
+				// to navigate up one level in the application structure. For
+				// more details, see the Navigation pattern on Android Design:
+				//
+				// http://developer.android.com/design/patterns/navigation.html#up-vs-back
+				//
+				NavUtils.navigateUpFromSameTask(this);
+				return true;
+				
+			case R.id.action_reply:
+				Intent replyIntent = new Intent(PostActivity.ACTION_REPLY, null, this, PostActivity.class);
+				replyIntent.putExtra("inReplyTo", this.m_object.toString());
+				startActivityForResult(replyIntent, 0);
+				return true;
+				
+			default:
+				return super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(requestCode == 0) {
+			// Post comment
+			if(resultCode == RESULT_OK) {
+				if(m_commentAdapter != null)
+					m_commentAdapter.updateComments();
+			}
+		} else {
+			super.onActivityResult(requestCode, resultCode, data);
+		}
 	}
 	
 	private void onGotObject(JSONObject obj) {
 		Log.v(TAG, "onGotObject(" + obj.toString() + ")");
+		m_object = obj;
 		ListView comments = new ListView(this);
 		
         LayoutInflater vi = LayoutInflater.from(this);
@@ -143,7 +167,8 @@ public class ObjectActivity extends ActivityWithAccount {
 		
 		JSONObject replies = obj.optJSONObject("replies");
 		if(replies != null) {
-			comments.setAdapter(new CommentAdapter(this, replies));
+			m_commentAdapter = new CommentAdapter(this, replies, false);
+			comments.setAdapter(m_commentAdapter);
 		}
 	}
 	

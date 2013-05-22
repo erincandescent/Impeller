@@ -10,6 +10,7 @@ import android.util.Log;
 import eu.e43.impeller.account.Authenticator;
 
 public abstract class ActivityWithAccount extends Activity {
+	public static final int LOGIN_REQUEST_CODE = 65536;
 	private static final String TAG = "ActivityWithAccount";
 	protected AccountManager 	m_accountManager 	= null;
 	protected Account           m_account           = null;
@@ -42,19 +43,24 @@ public abstract class ActivityWithAccount extends Activity {
 	    String[] features = new String[0];
 	    Bundle extras = new Bundle();
 	    Intent chooseIntent = AccountManager.newChooseAccountIntent(null, null, accountTypes, false, null, "", features, extras);
-	    this.startActivityForResult(chooseIntent, 0);
+	    this.startActivityForResult(chooseIntent, LOGIN_REQUEST_CODE);
 	}
 
+	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(resultCode == RESULT_OK) {
-			String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-			String accountType = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
-			Log.i(TAG, "Logged in " + accountName);
+		if(requestCode == LOGIN_REQUEST_CODE) {
+			if(resultCode == RESULT_OK) {
+				String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+				String accountType = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
+				Log.i(TAG, "Logged in " + accountName);
 			
-			m_account = new Account(accountName, accountType);
-			gotAccount(m_account);
+				m_account = new Account(accountName, accountType);
+				gotAccount(m_account);
+			} else {
+				finish();
+			}
 		} else {
-			finish();
+			super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
 	

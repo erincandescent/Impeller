@@ -7,6 +7,7 @@ import java.net.URL;
 
 import oauth.signpost.OAuthConsumer;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.accounts.Account;
@@ -26,13 +27,16 @@ import android.widget.Toast;
 import eu.e43.impeller.account.OAuth;
 
 public class PostActivity extends ActivityWithAccount implements OnClickListener {
+	public static final String ACTION_REPLY = "eu.e43.impeller.action.REPLY";
+	
 	private static final String TAG = "PostActivity";
 	// EXTRA_HTML_TEXT is a 4.2 feature
 	private static final String EXTRA_HTML_TEXT = "android.intent.extra.HTML_TEXT";
 	
-	Button   m_postBtn;
-	TextView m_content;
-	Account  m_account;
+	Button   	m_postBtn;
+	TextView 	m_content;
+	Account  	m_account;
+	JSONObject	m_inReplyTo = null;
 	
 	@Override
 	protected void onCreateEx() {
@@ -49,6 +53,15 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 			} else {
 				m_content.setText(intent.getCharSequenceExtra(Intent.EXTRA_TEXT));
 			}
+		} else if(ACTION_REPLY.equals(intent.getAction())) {
+			this.setTitle(R.string.title_activity_post_reply);
+			try {
+				m_inReplyTo = new JSONObject(intent.getStringExtra("inReplyTo"));
+			} catch (JSONException e) {
+				Log.e(TAG, "Error parsing inReplyTo", e);
+				setResult(RESULT_CANCELED);
+				finish();
+			}
 		}
 	}
 
@@ -64,7 +77,12 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 			JSONObject obj = new JSONObject();
 			String generator = Utils.readAll(getResources().openRawResource(R.raw.generator));
 			
-			obj.put("objectType", "note");
+			if(m_inReplyTo == null) {
+				obj.put("objectType", "note");
+			} else {
+				obj.put("objectType", "comment");
+				obj.put("inReplyTo", m_inReplyTo);
+			}
 			obj.put("content", Html.toHtml(m_content.getEditableText()));
 			
 			JSONObject act = new JSONObject();
@@ -134,7 +152,12 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 		protected void onPostExecute(Boolean res) {
 			m_progress.dismiss();
 			if(res.booleanValue() == true) {
-				startActivity(new Intent(ObjectActivity.ACTION, Uri.parse(m_url), PostActivity.this, ObjectActivity.class));
+				if(ACTION_REPLY.equals(getIntent().getAction())) {
+					Toast.makeText(PostActivity.this, "Posted", Toast.LENGTH_SHORT);
+				} else {
+					startActivity(new Intent(ObjectActivity.ACTION, Uri.parse(m_url), PostActivity.this, ObjectActivity.class));
+				}
+				setResult(RESULT_OK);
 				finish();
 			} else {
 				Toast.makeText(PostActivity.this, "Error creating post", Toast.LENGTH_SHORT).show();
