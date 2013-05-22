@@ -4,8 +4,6 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -13,34 +11,33 @@ import eu.e43.impeller.account.Authenticator;
 
 public abstract class ActivityWithAccount extends Activity {
 	private static final String TAG = "ActivityWithAccount";
-	
 	protected AccountManager 	m_accountManager 	= null;
-	protected SharedPreferences m_prefs				= null;
+	protected Account           m_account           = null;
 
 	public ActivityWithAccount() {
 		super();
 	}
+	
+	protected abstract void onCreateEx();
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected final void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
-		m_prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		m_accountManager = AccountManager.get(this);
+		onCreateEx();
+				
+		Intent startIntent = getIntent();
+		if(startIntent.hasExtra("account")) {
+			Account a = (Account) startIntent.getParcelableExtra("account");
+			if(a.type.equals(Authenticator.ACCOUNT_TYPE)) {
+				m_account = a;
+				gotAccount(a);
+				return;
+			}
+		}
 	    
-	    String accountName = m_prefs.getString("accountName", null);
-	    if(accountName != null) {
-	    	Account[] accts = m_accountManager.getAccountsByType(Authenticator.ACCOUNT_TYPE);
-	    	for(Account a : accts) {
-	    		if(a.name == accountName) {
-	    			gotAccount(a);
-	    			return;
-	    		}
-	    	}
-	    }
-	    
-	    // No account saved or account is invalid
-	    // Request a new account from the user
+	    // No account passed or account is invalid
 	    String[] accountTypes = new String[] { Authenticator.ACCOUNT_TYPE };
 	    String[] features = new String[0];
 	    Bundle extras = new Bundle();
@@ -54,11 +51,8 @@ public abstract class ActivityWithAccount extends Activity {
 			String accountType = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
 			Log.i(TAG, "Logged in " + accountName);
 			
-			Editor e = m_prefs.edit();
-			e.putString("accountName", accountName);
-			e.apply();
-			
-			gotAccount(new Account(accountName, accountType));
+			m_account = new Account(accountName, accountType);
+			gotAccount(m_account);
 		} else {
 			finish();
 		}

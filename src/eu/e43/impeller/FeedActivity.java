@@ -40,8 +40,7 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
 	ActivityAdapter		m_adapter   		= null;
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onCreateEx() {
 		startService(new Intent(this, FeedService.class));
 		
 		setContentView(R.layout.activity_feed);
@@ -132,8 +131,10 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
                 return true;
                 
             case R.id.action_post:
-		startActivity(new Intent(this, PostActivity.class));
-		return true;
+            	Intent postIntent = new Intent(this, PostActivity.class);
+            	postIntent.putExtra("account", m_account);
+            	startActivity(postIntent);
+            	return true;
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -155,7 +156,9 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
 		}
 		
 		if(url != null) {
-			startActivity(new Intent(ObjectActivity.ACTION, Uri.parse(url), this, ObjectActivity.class));
+			Intent objectIntent = new Intent(ObjectActivity.ACTION, Uri.parse(url), this, ObjectActivity.class);
+			objectIntent.putExtra("account", m_account);
+			startActivity(objectIntent);
 		}
 	}
     

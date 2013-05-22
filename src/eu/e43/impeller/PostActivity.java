@@ -35,8 +35,7 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 	Account  m_account;
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onCreateEx() {
 		setContentView(R.layout.activity_post);
 		
 		m_content = (TextView) findViewById(R.id.content);

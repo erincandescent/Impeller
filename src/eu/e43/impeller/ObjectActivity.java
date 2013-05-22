@@ -50,10 +50,7 @@ public class ObjectActivity extends ActivityWithAccount {
 	}
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		m_cacheConn = new CacheConnection();
-		
+	protected void onCreateEx() {
 		setContentView(new Spinner(this));
 		// Show the Up button in the action bar.
 		setupActionBar();
@@ -62,9 +59,18 @@ public class ObjectActivity extends ActivityWithAccount {
 	
 	@Override
 	protected void gotAccount(Account a) {
+		m_cacheConn = new CacheConnection();
 		Intent cacheIntent = new Intent(this, ObjectService.class);
 		cacheIntent.putExtra("account", a);
 		bindService(cacheIntent, m_cacheConn, BIND_AUTO_CREATE);
+	}
+
+	@Override
+	protected void onDestroy() {
+		if(m_cacheConn != null) {
+			unbindService(m_cacheConn);
+		}
+		super.onDestroy();
 	}
 
 	/**
