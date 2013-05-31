@@ -38,14 +38,15 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
 	FeedConnection		m_feedConn  		= new FeedConnection();
 	Feed        		m_feed      		= null;
 	ActivityAdapter		m_adapter   		= null;
+	ListView			m_list				= null;
 	
 	@Override
 	protected void onCreateEx() {
 		startService(new Intent(this, FeedService.class));
 		
-		setContentView(R.layout.activity_feed);
-	    ListView lv = (ListView) findViewById(R.id.activity_list);
-	    lv.setOnItemClickListener(this);
+		m_list = new ListView(this);
+		setContentView(m_list);
+	    m_list.setOnItemClickListener(this);
 	}
 	
 	@Override
@@ -64,13 +65,13 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
 			
 			m_feed.addListener(FeedActivity.this);
 			
-	        ListView lv = (ListView) findViewById(R.id.activity_list);
-	        lv.setAdapter(m_adapter);
+	        m_list.setAdapter(m_adapter);
 		}
 
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			m_feed.removeListener(FeedActivity.this);
+			m_list.setAdapter(null);
 			m_adapter.close();
 			m_adapter = null;
 			m_feed = null;
