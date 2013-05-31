@@ -136,6 +136,14 @@ public class ObjectService extends Service {
 				}
 			}
 		}
+		
+		public void invalidateObject(String uri) {
+			try {
+				m_cache.remove(Utils.sha1Hex(uri));
+			} catch (IOException e) {
+				Log.w(TAG, "Error invalidating", e);
+			}
+		}
 	}
 	
 	@Override
