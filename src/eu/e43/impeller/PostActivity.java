@@ -1,11 +1,6 @@
 package eu.e43.impeller;
 
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
-import oauth.signpost.OAuthConsumer;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,7 +9,6 @@ import android.accounts.Account;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
@@ -24,7 +18,6 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import eu.e43.impeller.account.OAuth;
 
 public class PostActivity extends ActivityWithAccount implements OnClickListener {
 	public static final String ACTION_REPLY = "eu.e43.impeller.action.REPLY";
@@ -90,7 +83,7 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 			act.put("verb", "post");
 			act.put("object", obj);
 			
-			PostTask t = new PostTask();
+			PostTask t = new PostTask(this, new PostCallback());
 			t.execute(act.toString());
 		} catch(Exception ex) {
 			Toast.makeText(this, "Error creating post: " + ex.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
@@ -101,67 +94,30 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 	public void onClick(View v) {
 		if(v == m_postBtn) { onPost(); }
 	}
-
-	private class PostTask extends AsyncTask<String, Void, Boolean> {
-		ProgressDialog m_progress; 
-		String m_url = null;
+	
+	private class PostCallback implements PostTask.Callback {
+		ProgressDialog m_progress;
 		
-		@Override
-		protected void onPreExecute() {
+		public PostCallback() {
 			m_progress = ProgressDialog.show(PostActivity.this, "Posting...", "Submitting post");
-			m_progress.setIndeterminate(true);
+			m_progress.setIndeterminate(true);			
 		}
 		
 		@Override
-		protected Boolean doInBackground(String... activity_) {
-			try {
-				String activity = activity_[0];
-				Log.i(TAG, "Posting " + activity);
-				OAuthConsumer cons = OAuth.getConsumerForAccount(PostActivity.this, m_account);
-			
-				Uri outboxUri = Feed.getFeedUri(PostActivity.this, m_account, "feed");
-			
-				URL url = new URL(outboxUri.toString());
-				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-				conn.setDoOutput(true);
-				conn.setDoInput(true);
-				conn.setRequestMethod("POST");
-				conn.setRequestProperty("Content-Type", "application/json");
-				cons.sign(conn);
-				
-				OutputStream os = conn.getOutputStream();
-				OutputStreamWriter wr = new OutputStreamWriter(os);
-				wr.write(activity);
-				wr.close();
-							
-				if(conn.getResponseCode() != 200) {
-					Log.e(TAG, "Error creating post: " + Utils.readAll(conn.getErrorStream()));
-					return false;
-				}
-				
-				JSONObject result = new JSONObject(Utils.readAll(conn.getInputStream()));
-				m_url = result.optString("id");
-				
-				return true;
-			} catch (Exception e) {
-				Log.e(TAG, "Error posting", e);
-				return false;
-			}
-		}
-		
-		protected void onPostExecute(Boolean res) {
+		public void call(JSONObject obj) {
 			m_progress.dismiss();
-			if(res.booleanValue() == true) {
+			if(obj != null) {
 				if(ACTION_REPLY.equals(getIntent().getAction())) {
 					Toast.makeText(PostActivity.this, "Posted", Toast.LENGTH_SHORT);
 				} else {
-					startActivity(new Intent(ObjectActivity.ACTION, Uri.parse(m_url), PostActivity.this, ObjectActivity.class));
+					String url = obj.optString("id");
+					startActivity(new Intent(ObjectActivity.ACTION, Uri.parse(url), PostActivity.this, ObjectActivity.class));
 				}
 				setResult(RESULT_OK);
 				finish();
 			} else {
 				Toast.makeText(PostActivity.this, "Error creating post", Toast.LENGTH_SHORT).show();
-			}
+			} 
 		}
 		
 	}
