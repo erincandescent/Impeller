@@ -146,6 +146,7 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
 	public void onItemClick(AdapterView<?> list, View view, int pos, long id) {
 		JSONObject act = (JSONObject) m_adapter.getItem(pos);
 		String url = null;
+		String proxyUrl = null;
 		//String url = act.optString("url");
 		// Pump.io gives out 404s in this field!
 		
@@ -153,12 +154,18 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
 			JSONObject obj = act.optJSONObject("object");
 			if(obj != null) {
 				url = obj.optString("id");
+				
+				if(obj.has("pump_io")) {
+					JSONObject pump_io = obj.optJSONObject("pump_io");
+					proxyUrl = pump_io.optString("proxyURL");
+				}
 			}
 		}
 		
 		if(url != null) {
 			Intent objectIntent = new Intent(ObjectActivity.ACTION, Uri.parse(url), this, ObjectActivity.class);
 			objectIntent.putExtra("account", m_account);
+			objectIntent.putExtra("proxyURL", proxyUrl);
 			startActivity(objectIntent);
 		}
 	}
