@@ -3,6 +3,8 @@ package eu.e43.impeller;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import oauth.signpost.OAuthConsumer;
 
@@ -53,25 +55,70 @@ public class ObjectService extends Service {
 			else return null;
 		}
 		
-		public JSONObject getObject(String uri) throws Exception {
+		public JSONObject getObject(String uri, String proxyUrl) throws Exception {
 			Log.i(TAG, "getObject(" + uri + ")");
 			String hash = Utils.sha1Hex(uri);
-			JSONObject o = tryGetForHash(hash);
-			if(o != null)
-				return o;
+			GregorianCalendar lastModified = null;
 			
-			Log.v(TAG, "fetch object " + uri);
-			HttpURLConnection conn = OAuth.fetchAuthenticated(m_oauth, new URL(uri));
-			String json = Utils.readAll(conn.getInputStream());
+			Snapshot s = m_cache.get(hash);
+			if(s != null) {
+				lastModified              = new GregorianCalendar();
+				GregorianCalendar expires = new GregorianCalendar();
+				lastModified.setTimeInMillis(Long.valueOf(s.getString(1)));
+				expires.setTimeInMillis(Long.valueOf(s.getString(2)));
+				
+				if(expires.after(new GregorianCalendar())) {
+					Log.v(TAG, "In date");
+					// Expires in future
+					return new JSONObject(s.getString(0));
+				} else {
+					Log.v(TAG, "Expired; fetching");
+					JSONObject obj = new JSONObject(s.getString(0));
+					if(proxyUrl == null && obj.has("pump_io")) {
+						JSONObject pump_io = obj.getJSONObject("pump_io");
+						proxyUrl = pump_io.getString("proxyURL");
+					}
+				}
+			} else {
+				Log.v(TAG, "Unknown object; fetch");
+			}
 			
+			if(proxyUrl == null) proxyUrl = uri;
+			
+			Long modificationTime = null;
+			if(lastModified != null)
+				modificationTime = lastModified.getTimeInMillis();
+			
+			HttpURLConnection conn = OAuth.fetchAuthenticated(m_oauth, new URL(proxyUrl), modificationTime);
 			Editor e = m_cache.edit(hash);
-			e.set(0,  json);
+			String json;
+			if(conn.getResponseCode() == 200) {
+				json = Utils.readAll(conn.getInputStream());
+				e.set(0,  json);
+			} else { // cache was current
+				json = s.getString(0);
+			}
+			e.set(1, String.valueOf(conn.getLastModified()));
+			e.set(2, String.valueOf(conn.getExpiration()));
 			e.commit();
 			
 			return new JSONObject(json);
 		}
 		
 		public void insertObject(JSONObject obj) {
+			insertObject(obj, null, null);
+		}
+		
+		public void insertObject(JSONObject obj, GregorianCalendar lastModified, GregorianCalendar expires) {
+			if(lastModified == null) {
+				lastModified = new GregorianCalendar();
+			}
+			
+			if(expires == null) {
+				expires = new GregorianCalendar();
+				expires.add(GregorianCalendar.MINUTE, 1);
+			}
+			
 			String uri = obj.optString("id", null);
 			if(uri != null) {
 				Log.i(TAG, "insertObject(" + uri + ")");
@@ -80,6 +127,8 @@ public class ObjectService extends Service {
 				try {
 					ed = m_cache.edit(hash);
 					ed.set(0, obj.toString());
+					ed.set(1, String.valueOf(lastModified.getTimeInMillis()));
+					ed.set(2, String.valueOf(expires.getTimeInMillis()));
 					ed.commit();
 				} catch(IOException e) {
 					if(ed != null)
@@ -92,7 +141,7 @@ public class ObjectService extends Service {
 	@Override
 	public void onCreate() {
 		try {
-			m_cache = DiskLruCache.open(getDir("objectCache", MODE_PRIVATE), 1, 1, MAX_CACHE_SIZE);
+			m_cache = DiskLruCache.open(getDir("objectCache", MODE_PRIVATE), 2, 3, MAX_CACHE_SIZE);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

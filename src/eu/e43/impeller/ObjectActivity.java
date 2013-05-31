@@ -175,9 +175,10 @@ public class ObjectActivity extends ActivityWithAccount {
 	private class GetObjectTask extends AsyncTask<Void, Void, JSONObject> {
 		@Override
 		protected JSONObject doInBackground(Void... arg0) {
-			Uri uri = getIntent().getData();
+			Uri uri      = getIntent().getData();
+			String proxyUrl = getIntent().getStringExtra("proxyURL");
 			try {
-				return m_cache.getObject(uri.toString());
+				return m_cache.getObject(uri.toString(), proxyUrl);
 			} catch(Exception e) {
 				Log.e(TAG, "Error getting object", e);
 				Toast.makeText(ObjectActivity.this, "Error getting object: " + e.getMessage(), Toast.LENGTH_LONG).show();
