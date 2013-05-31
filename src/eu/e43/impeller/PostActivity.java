@@ -15,8 +15,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -83,7 +83,7 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 				obj.put("objectType", "comment");
 				obj.put("inReplyTo", m_inReplyTo);
 			}
-			obj.put("content", Html.toHtml(m_content.getEditableText()));
+			obj.put("content", Html.toHtml((Spanned) m_content.getText()));
 			
 			JSONObject act = new JSONObject();
 			act.put("generator", new JSONObject(generator));
