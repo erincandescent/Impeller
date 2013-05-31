@@ -13,5 +13,7 @@
     <string name="action_post">New Post</string>
     <string name="action_reply">Reply</string>
     <string name="title_activity_post_reply">Reply</string>
+    <string name="action_like">Like</string>
+    <string name="action_unlike">Unlike</string>
 
 </resources>

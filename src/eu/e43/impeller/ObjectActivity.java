@@ -1,5 +1,6 @@
 package eu.e43.impeller;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.accounts.Account;
@@ -8,7 +9,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
@@ -37,6 +37,8 @@ public class ObjectActivity extends ActivityWithAccount {
 	private GetObjectTask 		m_getObjectTask;
 	private JSONObject			m_object;
 	private CommentAdapter		m_commentAdapter;
+	private boolean				m_objectIsLiked;
+	private Menu				m_menu;
 
 	private class CacheConnection implements ServiceConnection {
 		@Override
@@ -88,6 +90,8 @@ public class ObjectActivity extends ActivityWithAccount {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.object, menu);
+		m_menu = menu;
+		updateMenu();
 		return true;
 	}
 
@@ -109,6 +113,10 @@ public class ObjectActivity extends ActivityWithAccount {
 				Intent replyIntent = new Intent(PostActivity.ACTION_REPLY, null, this, PostActivity.class);
 				replyIntent.putExtra("inReplyTo", this.m_object.toString());
 				startActivityForResult(replyIntent, 0);
+				return true;
+				
+			case R.id.action_like:
+				new DoLike();
 				return true;
 				
 			default:
@@ -170,6 +178,9 @@ public class ObjectActivity extends ActivityWithAccount {
 			m_commentAdapter = new CommentAdapter(this, replies, false);
 			comments.setAdapter(m_commentAdapter);
 		}
+		
+		m_objectIsLiked = obj.optBoolean("liked", false);
+		updateMenu();
 	}
 	
 	private class GetObjectTask extends AsyncTask<Void, Void, JSONObject> {
@@ -189,10 +200,47 @@ public class ObjectActivity extends ActivityWithAccount {
 		protected void onPostExecute(final JSONObject obj) {
 			onGotObject(obj);
 		}
+	}
+	
+	private void updateMenu() {
+		if(m_menu == null)
+			return;
 		
-		
-		
-		
-		
+		MenuItem itm = m_menu.findItem(R.id.action_like);
+		if(m_objectIsLiked)
+			itm.setTitle(R.string.action_unlike);
+		else
+			itm.setTitle(R.string.action_like);
+	}
+	
+	private class DoLike implements PostTask.Callback {
+		public DoLike() {
+			String action;
+			
+			if(m_objectIsLiked)
+				action = "unfavorite";
+			else
+				action = "favorite";
+			
+			JSONObject obj = new JSONObject();
+			try {
+				obj.put("verb", action);
+				obj.put("object", m_object);
+			} catch(JSONException e) {
+				throw new RuntimeException(e);
+			}
+			
+			PostTask task = new PostTask(ObjectActivity.this, this);
+			task.execute(obj.toString());
+		}
+
+		@Override
+		public void call(JSONObject obj) {
+			// TODO Auto-generated method stub
+			m_objectIsLiked = !m_objectIsLiked;
+			updateMenu();
+			
+			m_cache.invalidateObject(m_object.optString("id"));
+		}
 	}
 }
