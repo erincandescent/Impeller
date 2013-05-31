@@ -85,21 +85,36 @@ public class OAuth {
 	}
 	
 	public static HttpURLConnection fetchAuthenticated(OAuthConsumer c, URL url) throws Exception {
+		return fetchAuthenticated(c, url, null);
+	}
+	
+	public static HttpURLConnection fetchAuthenticated(OAuthConsumer c, URL url, Long modificationTime) throws Exception {
 		Log.i(TAG, "Authenticated fetch of " + url);
 		for(int i = 0; i < 5; i++) {
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setInstanceFollowRedirects(false);
+			if(modificationTime != null) {
+				conn.setIfModifiedSince(modificationTime.longValue());
+			}
 			c.sign(conn);
 			conn.connect();
 		
-			if(conn.getResponseCode() == 200) {
-				Log.v(TAG, "Fetch complete");
+			switch(conn.getResponseCode()) {
+			case 200: // Success
+			case 304: // Not modified
+				Log.v(TAG, "Fetch complete (" + conn.getResponseCode() + ")");
 				return conn;
-			} else if(conn.getResponseCode() / 100 == 3) {
+				
+			case 301: // Moved permanently
+			case 302: // Found
+			case 303: // See other
+			case 307: // Moved temporarily
 				// Redirect
 				url = new URL(conn.getHeaderField("Location"));
 				Log.v(TAG, "Following redirect to" + url);
-			} else {
+				break;
+				
+			default:
 				String err = Utils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
 				throw new Exception(err);
 			}
