@@ -132,7 +132,7 @@ public class FeedService extends Service implements OnAccountsUpdateListener {
 			feedIntent.putExtra("account", m_acct);
 			
 			m_notify = new Notification.Builder(FeedService.this);
-			m_notify.setSmallIcon(R.drawable.ic_launcher);
+			m_notify.setSmallIcon(R.drawable.ic_impeller_wb);
 			m_notify.setContentTitle("New updates");
 			m_notify.setContentText(m_acct.name);
 			m_notify.setAutoCancel(true);

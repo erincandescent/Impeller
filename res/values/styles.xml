@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -16,7 +16,18 @@
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        <item name="android:actionBarStyle">@style/AppActionBar</item>
     </style>
+    
+    <style name="AppActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
+    	<item name="android:background">#7F00FF</item>
+    	<item name="android:icon">@drawable/ic_impeller_wb</item>
+    	<item name="android:titleTextStyle">@style/AppActionBar.TextStyle</item>
+	</style>        
+
+    <style name="AppActionBar.TextStyle" parent="android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+    	<item name="android:textColor">#FFFFFF</item>
+    </style>    
 
     <style name="LoginFormContainer">
         <item name="android:layout_width">match_parent</item>
