@@ -3,6 +3,7 @@ package eu.e43.impeller;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import oauth.signpost.OAuthConsumer;
@@ -50,7 +51,7 @@ public class Feed extends Binder {
 	
 	public interface Listener {
 		public void updateStarted(Feed feed);
-		public void feedUpdated(Feed feed, int items);
+		public void feedUpdated(Feed feed, int unread, List<JSONObject> items);
 	}
 	
 	private Runnable m_pollFeedR = new Runnable() {
@@ -120,10 +121,10 @@ public class Feed extends Binder {
 		m_h.removeCallbacks(m_pollFeedR);
 	}
 	
-	public int getItemCount()
+	public List<JSONObject> getItems()
 	{ 
 		synchronized(this) {
-			return m_items.size(); 
+			return m_items;
 		}
 	}
 	
@@ -134,16 +135,16 @@ public class Feed extends Binder {
 		}
 	}
 	
-	public JSONObject getItem(int idx)
-	{
-		synchronized(this) {
-			return m_items.get(idx);
-		}
-	}
-	
 	public void addListener(Listener l) {
 		synchronized(this) {
 			m_listeners.add(l);
+		}
+	}
+	
+	public void addListenerAndNotify(Listener l) {
+		synchronized(this) {
+			m_listeners.add(l);
+			l.feedUpdated(this, m_unreadCount, m_items);
 		}
 	}
 	
@@ -177,7 +178,7 @@ public class Feed extends Binder {
 			public void run() {
 				synchronized(this) {
 					for(Listener l : m_listeners) {
-						l.feedUpdated(Feed.this, m_unreadCount);
+						l.feedUpdated(Feed.this, m_unreadCount, m_items);
 					}
 				}
 			}
@@ -209,12 +210,24 @@ public class Feed extends Binder {
 		
 			synchronized(this) {
 				m_unreadCount += items.length();
+				
+				if(items.length() != 0) {
+					// Shallow copy items - avoid mutating list that the 
+					// display may be using
+					m_items = new ArrayList<JSONObject>(m_items);
+				}
+				
 				for(int i = items.length() - 1; i >= 0; i--) {
 					JSONObject activity = items.getJSONObject(i);
 					
 					for(String name : OBJECT_NAMES) {
 						JSONObject obj = activity.optJSONObject(name);
 						if(obj != null) {
+							if(name.equals("object")) {
+								if(!obj.has("author"))
+									obj.put("author", activity.optJSONObject("actor"));
+							}
+							
 							m_cache.insertObject(obj);
 						}
 					}

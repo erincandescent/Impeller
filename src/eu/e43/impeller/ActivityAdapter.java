@@ -15,6 +15,8 @@
 
 package eu.e43.impeller;
 
+import java.util.List;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,6 +39,7 @@ public class ActivityAdapter extends BaseAdapter {
 	Feed.Listener       	m_listener;
 	Context					m_ctx;
 	View					m_view;
+	List<JSONObject>		m_items;
 	
 	public ActivityAdapter(Context ctx, Feed feed) {
 		m_feed = feed;
@@ -44,8 +47,9 @@ public class ActivityAdapter extends BaseAdapter {
 		m_listener = new Feed.Listener() {
 			
 			@Override
-			public void feedUpdated(Feed feed, int items) {
-				Log.i(TAG, "Feed updated! " + feed.getItemCount());
+			public void feedUpdated(Feed feed, int unread, List<JSONObject> items) {
+				Log.i(TAG, "Feed updated! " + items.size());
+				m_items = items;
 				notifyDataSetChanged();
 			}
 
@@ -53,7 +57,7 @@ public class ActivityAdapter extends BaseAdapter {
 			public void updateStarted(Feed feed) {}			
 		};
 		
-		m_feed.addListener(m_listener);
+		m_feed.addListenerAndNotify(m_listener);
 	}
 	
 	public void close() {
@@ -62,12 +66,12 @@ public class ActivityAdapter extends BaseAdapter {
 
 	@Override
 	public int getCount() {
-		return m_feed.getItemCount();
+		return m_items.size();
 	}
 
 	@Override
 	public Object getItem(int position) {
-		return m_feed.getItem(position);
+		return m_items.get(position);
 	}
 
 	private static String getImage(JSONObject obj) {

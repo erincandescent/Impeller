@@ -15,6 +15,8 @@
 
 package eu.e43.impeller;
 
+import java.util.List;
+
 import org.json.JSONObject;
 
 import android.accounts.Account;
@@ -83,9 +85,9 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
 		Toast.makeText(this, "Update started", Toast.LENGTH_SHORT).show();
 	}
 	
-	public void feedUpdated(Feed feed, int items)
+	public void feedUpdated(Feed feed, int unread, List<JSONObject> items)
 	{
-		Toast.makeText(this, "Updated, " + items + " new notifications", Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, "Updated, " + unread + " new notifications", Toast.LENGTH_SHORT).show();
 	}
 
     @Override

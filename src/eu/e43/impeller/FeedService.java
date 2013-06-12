@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
+
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
@@ -138,9 +140,7 @@ public class FeedService extends Service implements OnAccountsUpdateListener {
 			m_notify.setDeleteIntent(PendingIntent.getService(FeedService.this, 0, clearIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 			m_notify.setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, feedIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 			
-			m_feed.addListener(this);
-			if(m_feed.getUnreadCount() != 0)
-				feedUpdated(m_feed, m_feed.getUnreadCount());
+			m_feed.addListenerAndNotify(this);
 		}
 		
 		@Override
@@ -154,9 +154,9 @@ public class FeedService extends Service implements OnAccountsUpdateListener {
 		
 		@SuppressWarnings("deprecation")
 		@Override
-		public void feedUpdated(Feed feed, int items) {
-			if(items != 0) {
-				m_notify.setNumber(items);
+		public void feedUpdated(Feed feed, int unread, List<JSONObject> items) {
+			if(unread != 0) {
+				m_notify.setNumber(unread);
 				// 	getNotification() -> build() in Jelly Bean and later
 				Notification n = m_notify.getNotification();
 				NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
