@@ -76,7 +76,7 @@ public class ObjectService extends Service {
 					JSONObject obj = new JSONObject(s.getString(0));
 					if(proxyUrl == null && obj.has("pump_io")) {
 						JSONObject pump_io = obj.getJSONObject("pump_io");
-						proxyUrl = pump_io.getString("proxyURL");
+						proxyUrl = pump_io.optString("proxyURL");
 					}
 				}
 			} else {
