@@ -27,11 +27,13 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONObject;
+
 public class Utils {
 
 	static public String readAll(Reader r) throws IOException {
 		int nRead;
-		char[] buf = new char[1024];
+		char[] buf = new char[16 * 1024];
 		StringBuilder bld = new StringBuilder();
 		while((nRead = r.read(buf)) != -1) {
 			bld.append(buf, 0, nRead);
