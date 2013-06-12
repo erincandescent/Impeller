@@ -137,6 +137,8 @@ public class ObjectActivity extends ActivityWithAccount {
 		AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) menuInfo_;
 		
 		JSONObject comment = (JSONObject) m_commentsView.getItemAtPosition(menuInfo.position);
+		if(comment == null) return;
+		
 		JSONObject author = comment.optJSONObject("author");
 		String title = "Comment";
 		if(author != null && author.has("displayName")) {
