@@ -112,7 +112,9 @@ public class Utils {
 	public static String getProxyUrl(JSONObject obj) {
 		if(obj.has("pump_io")) {
 			JSONObject pump_io = obj.optJSONObject("pump_io");
-			return pump_io.optString("proxyURL");
+			String url = pump_io.optString("proxyURL", null);
+			if(url == null || url.length() == 0) return null;
+			return url;
 		} else return null;
 	}
 }
