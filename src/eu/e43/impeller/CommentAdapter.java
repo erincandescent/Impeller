@@ -115,9 +115,10 @@ public class CommentAdapter extends BaseAdapter {
 		
 		JSONObject comment = getItem(position);
 		
-		ImageView authorImage = (ImageView) v.findViewById(R.id.commentAuthorImage);
-		TextView  commentBody = (TextView)  v.findViewById(R.id.commentBody);
-		TextView  commentMeta = (TextView)  v.findViewById(R.id.commentMeta);
+		ImageView authorImage  = (ImageView) v.findViewById(R.id.commentAuthorImage);
+		TextView  commentBody  = (TextView)  v.findViewById(R.id.commentBody);
+		TextView  commentMeta  = (TextView)  v.findViewById(R.id.commentMeta);
+		TextView  commentState = (TextView)  v.findViewById(R.id.commentState);
 		
 		JSONObject author = comment.optJSONObject("author");
 		if(author != null) {
@@ -126,6 +127,27 @@ public class CommentAdapter extends BaseAdapter {
 				UrlImageViewHelper.setUrlDrawable(authorImage, image.optString("url"));
 			commentMeta.setText("By " + author.optString("displayName") + " at " + comment.optString("published"));
 		}
+		
+		JSONObject likes = comment.optJSONObject("likes");
+		if(likes != null) {
+			int items = likes.optInt("items", 0);
+			if(comment.optBoolean("liked", false)) {
+				// You and N other people like this
+				if(items > 0) {
+					commentState.setText("You and " + (items - 1) + " other people like this");
+				} else {
+					commentState.setText("You like this");
+				}
+			} else {
+				// N people like this
+				if(items > 0) {
+					commentState.setText(items + " people like this");
+				} else {
+					commentState.setVisibility(View.INVISIBLE);
+				}
+			}
+		}
+		
 		PumpHtml.setFromHtml(commentBody, comment.optString("content"));
 		
 		return v;

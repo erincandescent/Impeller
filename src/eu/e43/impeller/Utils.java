@@ -107,4 +107,10 @@ public class Utils {
 		return new String(hex);
 	}
 	
+	public static String getProxyUrl(JSONObject obj) {
+		if(obj.has("pump_io")) {
+			JSONObject pump_io = obj.optJSONObject("pump_io");
+			return pump_io.optString("proxyURL");
+		} else return null;
+	}
 }

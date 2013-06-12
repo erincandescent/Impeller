@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/action_like" android:enabled="true" android:visible="true" android:title="@string/action_like"></item>
+    <item android:id="@+id/action_showAuthor" android:enabled="true" android:visible="true" android:title="Show author"></item>
+    
+
+</menu>

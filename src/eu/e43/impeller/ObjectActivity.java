@@ -12,12 +12,16 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -37,8 +41,8 @@ public class ObjectActivity extends ActivityWithAccount {
 	private GetObjectTask 		m_getObjectTask;
 	private JSONObject			m_object;
 	private CommentAdapter		m_commentAdapter;
-	private boolean				m_objectIsLiked;
 	private Menu				m_menu;
+	private ListView			m_commentsView;
 
 	private class CacheConnection implements ServiceConnection {
 		@Override
@@ -116,11 +120,60 @@ public class ObjectActivity extends ActivityWithAccount {
 				return true;
 				
 			case R.id.action_like:
-				new DoLike();
+				new DoLike(m_object);
 				return true;
 				
 			default:
 				return super.onOptionsItemSelected(item);
+		}
+	}
+	
+	// At present context menus are only shown for comments
+	
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo_) {
+		super.onCreateContextMenu(menu, v, menuInfo_);
+		
+		AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) menuInfo_;
+		
+		JSONObject comment = (JSONObject) m_commentsView.getItemAtPosition(menuInfo.position);
+		JSONObject author = comment.optJSONObject("author");
+		String title = "Comment";
+		if(author != null && author.has("displayName")) {
+			title = "Comment by " + author.optString("displayName");
+		}
+		
+		menu.setHeaderTitle(title);
+		getMenuInflater().inflate(R.menu.comment, menu);
+		if(comment.optBoolean("liked", false)) {
+			menu.findItem(R.id.action_like).setTitle(R.string.action_unlike);
+		}
+	}
+	
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
+		JSONObject comment = (JSONObject) m_commentsView.getItemAtPosition(menuInfo.position);
+		
+		
+		switch(item.getItemId()) {
+		case R.id.action_like:
+			new DoLike(comment);
+			return true;
+			
+		case R.id.action_showAuthor:
+			JSONObject author = comment.optJSONObject("author");
+			if(author == null)
+				return true;
+			
+			Intent authorIntent = new Intent(ObjectActivity.ACTION, Uri.parse(author.optString("id")), this, ObjectActivity.class);
+			authorIntent.putExtra("account", m_account);
+			authorIntent.putExtra("proxyURL", Utils.getProxyUrl(author));
+			startActivity(authorIntent);
+			return true;
+		
+		default:
+			return super.onContextItemSelected(item);
 		}
 	}
 	
@@ -146,6 +199,7 @@ public class ObjectActivity extends ActivityWithAccount {
         LinearLayout container = (LinearLayout) vi.inflate(R.layout.activity_object, null);
         comments.addHeaderView(container);
         setContentView(comments);
+        m_commentsView = comments;
 		
 		ImageView authorIcon   = (ImageView)    findViewById(R.id.actorImage);
 		TextView titleView     = (TextView)     findViewById(R.id.actorName);
@@ -179,8 +233,9 @@ public class ObjectActivity extends ActivityWithAccount {
 			comments.setAdapter(m_commentAdapter);
 		}
 		
-		m_objectIsLiked = obj.optBoolean("liked", false);
 		updateMenu();
+		
+		registerForContextMenu(comments);
 	}
 	
 	private class GetObjectTask extends AsyncTask<Void, Void, JSONObject> {
@@ -207,17 +262,20 @@ public class ObjectActivity extends ActivityWithAccount {
 			return;
 		
 		MenuItem itm = m_menu.findItem(R.id.action_like);
-		if(m_objectIsLiked)
+		if(m_object != null && m_object.optBoolean("liked", false))
 			itm.setTitle(R.string.action_unlike);
 		else
 			itm.setTitle(R.string.action_like);
 	}
 	
 	private class DoLike implements PostTask.Callback {
-		public DoLike() {
+		private JSONObject m_object;
+		
+		public DoLike(JSONObject object) {
 			String action;
+			m_object = object;
 			
-			if(m_objectIsLiked)
+			if(object.optBoolean("liked", false))
 				action = "unfavorite";
 			else
 				action = "favorite";
@@ -225,7 +283,7 @@ public class ObjectActivity extends ActivityWithAccount {
 			JSONObject obj = new JSONObject();
 			try {
 				obj.put("verb", action);
-				obj.put("object", m_object);
+				obj.put("object", object);
 			} catch(JSONException e) {
 				throw new RuntimeException(e);
 			}
@@ -237,7 +295,11 @@ public class ObjectActivity extends ActivityWithAccount {
 		@Override
 		public void call(JSONObject obj) {
 			// TODO Auto-generated method stub
-			m_objectIsLiked = !m_objectIsLiked;
+			try {
+				m_object.put("liked", !m_object.optBoolean("liked", false));
+			} catch (JSONException e) {
+				Log.v(TAG, "Swallowing exception", e);
+			}
 			updateMenu();
 			
 			m_cache.invalidateObject(m_object.optString("id"));
