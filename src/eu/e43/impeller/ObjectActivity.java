@@ -249,13 +249,17 @@ public class ObjectActivity extends ActivityWithAccount {
 				return m_cache.getObject(uri.toString(), proxyUrl);
 			} catch(Exception e) {
 				Log.e(TAG, "Error getting object", e);
-				Toast.makeText(ObjectActivity.this, "Error getting object: " + e.getMessage(), Toast.LENGTH_LONG).show();
 				return null;
 			}
 		}
 		
 		protected void onPostExecute(final JSONObject obj) {
-			onGotObject(obj);
+			if(obj != null) {
+				onGotObject(obj);
+			} else {
+				Toast.makeText(ObjectActivity.this, "Error getting object", Toast.LENGTH_SHORT);
+				finishActivity(RESULT_CANCELED);
+			}
 		}
 	}
 	
