@@ -24,7 +24,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
@@ -156,11 +155,7 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
 			JSONObject obj = act.optJSONObject("object");
 			if(obj != null) {
 				url = obj.optString("id");
-				
-				if(obj.has("pump_io")) {
-					JSONObject pump_io = obj.optJSONObject("pump_io");
-					proxyUrl = pump_io.optString("proxyURL");
-				}
+				proxyUrl = Utils.getProxyUrl(obj);
 			}
 		}
 		
