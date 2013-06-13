@@ -16,8 +16,6 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
-
 import eu.e43.impeller.account.OAuth;
 
 public class CommentAdapter extends BaseAdapter {
@@ -59,7 +57,7 @@ public class CommentAdapter extends BaseAdapter {
 			String urlString = url_[0];
 			try {
 				URL url = new URL(urlString);
-				HttpURLConnection conn = OAuth.fetchAuthenticated(OAuth.getConsumerForAccount(m_ctx, m_ctx.m_account), url);
+				HttpURLConnection conn = OAuth.fetchAuthenticated(m_ctx, m_ctx.m_account, url);
 				
 				if(conn.getResponseCode() != 200) {
 					Log.e(TAG, "Error getting comments" + Utils.readAll(conn.getErrorStream()));
@@ -124,13 +122,14 @@ public class CommentAdapter extends BaseAdapter {
 		if(author != null) {
 			JSONObject image = author.optJSONObject("image");
 			if(image != null)
-				UrlImageViewHelper.setUrlDrawable(authorImage, image.optString("url"));
+				m_ctx.getImageLoader().setImage(authorImage, Utils.getImageUrl(image));
 			commentMeta.setText("By " + author.optString("displayName") + " at " + comment.optString("published"));
 		}
 		
 		JSONObject likes = comment.optJSONObject("likes");
 		if(likes != null) {
-			int items = likes.optInt("items", 0);
+			int items = likes.optInt("totalItems", 0);
+			//commentState.setVisibility(View.VISIBLE);
 			if(comment.optBoolean("liked", false)) {
 				// You and N other people like this
 				if(items > 0) {
@@ -143,12 +142,13 @@ public class CommentAdapter extends BaseAdapter {
 				if(items > 0) {
 					commentState.setText(items + " people like this");
 				} else {
-					commentState.setVisibility(View.INVISIBLE);
+					commentState.setText("Nobody likes this =(");
+					//commentState.setVisibility(View.INVISIBLE);
 				}
 			}
 		}
 		
-		PumpHtml.setFromHtml(commentBody, comment.optString("content"));
+		PumpHtml.setFromHtml(m_ctx, commentBody, comment.optString("content"));
 		
 		return v;
 	}

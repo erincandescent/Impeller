@@ -15,6 +15,7 @@
 
 package eu.e43.impeller.account;
 
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -190,7 +191,31 @@ public class LoginActivity extends AccountAuthenticatorActivity implements OnCli
 			
 			JSONObject whoAmI;
 			try {
-				HttpURLConnection conn = OAuth.fetchAuthenticated(m_consumer, new URL("https", m_host, "/api/whoami"));
+				URL url = new URL("https", m_host, "/api/whoami");
+				HttpURLConnection conn;
+				loop: while(true) {
+					conn = (HttpURLConnection) url.openConnection();
+					conn.setInstanceFollowRedirects(false);
+					m_consumer.sign(conn);
+					conn.connect();
+					switch(conn.getResponseCode()) {
+						case 200:
+							break loop;  
+							
+						case 301:
+						case 302:
+						case 303:
+						case 307:
+							url = new URL(conn.getHeaderField("Location"));
+							Log.v(TAG, "Following redirect to" + url);
+							continue;
+							
+						default:
+							String err = Utils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+							throw new Exception(err);
+					}
+				}
+				
 				whoAmI = new JSONObject(Utils.readAll(conn.getInputStream()));
 			} catch(Exception e) {
 				Log.e(TAG, "Error getting whoami", e);

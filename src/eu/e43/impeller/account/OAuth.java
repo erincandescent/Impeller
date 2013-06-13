@@ -84,11 +84,11 @@ public class OAuth {
 		
 	}
 	
-	public static HttpURLConnection fetchAuthenticated(OAuthConsumer c, URL url) throws Exception {
-		return fetchAuthenticated(c, url, null);
+	public static HttpURLConnection fetchAuthenticated(Context ctx, Account acct, URL url) throws Exception {
+		return fetchAuthenticated(ctx, acct, url, null, true);
 	}
 	
-	public static HttpURLConnection fetchAuthenticated(OAuthConsumer c, URL url, Long modificationTime) throws Exception {
+	public static HttpURLConnection fetchAuthenticated(Context ctx, Account acct, URL url, Long modificationTime, boolean throwOnError) throws Exception {
 		Log.i(TAG, "Authenticated fetch of " + url);
 		for(int i = 0; i < 5; i++) {
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -96,7 +96,12 @@ public class OAuth {
 			if(modificationTime != null) {
 				conn.setIfModifiedSince(modificationTime.longValue());
 			}
-			c.sign(conn);
+			
+			if(url.getHost().equals(((AccountManager)ctx.getSystemService(Context.ACCOUNT_SERVICE)).getUserData(acct, "host"))) {
+				OAuthConsumer cons = getConsumerForAccount(ctx, acct);
+				cons.sign(conn);
+			}
+			
 			conn.connect();
 		
 			switch(conn.getResponseCode()) {
@@ -115,8 +120,12 @@ public class OAuth {
 				break;
 				
 			default:
-				String err = Utils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
-				throw new Exception(err);
+				if(throwOnError) {
+					String err = Utils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+					throw new Exception(err);
+				} else {
+					return conn;
+				}
 			}
 		}
 		

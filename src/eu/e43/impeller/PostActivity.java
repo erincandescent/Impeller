@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,7 +40,7 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 		Intent intent = getIntent();
 		if(Intent.ACTION_SEND.equals(intent.getAction())) {
 			if(intent.hasExtra(EXTRA_HTML_TEXT)) {
-				PumpHtml.setFromHtml(m_content, intent.getStringExtra(EXTRA_HTML_TEXT));
+				PumpHtml.setFromHtml(this, m_content, intent.getStringExtra(EXTRA_HTML_TEXT));
 			} else {
 				m_content.setText(intent.getCharSequenceExtra(Intent.EXTRA_TEXT));
 			}

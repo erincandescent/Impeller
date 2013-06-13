@@ -1,5 +1,7 @@
 package eu.e43.impeller;
 
+import java.net.URI;
+
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -9,23 +11,22 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.koushikdutta.urlimageviewhelper.UrlImageViewCallback;
-import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
-
-public class PumpHtml implements UrlImageViewCallback, ImageGetter {
+public class PumpHtml implements ImageLoader.Listener, ImageGetter {
 	private static final String TAG = "PumpHtml";
 	
-	private String   m_html;
-	private TextView m_view;
-	private int      m_outstanding = 0;
+	private ImageLoader			m_loader;
+	private String   			m_html;
+	private TextView 			m_view;
+	private int      			m_outstanding = 0;
 	
-	public static void setFromHtml(TextView view, String html) {
-		new PumpHtml(view, html).parse();
+	public static void setFromHtml(ActivityWithAccount ctx, TextView view, String html) {
+		new PumpHtml(ctx, view, html).parse();
 	}
 	
-	private PumpHtml(TextView view, String html) {
-		m_view = view;
-		m_html = html;
+	private PumpHtml(ActivityWithAccount ctx, TextView view, String html) {
+		m_loader = ctx.getImageLoader();
+		m_view   = view;
+		m_html   = html;
 	}
 	
 	private void parse() {
@@ -34,28 +35,28 @@ public class PumpHtml implements UrlImageViewCallback, ImageGetter {
 	
 	@Override
 	public Drawable getDrawable(String url) {
-		Bitmap b = UrlImageViewHelper.getCachedBitmap(url);
-		if(b != null) {
+		Drawable d = m_loader.getCachedImage(url);
+		if(d != null) {
 			Log.v(TAG, "getDrawable(" + url + ") successful");
-			Drawable d = new BitmapDrawable(m_view.getContext().getResources(), b);
-			d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
 			return d;
 		} else {
 			Log.v(TAG, "getDrawable(" + url + ") pending");
 			m_outstanding++;
-			UrlImageViewHelper.loadUrlDrawable(m_view.getContext(), url, this);
+			m_loader.load(this, url);
 			return null;
 		}
 	}
+	
+	@Override
+	public void loaded(Drawable dr, URI uri) {
+		m_outstanding--;	
+		Log.v(TAG, "loaded(" + uri + ") -> " + m_outstanding + " outstanding");
+		if(m_outstanding == 0) parse();
+	}
 
 	@Override
-	public void onLoaded(ImageView imageView, Bitmap loadedBitmap, String url, boolean loadedFromCache) {
-		if(!loadedFromCache && loadedBitmap != null) {
-			// If loadedBitmal == null, then an error occured loading. Never let m_outstanding descend to null
-			m_outstanding--;
-			Log.v(TAG, "onLoaded(" + url + ") -> " + m_outstanding + " outstanding");
-			if(m_outstanding == 0) parse();
-		}
+	public void error(URI uri) {
+		Log.w(TAG, "error(" + uri + ")");
 	}
 
 }

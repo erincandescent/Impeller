@@ -30,18 +30,16 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
-
 public class ActivityAdapter extends BaseAdapter {
 	static final String TAG = "ActivityAdapter";
 	
 	Feed 					m_feed;
 	Feed.Listener       	m_listener;
-	Context					m_ctx;
+	ActivityWithAccount		m_ctx;
 	View					m_view;
 	List<JSONObject>		m_items;
 	
-	public ActivityAdapter(Context ctx, Feed feed) {
+	public ActivityAdapter(ActivityWithAccount ctx, Feed feed) {
 		m_feed = feed;
 		m_ctx  = ctx;
 		m_listener = new Feed.Listener() {
@@ -78,7 +76,7 @@ public class ActivityAdapter extends BaseAdapter {
 		JSONObject mediaLink = obj.optJSONObject("image");
 		if(mediaLink == null) return null;
 		
-		return mediaLink.optString("url");
+		return Utils.getImageUrl(mediaLink);
 	}
 	
 	@Override
@@ -140,9 +138,9 @@ public class ActivityAdapter extends BaseAdapter {
 		    	JSONObject obj = json.getJSONObject("object");
 		    	String content = obj.getString("content");
 		    	
-		    	PumpHtml.setFromHtml(caption, content);
+		    	PumpHtml.setFromHtml(m_ctx, caption, content);
 				
-				UrlImageViewHelper.setUrlDrawable(image, getImage(json.getJSONObject("actor")));
+				m_ctx.getImageLoader().setImage(image, getImage(json.getJSONObject("actor")));
 			} catch (JSONException e) {
 				caption.setText(Html.fromHtml(e.getLocalizedMessage()));
 				//caption.loadData(e.getLocalizedMessage(), "text/plain", "utf-8");
@@ -161,7 +159,7 @@ public class ActivityAdapter extends BaseAdapter {
 	    	
 	    	try {
 	    		imgDescription.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
-	    		UrlImageViewHelper.setUrlDrawable(imgImg, getImage(json.getJSONObject("object")));
+	    		m_ctx.getImageLoader().setImage(imgImg, getImage(json.getJSONObject("object")));
 	    	} catch(JSONException e) {
 	    		imgDescription.setText(e.getMessage());
 	    	}

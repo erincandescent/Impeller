@@ -3,7 +3,6 @@ package eu.e43.impeller;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 import oauth.signpost.OAuthConsumer;
@@ -27,11 +26,11 @@ import eu.e43.impeller.account.OAuth;
 public class ObjectService extends Service {
 	private static final String TAG = "ObjectService";
 	
-	private static final int MAX_CACHE_SIZE = 10 * 1024 * 1024; // 10mb
+	private static final int MAX_CACHE_SIZE = 1 * 1024 * 1024; // 1mb
 	private DiskLruCache m_cache;
 	
 	class ObjectCache extends Binder {
-		private OAuthConsumer m_oauth;
+		private Account m_acct;
 		
 		private ObjectCache(Intent i) {
 			Account a = i.getParcelableExtra("account");
@@ -39,7 +38,7 @@ public class ObjectService extends Service {
 				throw new IllegalArgumentException("Need an account");
 			
 			Log.i(TAG, "Bound for account " + a.name);
-			m_oauth = OAuth.getConsumerForAccount(ObjectService.this, a);
+			m_acct = a;
 		}
 		
 		public JSONObject tryGetObject(String uri) throws IOException, JSONException {
@@ -74,10 +73,7 @@ public class ObjectService extends Service {
 				} else {
 					Log.v(TAG, "Expired; fetching");
 					JSONObject obj = new JSONObject(s.getString(0));
-					if(proxyUrl == null && obj.has("pump_io")) {
-						JSONObject pump_io = obj.getJSONObject("pump_io");
-						proxyUrl = pump_io.optString("proxyURL");
-					}
+					proxyUrl = Utils.getProxyUrl(obj);
 				}
 			} else {
 				Log.v(TAG, "Unknown object; fetch");
@@ -89,7 +85,7 @@ public class ObjectService extends Service {
 			if(lastModified != null)
 				modificationTime = lastModified.getTimeInMillis();
 			
-			HttpURLConnection conn = OAuth.fetchAuthenticated(m_oauth, new URL(proxyUrl), modificationTime);
+			HttpURLConnection conn = OAuth.fetchAuthenticated(ObjectService.this, m_acct, new URL(proxyUrl), modificationTime, true);
 			Editor e = m_cache.edit(hash);
 			String json;
 			if(conn.getResponseCode() == 200) {

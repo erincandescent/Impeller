@@ -117,4 +117,11 @@ public class Utils {
 			return url;
 		} else return null;
 	}
+	
+	public static String getImageUrl(JSONObject img) {
+		String url = getProxyUrl(img);
+		if(url == null)
+			url = img.optString("url");
+		return url;
+	}
 }

@@ -32,8 +32,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
-import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
-
 import eu.e43.impeller.ObjectService.ObjectCache;
 
 public class ObjectActivity extends ActivityWithAccount {
@@ -222,12 +220,20 @@ public class ObjectActivity extends ActivityWithAccount {
 			titleView.setText(author.optString("displayName"));
 			JSONObject img = author.optJSONObject("image");
 			if(img != null) {
-				UrlImageViewHelper.setUrlDrawable(authorIcon, img.optString("url"));
+				getImageLoader().setImage(authorIcon, Utils.getImageUrl(img));
 			}
 		} else {
 			titleView.setText("No author. How bizzare.");
 		}
 		dateView.setText(obj.optString("published"));
+		
+		JSONObject image = obj.optJSONObject("image");
+		if(image != null) {
+			ImageView iv = new ImageView(this);
+			getImageLoader().setImage(iv, Utils.getImageUrl(image));
+			iv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+			container.addView(iv);
+		}
 		
 		WebView wv = new WebView(this);
 		wv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));

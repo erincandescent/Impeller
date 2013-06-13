@@ -3,7 +3,6 @@ package eu.e43.impeller;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import oauth.signpost.OAuthConsumer;
@@ -44,7 +43,7 @@ public class Feed extends Binder {
 	private int						m_pollInterval;	///< Poll interval in seconds
 	private int						m_unreadCount;
 	private List<JSONObject> 		m_items;		///< List of items
-	private OAuthConsumer 			m_oauth;
+	private Account		 			m_account;
 	private List<Listener>			m_listeners;
 	private ObjectCache				m_cache;
 	private ServiceConnection		m_cacheConn;
@@ -93,7 +92,7 @@ public class Feed extends Binder {
 		m_listeners = new ArrayList<Listener>();
 		m_items = new ArrayList<JSONObject>();
 		
-		m_oauth = OAuth.getConsumerForAccount(m_svc, acct);
+		m_account = acct;
 		
 		Intent cacheIntent = new Intent(m_svc, ObjectService.class);
 		cacheIntent.putExtra("account", acct);
@@ -203,7 +202,7 @@ public class Feed extends Binder {
 		HttpURLConnection conn;
 		try { 
 			URL url = new URL(uri.toString());
-			conn = OAuth.fetchAuthenticated(m_oauth, url);
+			conn = OAuth.fetchAuthenticated(m_svc, m_account, url);
 		
 			JSONObject coll = new JSONObject(Utils.readAll(conn.getInputStream()));
 			JSONArray items = coll.getJSONArray("items");

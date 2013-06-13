@@ -4,18 +4,13 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.Callable;
-
 import oauth.signpost.OAuthConsumer;
 
 import org.json.JSONObject;
 
-import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 import eu.e43.impeller.account.OAuth;
 
 public class PostTask extends AsyncTask<String, Void, JSONObject> {
