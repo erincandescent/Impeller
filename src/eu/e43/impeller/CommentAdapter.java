@@ -31,11 +31,6 @@ public class CommentAdapter extends BaseAdapter {
 		if(m_comments == null)
 			m_comments = new JSONArray();
 		
-		int total = collection.optInt("totalItems", 0);
-		if(total == m_comments.length() && !forceUpdate) 
-			return;
-		
-		// Got here -> Don't have full comment set. Go and fetch.
 		updateComments();
 	}
 	
