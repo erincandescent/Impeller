@@ -1,5 +1,7 @@
 package eu.e43.impeller;
 
+import java.net.MalformedURLException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -258,7 +260,7 @@ public class ObjectActivity extends ActivityWithAccount {
 				onGotObject(obj);
 			} else {
 				Toast.makeText(ObjectActivity.this, "Error getting object", Toast.LENGTH_SHORT);
-				finishActivity(RESULT_CANCELED);
+				finish();
 			}
 		}
 	}
