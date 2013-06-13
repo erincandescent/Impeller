@@ -30,6 +30,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 
@@ -45,6 +46,7 @@ public class ObjectActivity extends ActivityWithAccount {
 	private CommentAdapter		m_commentAdapter;
 	private Menu				m_menu;
 	private ListView			m_commentsView;
+	private ViewFlipper			m_flipper;
 
 	private class CacheConnection implements ServiceConnection {
 		@Override
@@ -61,7 +63,11 @@ public class ObjectActivity extends ActivityWithAccount {
 	
 	@Override
 	protected void onCreateEx() {
-		setContentView(new Spinner(this));
+		m_flipper = new ViewFlipper(this);
+		setContentView(m_flipper);
+		m_flipper.addView(new Spinner(this), 0);
+		m_flipper.setDisplayedChild(0);
+		
 		// Show the Up button in the action bar.
 		setupActionBar();
 		m_getObjectTask = new GetObjectTask();
@@ -202,7 +208,7 @@ public class ObjectActivity extends ActivityWithAccount {
         LayoutInflater vi = LayoutInflater.from(this);
         LinearLayout container = (LinearLayout) vi.inflate(R.layout.activity_object, null);
         comments.addHeaderView(container);
-        setContentView(comments);
+        m_flipper.addView(comments, 1);
         m_commentsView = comments;
 		
 		ImageView authorIcon   = (ImageView)    findViewById(R.id.actorImage);
@@ -240,6 +246,7 @@ public class ObjectActivity extends ActivityWithAccount {
 		updateMenu();
 		
 		registerForContextMenu(comments);
+		m_flipper.showNext();
 	}
 	
 	private class GetObjectTask extends AsyncTask<Void, Void, JSONObject> {
