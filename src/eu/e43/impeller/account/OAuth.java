@@ -85,17 +85,14 @@ public class OAuth {
 	}
 	
 	public static HttpURLConnection fetchAuthenticated(Context ctx, Account acct, URL url) throws Exception {
-		return fetchAuthenticated(ctx, acct, url, null, true);
+		return fetchAuthenticated(ctx, acct, url, true);
 	}
 	
-	public static HttpURLConnection fetchAuthenticated(Context ctx, Account acct, URL url, Long modificationTime, boolean throwOnError) throws Exception {
+	public static HttpURLConnection fetchAuthenticated(Context ctx, Account acct, URL url, boolean throwOnError) throws Exception {
 		Log.i(TAG, "Authenticated fetch of " + url);
 		for(int i = 0; i < 5; i++) {
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setInstanceFollowRedirects(false);
-			if(modificationTime != null) {
-				conn.setIfModifiedSince(modificationTime.longValue());
-			}
 			
 			if(url.getHost().equals(((AccountManager)ctx.getSystemService(Context.ACCOUNT_SERVICE)).getUserData(acct, "host"))) {
 				OAuthConsumer cons = getConsumerForAccount(ctx, acct);
