@@ -26,7 +26,6 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 	// EXTRA_HTML_TEXT is a 4.2 feature
 	private static final String EXTRA_HTML_TEXT = "android.intent.extra.HTML_TEXT";
 	
-	Button   	m_postBtn;
 	TextView 	m_content;
 	Account  	m_account;
 	JSONObject	m_inReplyTo = null;
@@ -36,8 +35,8 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 		setContentView(R.layout.activity_post);
 		
 		m_content = (TextView) findViewById(R.id.content);
-		m_postBtn = (Button) findViewById(R.id.post);
-		m_postBtn.setOnClickListener(this);
+		findViewById(R.id.action_post).setOnClickListener(this);
+		findViewById(R.id.action_cancel).setOnClickListener(this);
 		
 		Intent intent = getIntent();
 		if(Intent.ACTION_SEND.equals(intent.getAction())) {
@@ -67,6 +66,8 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 
 	private void onPost() {
 		try {
+			m_content.clearComposingText();
+			
 			JSONObject obj = new JSONObject();
 			String generator = Utils.readAll(getResources().openRawResource(R.raw.generator));
 			
@@ -92,7 +93,15 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 	
 	@Override
 	public void onClick(View v) {
-		if(v == m_postBtn) { onPost(); }
+		switch(v.getId()) {
+			case R.id.action_post: 
+				onPost(); 
+				return;
+			case R.id.action_cancel:
+				setResult(RESULT_CANCELED);
+				finish();
+				return;
+		}
 	}
 	
 	private class PostCallback implements PostTask.Callback {
