@@ -56,7 +56,7 @@ public class ImageLoader {
 			} else {
 				l.error(null);
 			}
-		} catch (URISyntaxException e) {
+		} catch (Exception e) {
 			l.error(null);
 		}
 	}
@@ -87,7 +87,7 @@ public class ImageLoader {
 		URI uri;
 		try {
 			uri = new URI(imageUrl);
-		} catch(URISyntaxException e) {
+		} catch(Exception e) {
 			uri = null;
 		}
 		setImage(view, uri);
@@ -100,7 +100,7 @@ public class ImageLoader {
 	public Drawable getCachedImage(String url) {
 		try {
 			return getCachedImage(new URI(url));
-		} catch(URISyntaxException e) {
+		} catch(Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
