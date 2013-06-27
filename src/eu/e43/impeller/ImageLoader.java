@@ -51,9 +51,13 @@ public class ImageLoader {
 	
 	public void load(Listener l, String uri) {
 		try {
-			load(l, new URI(uri));
+			if(uri != null) {
+				load(l, new URI(uri));
+			} else {
+				l.error(null);
+			}
 		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
+			l.error(null);
 		}
 	}
 	
@@ -80,11 +84,13 @@ public class ImageLoader {
 	}
 	
 	public void setImage(ImageView view, String imageUrl) {
+		URI uri;
 		try {
-			setImage(view, new URI(imageUrl));
+			uri = new URI(imageUrl);
 		} catch(URISyntaxException e) {
-			throw new RuntimeException(e);
+			uri = null;
 		}
+		setImage(view, uri);
 	}
 	
 	public Drawable getCachedImage(URI uri) {
