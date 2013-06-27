@@ -48,7 +48,18 @@ public final class SyncOperation {
                 .appendQueryParameter(ContactsContract.RawContacts.SOURCE_ID, id)
                 .build();
 
-        Cursor c = resolver.query(rawContactsUri, new String[] { ContactsContract.RawContacts._ID }, null, null, null);
+        Cursor c = resolver.query(
+                ContactsContract.RawContacts.CONTENT_URI,
+                new String[] { ContactsContract.RawContacts._ID },
+                ContactsContract.RawContacts.ACCOUNT_TYPE + "=? AND " +
+                ContactsContract.RawContacts.ACCOUNT_NAME + "=? AND " +
+                ContactsContract.RawContacts.SOURCE_ID    + "=?",
+                new String[] {
+                        account.type,
+                        account.name,
+                        id
+                },
+                null);
         if(!c.moveToFirst()) {
             m_rawContactInsertIndex = m_operations.size();
             operations.add(ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
