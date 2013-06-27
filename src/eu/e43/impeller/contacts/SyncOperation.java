@@ -68,27 +68,26 @@ public final class SyncOperation {
                     .withValue(ContactsContract.RawContacts.SOURCE_ID, m_id)
                     .build());
 
-            // Add the identity (pump.io account reference, i.e. acct:person@example.com)
-            // Used by Android to unique contacts
-            operations.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, m_rawContactInsertIndex)
-                    .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Identity.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.Identity.NAMESPACE, "io.pump")
-                    .withValue(ContactsContract.CommonDataKinds.Identity.IDENTITY, id)
-                    .build());
-
-            // Add the profile entry
-            operations.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, m_rawContactInsertIndex)
-                    .withValue(ContactsContract.Data.MIMETYPE, "vnd.android.cursor.item/vnd.e43.impeller.profile")
-                    .withValue(ContactsContract.Data.DATA1, id)
-                    .build());
-
             m_isNew = true;
         } else {
             m_isNew = false;
             m_rawContactId = c.getLong(0);
         }
+
+        // Add the identity (pump.io account reference, i.e. acct:person@example.com)
+        // Used by Android to unique contacts
+        operations.add(
+                withContact(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI))
+                .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Identity.CONTENT_ITEM_TYPE)
+                .withValue(ContactsContract.CommonDataKinds.Identity.NAMESPACE, "io.pump")
+                .withValue(ContactsContract.CommonDataKinds.Identity.IDENTITY, id)
+                .build());
+
+        // Add the profile entry
+        operations.add(withContact(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI))
+                .withValue(ContactsContract.Data.MIMETYPE, "vnd.android.cursor.item/vnd.e43.impeller.profile")
+                .withValue(ContactsContract.Data.DATA1, id)
+                .build());
     }
 
     private ContentProviderOperation.Builder withContact(ContentProviderOperation.Builder b) {
@@ -107,6 +106,7 @@ public final class SyncOperation {
                     new String[] { String.valueOf(m_rawContactId), mimetype}, null);
             if(c.moveToFirst()) {
                 long id = c.getLong(0);
+                Log.v(TAG, "Already have a " + mimetype + " with ID - update" + id);
                 return withContact(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI))
                         .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(id)});
             }
@@ -130,46 +130,9 @@ public final class SyncOperation {
     }
 
     public void setPhotoUri(String photoUri) throws Exception {
-        // Avoid re-downloading the image one each sync
-        ContentProviderOperation.Builder b = null;
-        if(!m_isNew) {
-            Cursor c = m_resolver.query(ContactsContract.Data.CONTENT_URI,
-                    new String[]{
-                            ContactsContract.Data._ID,
-                            ContactsContract.Data.SYNC1
-                    },
-                    ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + "=?",
-                    new String[] {
-                            String.valueOf(m_rawContactId),
-                            ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE
-                    }, null);
-            if(c.moveToFirst()) {
-                long    id = c.getLong(0);
-                String uri = c.getString(1);
-
-                if(photoUri.equals(uri)) {
-                    // URI unchanged -> photo unchanged
-                    return;
-                }
-
-                b = withContact(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI))
-                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{ String.valueOf(id) });
-            }
-        }
-
-        if(b == null) {
-            b = withContact(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI))
-                    .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE);
-        }
-        try {
-            HttpURLConnection conn = OAuth.fetchAuthenticated(m_context, m_account, new URL(photoUri), true);
-
-            b.withValue(ContactsContract.Data.SYNC1, photoUri);
-            b.withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, Utils.readAllBytes(conn.getInputStream()));
-            m_operations.add(b.build());
-        } catch(Exception e) {
-            Log.w(TAG, "Error getting photo", e);
-            // Swallow
-        }
+        Log.v(TAG, "Set photo to " + photoUri);
+        m_operations.add(setDataOfType(ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+                        .withValue(ContactsContract.Data.SYNC1, photoUri)
+                        .build());
     }
 }

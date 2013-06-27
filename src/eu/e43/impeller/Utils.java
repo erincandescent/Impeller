@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -47,13 +48,18 @@ public class Utils {
 		return readAll(new InputStreamReader(s, "UTF-8"));
 	}
 
-    static public byte[] readAllBytes(InputStream s) throws IOException {
+    static public OutputStream copyBytes(OutputStream out, InputStream in) throws IOException {
         int nRead;
-        ByteArrayOutputStream aos = new ByteArrayOutputStream();
         byte[] buf = new byte[32 * 1024];
-        while((nRead = s.read(buf)) != -1) {
-            aos.write(buf, 0, nRead);
+        while((nRead = in.read(buf)) != -1) {
+            out.write(buf, 0, nRead);
         }
+        return out;
+    }
+
+    static public byte[] readAllBytes(InputStream s) throws IOException {
+        ByteArrayOutputStream aos = new ByteArrayOutputStream();
+        copyBytes(aos, s);
         return aos.toByteArray();
     }
 

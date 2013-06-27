@@ -10,6 +10,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncResult;
+import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eu.e43.impeller.Utils;
+import eu.e43.impeller.account.Authenticator;
 import eu.e43.impeller.account.OAuth;
 
 /**
@@ -60,7 +62,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         op.setNickname(person.getString("preferredUsername"));
         if(person.has("displayName")) op.setDisplayName(person.getString("displayName"));
         if(person.has("image")) {
-            op.setPhotoUri(Utils.getImageUrl(person.getJSONObject("image")));
+            JSONObject image = person.getJSONObject("image");
+            JSONObject pump_io = person.optJSONObject("pump_io");
+            if(pump_io != null) {
+                JSONObject fullImage = pump_io.optJSONObject("fullImage");
+                if(fullImage != null) {
+                    image = fullImage;
+                } else Log.v(TAG, "No fullImage");
+            } else Log.v(TAG, "No pump_io");
+            op.setPhotoUri(Utils.getImageUrl(image));
         }
     }
 
@@ -99,6 +109,64 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
 
             resolver.applyBatch(ContactsContract.AUTHORITY, operations);
+
+            // Now update all photos which are out of date
+            Cursor c = resolver.query(ContactsContract.RawContacts.CONTENT_URI,
+                    new String[] { ContactsContract.RawContacts._ID },
+                    ContactsContract.RawContacts.ACCOUNT_TYPE + "=? AND "
+                    + ContactsContract.RawContacts.ACCOUNT_NAME + "=?",
+                    new String[] { account.type, account.name }, null);
+
+            while(c.moveToNext()) {
+                long id = c.getLong(0);
+                Cursor pic_c = resolver.query(ContactsContract.Data.CONTENT_URI,
+                    new String[] {
+                        ContactsContract.Data._ID,
+                        ContactsContract.Data.SYNC1,
+                        ContactsContract.Data.SYNC2
+                    },
+                    ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + "=?",
+                    new String[] {
+                            String.valueOf(id),
+                            ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE
+                    }, null);
+
+                if(pic_c.moveToFirst()) {
+                    // SYNC1 = URL just returned by the JSON fetch
+                    // SYNC2 = URL currently stored
+                    // If they differ -> do a download
+                    long rowId    = pic_c.getLong(0);
+                    String newUrl = pic_c.getString(1);
+                    String oldUrl = pic_c.getString(2);
+                    Log.v(TAG, rowId + " " + newUrl + " " + oldUrl);
+
+                    if(newUrl != null && !newUrl.equals(oldUrl)) {
+                        try {
+                            Log.i(TAG, "Updating display picture from " + newUrl);
+                            Uri rawContactPhotoUri = Uri.withAppendedPath(
+                                ContentUris.withAppendedId(ContactsContract.RawContacts.CONTENT_URI, id),
+                                ContactsContract.RawContacts.DisplayPhoto.CONTENT_DIRECTORY);
+
+                            conn = OAuth.fetchAuthenticated(m_context, account, new URL(newUrl), true);
+
+                            AssetFileDescriptor fd =
+                                    resolver.openAssetFileDescriptor(rawContactPhotoUri, "rw");
+                            Utils.copyBytes(fd.createOutputStream(), conn.getInputStream());
+
+                            ContentValues cv = new ContentValues();
+                            cv.put(ContactsContract.Data.SYNC2, newUrl);
+                            resolver.update(
+                                    ContactsContract.Data.CONTENT_URI,
+                                    cv,
+                                    ContactsContract.Data._ID + "=?",
+                                    new String[] { String.valueOf(rowId) }
+                            );
+                        } catch(Exception e) {
+                            Log.w(TAG, "Error updating user photograph ", e);
+                        }
+                    }
+                }
+            }
 
         } catch(Exception e) {
             Log.e(TAG, "Sync exception", e);
