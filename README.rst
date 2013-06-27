@@ -18,4 +18,4 @@ Apache License 2.0. See COPYING.TXT.
 
 .. _Impeller: http://impeller.e43.eu
 .. _Pump.io: http://pump.io
-.. _bug tracker https://e43oss.atlassian.net/browse/IMP
+.. _bug tracker: https://e43oss.atlassian.net/browse/IMP
