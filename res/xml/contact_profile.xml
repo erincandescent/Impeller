@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ContactsAccountType xmlns:android="http://schemas.android.com/apk/res/android">
+    <ContactsDataKind
+            android:mimeType="vnd.android.cursor.item/vnd.e43.impeller.profile"
+            android:icon="@drawable/ic_launcher"
+            android:summaryColumn="data1"
+            android:detailColumn="data1"
+            android:detailSocialSummary="true" />
+
+</ContactsAccountType>

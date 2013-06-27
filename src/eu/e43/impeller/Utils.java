@@ -15,6 +15,7 @@
 
 package eu.e43.impeller;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,6 +23,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -44,7 +46,17 @@ public class Utils {
 	static public String readAll(InputStream s) throws IOException {
 		return readAll(new InputStreamReader(s, "UTF-8"));
 	}
-	
+
+    static public byte[] readAllBytes(InputStream s) throws IOException {
+        int nRead;
+        ByteArrayOutputStream aos = new ByteArrayOutputStream();
+        byte[] buf = new byte[32 * 1024];
+        while((nRead = s.read(buf)) != -1) {
+            aos.write(buf, 0, nRead);
+        }
+        return aos.toByteArray();
+    }
+
 	static public String encode(Map<String, String> params) {
 		try {
 			StringBuilder sb = new StringBuilder();

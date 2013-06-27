@@ -93,6 +93,8 @@ public class OAuth {
 		for(int i = 0; i < 5; i++) {
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setInstanceFollowRedirects(false);
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(15000);
 			
 			if(url.getHost().equals(((AccountManager)ctx.getSystemService(Context.ACCOUNT_SERVICE)).getUserData(acct, "host"))) {
 				OAuthConsumer cons = getConsumerForAccount(ctx, acct);

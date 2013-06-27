@@ -12,6 +12,8 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -63,6 +65,21 @@
                 android:resource="@xml/authenticator" />
         </service>
 
+        <service
+            android:name="eu.e43.impeller.contacts.SyncService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                    android:name="android.content.SyncAdapter"
+                    android:resource="@xml/contact_sync_adapter" />
+            <meta-data
+                    android:name="android.provider.CONTACTS_STRUCTURE"
+                    android:resource="@xml/contact_profile" />
+        </service>
+
         <activity
             android:name="eu.e43.impeller.ObjectActivity"
             android:label="@string/title_activity_object"
@@ -85,6 +102,7 @@
             android:enabled="true"
             android:exported="false" >
         </service>
+        <service android:name=".contacts.SyncService"/>
 
         <activity
             android:name="eu.e43.impeller.PostActivity"
