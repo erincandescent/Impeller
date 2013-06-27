@@ -1,20 +1,21 @@
 ======================================================================================
-`Impeller <http://impeller.e43.eu/>`- An Android client for `Pump.io <http://pump.io>`
+Impeller_ - An Android client for `Pump.io`_
 ======================================================================================
 
 What is it
 ==========
 
-An early, quite incomplete client for Pump.io which runs on Android Ice Cream
-Sandwich and later.
+A client for `Pump.io`_, intended to provide a rich, platform-integrated experience.
 
-At present, it solves only ~10% of the problem: getting your feed and notifying 
-you of updates. Fortunately, thats' the most important 10%.
+Runs on Android 4.0 and later.
 
-For my future directions, see `this post <https://microca.st/oshepherd/note/Rtud1lE6TzKxdo8YC47Hhg>`
-on my feed
+If you encounter any bugs, please report them on the `bug tracker`_
 
 License
 =======
 
 Apache License 2.0. See COPYING.TXT.
+
+.. _Impeller: http://impeller.e43.eu
+.. _Pump.io: http://pump.io
+.. _bug tracker https://e43oss.atlassian.net/browse/IMP
