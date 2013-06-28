@@ -34,9 +34,16 @@ public class ImageLoader {
 	}
 	
 	public void load(Listener l, URI uri) {
+        if(uri == null) {
+            l.error(null);
+            return;
+        }
+
 		Drawable dw = ms_images.get(uri);
-		if(dw != null) 
+		if(dw != null) {
 			l.loaded(dw,  uri);
+            return;
+        }
 		
 		FetchTask task = ms_tasks.get(uri);
 		if(task == null) {
@@ -75,7 +82,8 @@ public class ImageLoader {
 
 			@Override
 			public void error(URI uri) {
-				if(uri.equals(ms_viewUris.get(view))) {
+                URI viewUri = ms_viewUris.get(view);
+				if(viewUri != null && uri != null && uri.equals(viewUri)) {
 					view.setImageDrawable(m_ctx.getResources().getDrawable(R.drawable.ic_image_broken));
 					ms_viewUris.remove(uri);
 				}
