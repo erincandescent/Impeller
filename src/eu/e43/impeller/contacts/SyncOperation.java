@@ -77,15 +77,14 @@ public final class SyncOperation {
         // Add the identity (pump.io account reference, i.e. acct:person@example.com)
         // Used by Android to unique contacts
         operations.add(
-                withContact(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI))
-                .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Identity.CONTENT_ITEM_TYPE)
+                setDataOfType(ContactsContract.CommonDataKinds.Identity.CONTENT_ITEM_TYPE)
                 .withValue(ContactsContract.CommonDataKinds.Identity.NAMESPACE, "io.pump")
                 .withValue(ContactsContract.CommonDataKinds.Identity.IDENTITY, id)
                 .build());
 
         // Add the profile entry
-        operations.add(withContact(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI))
-                .withValue(ContactsContract.Data.MIMETYPE, "vnd.android.cursor.item/vnd.e43.impeller.profile")
+        operations.add(
+                setDataOfType("vnd.android.cursor.item/vnd.e43.impeller.profile")
                 .withValue(ContactsContract.Data.DATA1, id)
                 .build());
     }
