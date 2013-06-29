@@ -20,7 +20,8 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme"
+        android:name="eu.e43.impeller.ImpellerApplication">
         <activity
             android:name="eu.e43.impeller.FeedActivity"
             android:label="@string/app_name" >
@@ -118,6 +119,25 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+
+        <!-- JMC crash reporting -->
+        <activity android:name="com.atlassian.jconnect.droid.activity.FeedbackActivity"
+                  android:label="@string/jconnect.droid.create_feedback">
+        </activity>
+        <activity android:name="com.atlassian.jconnect.droid.activity.FeedbackInboxActivity"
+                  android:label="@string/jconnect.droid.feedback_inbox">
+        </activity>
+        <activity android:name="com.atlassian.jconnect.droid.activity.ViewFeedbackActivity"
+                  android:label="@string/jconnect.droid.feedback_inbox">
+        </activity>
+        <service android:name="com.atlassian.jconnect.droid.service.RemoteFeedbackService" />
+        <service android:name="com.atlassian.jconnect.droid.service.FeedbackPollingService" />
+
+        <activity android:name="org.acra.CrashReportDialog"
+                  android:theme="@style/AppDialogTheme"
+                  android:launchMode="singleInstance"
+                  android:excludeFromRecents="true"
+                  android:finishOnTaskLaunch="true" />
     </application>
 
 </manifest>

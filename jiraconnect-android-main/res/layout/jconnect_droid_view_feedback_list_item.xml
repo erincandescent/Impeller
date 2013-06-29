@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+    <LinearLayout android:layout_height="wrap_content"
+                  android:layout_width="fill_parent"
+                  android:padding="7dip"
+                  android:paddingLeft="2dip"
+                  android:orientation="vertical">
+    <TextView android:id="@+id/jconnect.droid.viewfeedback.contents"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/jconnect.droid.style.main_font" />
+    <TextView android:id="@+id/jconnect.droid.viewfeedback.date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/jconnect.droid.style.secondary_font" />
+    </LinearLayout>
+    <LinearLayout android:layout_height="wrap_content"
+                  android:layout_width="match_parent"
+                  style="@style/jconnect.droid.style.padded_divider_container">
+        <View style="@style/jconnect.droid.style.light_divider" />
+    </LinearLayout>
+
+</LinearLayout>

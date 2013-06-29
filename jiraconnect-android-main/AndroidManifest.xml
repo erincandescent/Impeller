@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="com.atlassian.jconnect.droid"
+      android:versionCode="1"
+      android:versionName="1.0">
+    <!-- Contents of this file need to be merged into your application's AndroidManifest.xml -->
+    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="16"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <supports-screens android:smallScreens="true"
+                  android:normalScreens="true"
+                  android:largeScreens="true" />
+    <application android:label="@string/jconnect.droid.app_name" android:debuggable="true">
+        <activity android:name="com.atlassian.jconnect.droid.activity.FeedbackActivity"
+                  android:label="@string/jconnect.droid.create_feedback">
+        </activity>
+        <activity android:name="com.atlassian.jconnect.droid.activity.FeedbackInboxActivity"
+                  android:label="@string/jconnect.droid.feedback_inbox">
+        </activity>
+        <activity android:name="com.atlassian.jconnect.droid.activity.ViewFeedbackActivity"
+                  android:label="@string/jconnect.droid.feedback_inbox">
+        </activity>
+        <service android:name="com.atlassian.jconnect.droid.service.RemoteFeedbackService" />
+        <service android:name="com.atlassian.jconnect.droid.service.FeedbackPollingService" />
+
+    </application>
+</manifest> 

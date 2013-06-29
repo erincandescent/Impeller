@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/jconnect.droid.attach"
+          android:icon="@drawable/jconnect_droid_ic_menu_attachment"
+          android:title="@string/jconnect.droid.attach" >
+        <menu>
+            <!--<item android:id="@+id/jconnect.droid.attach_image"-->
+                  <!--android:icon="@drawable/jconnect_droid_ic_gallery"-->
+                  <!--android:title="@string/jconnect.droid.image" />-->
+            <!--<item android:id="@+id/jconnect.droid.attach_audio"-->
+                  <!--android:icon="@drawable/jconnect_droid_ic_audio"-->
+                  <!--android:title="@string/jconnect.droid.audio" />-->
+            <item android:id="@+id/jconnect.droid.attach_record_audio"
+                  android:icon="@drawable/jconnect_droid_ic_audio"
+                  android:title="@string/jconnect.droid.record_feedback" />
+
+        </menu>
+    </item>
+</menu>

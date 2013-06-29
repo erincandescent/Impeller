@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="jconnect.droid.app_name">JIRA Mobile Connect</string>
+    <string name="jconnect.droid.create_feedback">New Feedback</string>
+    <string name="jconnect.droid.create_feedback_desc">Send Feedback to the Application Developer</string>
+    <string name="jconnect.droid.feedback_inbox">Feedback Inbox</string>
+
+    <string name="jconnect.droid.feedback_placeholder">[Type Feedback]</string>
+    <string name="jconnect.droid.reply_placeholder">[Type Reply]</string>
+
+    <string name="jconnect.droid.no_config_property">\'%s\' configuration property value is empty. Cannot create feedback. Please check jconnect_droid_baseconfig.xml in your application resources.</string>
+    <string name="jconnect.droid.sending_feedback">Sending feedback for \'%s\'</string>
+    <string name="jconnect.droid.refreshing_feedback">Refreshing feedback...</string>
+    <string name="jconnect.droid.feedback_sent">Feedback has been sent</string>
+    <string name="jconnect.droid.feedback_sending_failed">Failed to send feedback</string>
+    <string name="jconnect.droid.reply_sent">Reply sent</string>
+    <string name="jconnect.droid.reply_sending_failed">Failed to send reply</string>
+    <string name="jconnect.droid.feedback_retrieving_failed">Error while retrieving feedback items</string>
+
+    <string name="jconnect.droid.no_response">No response</string>
+    <string name="jconnect.droid.send">Send</string>
+    <string name="jconnect.droid.sent">Sent %s</string>
+    <string name="jconnect.droid.me">Me</string>
+
+    <string name="jconnect.droid.attach">Attach</string>
+    <string name="jconnect.droid.image">Image</string>
+    <string name="jconnect.droid.audio">Audio</string>
+    <string name="jconnect.droid.record_feedback">Record feedback</string>
+
+    <string name="jconnect.droid.finish_recording">Finish</string>
+    <string name="jconnect.droid.cancel_recording">Cancel</string>
+    <string name="jconnect.droid.recording_failed">Unable to record feedback: %s</string>
+
+    <string name="jconnect.droid.updating_feedback_inbox">Updating inbox</string>
+</resources>

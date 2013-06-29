@@ -1,0 +1,104 @@
+package com.atlassian.jconnect.droid.task;
+
+import static java.lang.String.format;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+
+import android.net.http.AndroidHttpClient;
+import android.os.AsyncTask;
+import android.util.Log;
+
+import com.atlassian.jconnect.droid.jira.Issue;
+import com.atlassian.jconnect.droid.jira.IssueParser;
+import com.atlassian.jconnect.droid.net.RestURLGenerator;
+import com.atlassian.jconnect.droid.service.FeedbackAttachment;
+import com.atlassian.jconnect.droid.service.RemoteFeedbackService;
+
+public class CreateFeedbackTask extends AsyncTask<CreateIssueParams, Void, Issue> {
+
+    private static final String LOG_TAG = CreateFeedbackTask.class.getSimpleName();
+
+    final WeakReference<RemoteFeedbackService> contextRef;
+
+    public CreateFeedbackTask(RemoteFeedbackService service) {
+        this.contextRef = new WeakReference<RemoteFeedbackService>(service);
+    }
+
+    @Override
+    protected Issue doInBackground(CreateIssueParams... paramsArray) {
+        if (paramsArray.length != 1) {
+            throw new IllegalArgumentException("Should have exactly 1 params object");
+        }
+
+        CreateIssueParams params = paramsArray[0];
+        MultipartEntity entity = params.toMultipartEntity();
+        if (entity == null) return null;
+
+        String issueKey = null;
+        final AndroidHttpClient client = AndroidHttpClient.newInstance("JIRA Connect Android Client");
+        try {
+            HttpPost post = new HttpPost(RestURLGenerator.getIssueCreateURI(params));
+            post.setEntity(entity);
+            final HttpResponse resp = client.execute(post);
+            final StatusLine status = resp.getStatusLine();
+            if (status.getStatusCode() == 200) {
+                issueKey = IssueParser.parseIssueKey(resp.getEntity());
+            } else {
+                Log.e(
+                        LOG_TAG,
+                        format(
+                                "Queried %s and Received %s: %s: %s",
+                                post.getURI(),
+                                status.getStatusCode(),
+                                status.getReasonPhrase(),
+                                EntityUtils.toString(resp.getEntity())));
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Failed to create JIRA issue", e);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "Failed to parse create issue response", e);
+        } finally {
+            client.close();
+            cleanUpAttachments(params);
+        }
+        return new Issue.Builder(issueKey).title(params.summary).build();
+    }
+
+    /**
+     * Clean up any temporary attachments once we're done.
+     * 
+     * @param params
+     *            task params
+     */
+    private void cleanUpAttachments(CreateIssueParams params) {
+        for (FeedbackAttachment attachment : params.attachments) {
+            if (attachment.isTemporary() && attachment.exists()) {
+                FileUtils.deleteQuietly(attachment.getSource());
+            }
+        }
+    }
+
+    @Override
+    protected void onPostExecute(Issue issue) {
+        RemoteFeedbackService owner = contextRef.get();
+        if (owner != null) {
+            if (issue != null) {
+                owner.onFeedbackCreated(issue);
+            } else {
+                owner.onFeedbackFailed();
+            }
+        } else {
+            Log.w(LOG_TAG, "Context is gone!");
+        }
+
+    }
+}

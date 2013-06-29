@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              style="@style/jconnect.droid.style.main">
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:isScrollContainer="true"
+                  android:weightSum="100"
+                  style="@style/jconnect.droid.style.input_container">
+        `
+        <EditText android:id="@+id/feedback_text"
+                  android:layout_width="0dip"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="75"
+                  android:minLines="5"
+                  android:gravity="top"
+                  android:hint="@string/jconnect.droid.feedback_placeholder" />
+        <LinearLayout android:layout_width="0dip"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical"
+                      android:layout_weight="25"
+                      android:layout_gravity="top">
+            <Button android:id="@+id/submit_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/jconnect.droid.send" />
+            <!-- TODO that needs a dialog with options that simulates submenu. Cause obviously they couldn't make it available to devs... -->
+            <!--<ImageButton android:id="@+id/attach_button"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:src="@drawable/jconnect_droid_ic_menu_attachment" />-->
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
