@@ -82,18 +82,10 @@ public class FeedActivity extends ActivityWithAccount implements OnItemClickList
     public void refresh(MenuItem itm) {
         getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
     }
-    
-    public void openSettings(MenuItem itm) {
-    	startActivity(new Intent(this, SettingsActivity.class));
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                openSettings(item);
-                return true;
-                
             case R.id.action_refresh:
                 refresh(item);
                 return true;

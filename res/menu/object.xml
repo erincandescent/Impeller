@@ -1,5 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:id="@+id/action_reply" android:visible="true" android:title="@string/action_reply" android:enabled="true" android:menuCategory="container" android:showAsAction="ifRoom"></item>
     <item android:id="@+id/action_like" android:menuCategory="container" android:title="@string/action_like" android:enabled="true" android:visible="true" android:showAsAction="ifRoom"></item>
-
 </menu>

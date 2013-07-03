@@ -93,15 +93,6 @@
         </activity>
 
         <activity
-                android:name="eu.e43.impeller.SettingsActivity"
-                android:label="@string/title_activity_settings"
-                android:parentActivityName="eu.e43.impeller.FeedActivity" >
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="eu.e43.impeller.FeedActivity" />
-        </activity>
-
-        <activity
             android:name="eu.e43.impeller.ObjectActivity"
             android:label="@string/title_activity_object"
             android:parentActivityName="eu.e43.impeller.FeedActivity" >

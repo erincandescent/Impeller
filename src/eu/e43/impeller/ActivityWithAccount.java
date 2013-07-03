@@ -29,7 +29,6 @@ public abstract class ActivityWithAccount extends Activity {
 	@Override
 	protected final void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
 		m_accountManager = AccountManager.get(this);
 		
 		if(HttpResponseCache.getInstalled() == null) {
