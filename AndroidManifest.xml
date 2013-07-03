@@ -14,6 +14,8 @@
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -22,53 +24,44 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
         android:name="eu.e43.impeller.ImpellerApplication">
-        <activity
-            android:name="eu.e43.impeller.FeedActivity"
-            android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <provider
+            android:name="eu.e43.impeller.content.PumpContentProvider"
+            android:label="Pump.io"
+            android:authorities="eu.e43.impeller.content"
+            android:enabled="true"
+            android:exported="true"
+            android:syncable="true"
+            />
 
         <service
-            android:name="eu.e43.impeller.FeedService"
-            android:enabled="true"
-            android:exported="false" >
-        </service>
-
-        <activity
-            android:name="eu.e43.impeller.account.LoginActivity"
-            android:label="@string/title_activity_login"
-            android:windowSoftInputMode="adjustResize|stateVisible" >
-        </activity>
-        
-        <activity
-            android:name="eu.e43.impeller.SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:parentActivityName="eu.e43.impeller.FeedActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="eu.e43.impeller.FeedActivity" />
-        </activity>
-
-        <service
-            android:name="eu.e43.impeller.account.AuthenticatorService"
-            android:enabled="true"
-            android:exported="true" >
+                android:name="eu.e43.impeller.account.AuthenticatorService"
+                android:enabled="true"
+                android:exported="true" >
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
 
             <meta-data
-                android:name="android.accounts.AccountAuthenticator"
-                android:resource="@xml/authenticator" />
+                    android:name="android.accounts.AccountAuthenticator"
+                    android:resource="@xml/authenticator" />
         </service>
 
         <service
-            android:name="eu.e43.impeller.contacts.SyncService"
-            android:exported="true">
+                android:name="eu.e43.impeller.content.FeedSyncService"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                    android:name="android.content.SyncAdapter"
+                    android:resource="@xml/feed_sync_adapter" />
+        </service>
+
+        <service
+                android:name="eu.e43.impeller.contacts.SyncService"
+                android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -80,6 +73,33 @@
                     android:name="android.provider.CONTACTS_STRUCTURE"
                     android:resource="@xml/contact_profile" />
         </service>
+
+        <service android:name=".contacts.SyncService"/>
+
+        <activity
+                android:name="eu.e43.impeller.FeedActivity"
+                android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+                android:name="eu.e43.impeller.account.LoginActivity"
+                android:label="@string/title_activity_login"
+                android:windowSoftInputMode="adjustResize|stateVisible" >
+        </activity>
+
+        <activity
+                android:name="eu.e43.impeller.SettingsActivity"
+                android:label="@string/title_activity_settings"
+                android:parentActivityName="eu.e43.impeller.FeedActivity" >
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="eu.e43.impeller.FeedActivity" />
+        </activity>
 
         <activity
             android:name="eu.e43.impeller.ObjectActivity"
@@ -97,13 +117,6 @@
 				<data android:scheme="acct"  />
             </intent-filter>
         </activity>
-
-        <service
-            android:name="eu.e43.impeller.ObjectService"
-            android:enabled="true"
-            android:exported="false" >
-        </service>
-        <service android:name=".contacts.SyncService"/>
 
         <activity
             android:name="eu.e43.impeller.PostActivity"

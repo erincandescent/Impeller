@@ -15,6 +15,11 @@
 
 package eu.e43.impeller;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.Context;
+import android.net.Uri;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +38,24 @@ import java.util.Map;
 import org.json.JSONObject;
 
 public class Utils {
+    public static Uri getFeedUri(Context ctx, Account user, String... feed) {
+        AccountManager am = AccountManager.get(ctx);
+        String host     = am.getUserData(user, "host");
+        String username = am.getUserData(user, "username");
+
+        Uri.Builder b = new Uri.Builder();
+        b.scheme("https");
+        b.authority(host);
+        b.appendPath("api");
+        b.appendPath("user");
+        b.appendPath(username);
+        for(String s : feed) {
+            b.appendPath(s);
+        }
+
+        return b.build();
+    }
+
 
 	static public String readAll(Reader r) throws IOException {
 		int nRead;

@@ -21,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,43 +34,40 @@ import android.widget.TextView;
 public class ActivityAdapter extends BaseAdapter {
 	static final String TAG = "ActivityAdapter";
 	
-	Feed 					m_feed;
-	Feed.Listener       	m_listener;
+    Cursor                  m_cursor;
 	ActivityWithAccount		m_ctx;
-	View					m_view;
-	List<JSONObject>		m_items;
 	
-	public ActivityAdapter(ActivityWithAccount ctx, Feed feed) {
-		m_feed = feed;
+	public ActivityAdapter(ActivityWithAccount ctx) {
+		m_cursor = null;
 		m_ctx  = ctx;
-		m_listener = new Feed.Listener() {
-			
-			@Override
-			public void feedUpdated(Feed feed, int unread, List<JSONObject> items) {
-				Log.i(TAG, "Feed updated! " + items.size());
-				m_items = items;
-				notifyDataSetChanged();
-			}
-
-			@Override
-			public void updateStarted(Feed feed) {}			
-		};
-		
-		m_feed.addListenerAndNotify(m_listener);
 	}
+
+    public void updateCursor(Cursor c) {
+        m_cursor = c;
+        notifyDataSetChanged();
+    }
 	
 	public void close() {
-		m_feed.removeListener(m_listener);
+		m_cursor = null;
 	}
 
 	@Override
 	public int getCount() {
-		return m_items.size();
+        if(m_cursor != null)
+		    return m_cursor.getCount();
+        else
+            return 0;
 	}
 
 	@Override
 	public Object getItem(int position) {
-		return m_items.get(position);
+        try {
+		    m_cursor.moveToPosition(position);
+
+            return new JSONObject(m_cursor.getString(0));
+        } catch(JSONException e) {
+            throw new RuntimeException(e);
+        }
 	}
 
 	private static String getImage(JSONObject obj) {
@@ -119,7 +117,7 @@ public class ActivityAdapter extends BaseAdapter {
 	    	}
 	    	
 	    	TextView text = (TextView) v.findViewById(android.R.id.text1);
-	    	text.setText(Html.fromHtml(json.optString("content", "(Missing")));
+	    	text.setText(Html.fromHtml(json.optJSONObject("object").optString("objectType", "(Missing")));
 	    	break;
 	    	
 	    case 1:

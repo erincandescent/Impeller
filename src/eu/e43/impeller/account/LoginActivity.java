@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
+import eu.e43.impeller.content.PumpContentProvider;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthProvider;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -237,6 +239,9 @@ public class LoginActivity extends AccountAuthenticatorActivity implements OnCli
 			if(tokenInfo != null) {
 				Account account = new Account(tokenInfo.getString("username") + "@" + tokenInfo.getString("host"), Authenticator.ACCOUNT_TYPE);
 				m_accountManager.addAccountExplicitly(account, "(Ignored)", tokenInfo);
+
+                getContentResolver().setSyncAutomatically(
+                        account, PumpContentProvider.AUTHORITY, true);
 			
 				final Intent i = new Intent();
 				i.putExtra(AccountManager.KEY_ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE);

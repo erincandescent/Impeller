@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
+              android:contentAuthority="eu.e43.impeller.content"
+              android:accountType="eu.e43.impeller"
+              android:supportsUploading="false"
+              android:userVisible="true"
+              android:isAlwaysSyncable="true"
+              android:allowParallelSyncs="true"
+        />

@@ -7,10 +7,13 @@ import org.json.JSONObject;
 
 import android.accounts.Account;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
@@ -32,68 +35,106 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
-import eu.e43.impeller.ObjectService.ObjectCache;
+import eu.e43.impeller.content.PumpContentProvider;
 
 public class ObjectActivity extends ActivityWithAccount {
 	private static final String TAG = "ObjectActivity";
 	public static final String ACTION = "eu.e43.impeller.SHOW_OBJECT";
-	private CacheConnection 	m_cacheConn;
-	private ObjectCache 		m_cache;
-	private GetObjectTask 		m_getObjectTask;
 	private JSONObject			m_object;
 	private CommentAdapter		m_commentAdapter;
 	private Menu				m_menu;
 	private ListView			m_commentsView;
 	private ViewFlipper			m_flipper;
 
-	private class CacheConnection implements ServiceConnection {
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder cache) {
-			m_cache = (ObjectCache) cache;
-			m_getObjectTask.execute(null, null);
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName arg0) {
-			m_cache = null;			
-		}
-	}
-	
 	@Override
 	protected void onCreateEx() {
-		m_flipper = new ViewFlipper(this);
-		setContentView(m_flipper);
-		m_flipper.addView(new Spinner(this), 0);
-		m_flipper.setDisplayedChild(0);
-		
-		// Show the Up button in the action bar.
-		setupActionBar();
-		m_getObjectTask = new GetObjectTask();
+        m_commentsView = new ListView(this);
+        setContentView(m_commentsView);
+
+        // Show the Up button in the action bar.
+        setupActionBar();
 	}
 	
 	@Override
 	protected void gotAccount(Account a) {
-		m_cacheConn = new CacheConnection();
-		Intent cacheIntent = new Intent(this, ObjectService.class);
-		cacheIntent.putExtra("account", a);
-		bindService(cacheIntent, m_cacheConn, BIND_AUTO_CREATE);
-	}
-	
-	@Override
-	protected void onDestroy() {
-		if(m_cacheConn != null) {
-			unbindService(m_cacheConn);
-		}
-		super.onDestroy();
+        Log.i(TAG, "Got account, " + a.name + "; fetching " + getIntent().getData());
+        Uri uri      = getIntent().getData();
+
+        ContentResolver res = getContentResolver();
+        Cursor c = res.query(Uri.parse(PumpContentProvider.OBJECT_URL),
+                new String[] { "_json" },
+                "id=?", new String[] { uri.toString() },
+                null);
+
+        if(c.getCount() != 0) {
+            c.moveToFirst();
+            try {
+                m_object = new JSONObject(c.getString(0));
+            } catch(JSONException ex) {
+                Log.e(TAG, "Bad object in database", ex);
+            }
+        }
+
+        if(m_object == null) {
+            Toast.makeText(this, "Error getting object", Toast.LENGTH_SHORT).show();
+            this.finish();
+        }
+
+        LayoutInflater vi = LayoutInflater.from(this);
+        LinearLayout container = (LinearLayout) vi.inflate(R.layout.activity_object, null);
+        m_commentsView.addHeaderView(container);
+
+        ImageView authorIcon   = (ImageView)    findViewById(R.id.actorImage);
+        TextView titleView     = (TextView)     findViewById(R.id.actorName);
+        TextView dateView      = (TextView)     findViewById(R.id.objectDate);
+
+        setTitle(m_object.optString("displayName", "Object"));
+
+        JSONObject author = m_object.optJSONObject("author");
+        if(author != null) {
+            titleView.setText(author.optString("displayName"));
+            JSONObject img = author.optJSONObject("image");
+            if(img != null) {
+                getImageLoader().setImage(authorIcon, Utils.getImageUrl(img));
+            }
+        } else {
+            titleView.setText("No author. How bizzare.");
+        }
+        dateView.setText(m_object.optString("published"));
+
+        JSONObject image = m_object.optJSONObject("image");
+        if(image != null) {
+            ImageView iv = new ImageView(this);
+            getImageLoader().setImage(iv, Utils.getImageUrl(image));
+            iv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            container.addView(iv);
+        }
+
+        WebView wv = new WebView(this);
+        wv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        String url  = m_object.optString("url");
+        String data = m_object.optString("content", "No content");
+        wv.loadDataWithBaseURL(url, data, "text/html", "utf-8", null);
+        wv.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
+        container.addView(wv);
+
+        JSONObject replies = m_object.optJSONObject("replies");
+        if(replies != null) {
+            m_commentAdapter = new CommentAdapter(this, replies, false);
+            m_commentsView.setAdapter(m_commentAdapter);
+        }
+
+        updateMenu();
+
+        registerForContextMenu(m_commentsView);
+        Log.i(TAG, "Finished showing object");
 	}
 
 	/**
 	 * Set up the {@link android.app.ActionBar}.
 	 */
 	private void setupActionBar() {
-
 		getActionBar().setDisplayHomeAsUpEnabled(true);
-
 	}
 
 	@Override
@@ -198,86 +239,6 @@ public class ObjectActivity extends ActivityWithAccount {
 		}
 	}
 	
-	private void onGotObject(JSONObject obj) {
-		Log.v(TAG, "onGotObject(" + obj.toString() + ")");
-		m_object = obj;
-		ListView comments = new ListView(this);
-		
-        LayoutInflater vi = LayoutInflater.from(this);
-        LinearLayout container = (LinearLayout) vi.inflate(R.layout.activity_object, null);
-        comments.addHeaderView(container);
-        m_flipper.addView(comments, 1);
-        m_commentsView = comments;
-		
-		ImageView authorIcon   = (ImageView)    findViewById(R.id.actorImage);
-		TextView titleView     = (TextView)     findViewById(R.id.actorName);
-		TextView dateView      = (TextView)     findViewById(R.id.objectDate);
-		
-		setTitle(obj.optString("displayName", "Object"));
-		
-		JSONObject author = obj.optJSONObject("author");
-		if(author != null) {
-			titleView.setText(author.optString("displayName"));
-			JSONObject img = author.optJSONObject("image");
-			if(img != null) {
-				getImageLoader().setImage(authorIcon, Utils.getImageUrl(img));
-			}
-		} else {
-			titleView.setText("No author. How bizzare.");
-		}
-		dateView.setText(obj.optString("published"));
-		
-		JSONObject image = obj.optJSONObject("image");
-		if(image != null) {
-			ImageView iv = new ImageView(this);
-			getImageLoader().setImage(iv, Utils.getImageUrl(image));
-			iv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-			container.addView(iv);
-		}
-		
-		WebView wv = new WebView(this);
-		wv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-		String url  = obj.optString("url");
-		String data = obj.optString("content", "No content");
-		wv.loadDataWithBaseURL(url, data, "text/html", "utf-8", null);
-		wv.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
-		container.addView(wv);
-		
-		JSONObject replies = obj.optJSONObject("replies");
-		if(replies != null) {
-			m_commentAdapter = new CommentAdapter(this, replies, false);
-			comments.setAdapter(m_commentAdapter);
-		}
-		
-		updateMenu();
-		
-		registerForContextMenu(comments);
-		m_flipper.showNext();
-	}
-	
-	private class GetObjectTask extends AsyncTask<Void, Void, JSONObject> {
-		@Override
-		protected JSONObject doInBackground(Void... arg0) {
-			Uri uri      = getIntent().getData();
-			String proxyUrl = getIntent().getStringExtra("proxyURL");
-			try {
-				return m_cache.getObject(uri.toString(), proxyUrl);
-			} catch(Exception e) {
-				Log.e(TAG, "Error getting object", e);
-				return null;
-			}
-		}
-		
-		protected void onPostExecute(final JSONObject obj) {
-			if(obj != null) {
-				onGotObject(obj);
-			} else {
-				Toast.makeText(ObjectActivity.this, "Error getting object", Toast.LENGTH_SHORT);
-				finish();
-			}
-		}
-	}
-	
 	private void updateMenu() {
 		if(m_menu == null)
 			return;
@@ -323,7 +284,7 @@ public class ObjectActivity extends ActivityWithAccount {
 			}
 			updateMenu();
 			
-			m_cache.invalidateObject(m_object.optString("id"));
+			getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
 		}
 	}
 }

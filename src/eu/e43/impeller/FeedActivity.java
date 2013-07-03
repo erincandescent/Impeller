@@ -20,10 +20,15 @@ import java.util.List;
 import org.json.JSONObject;
 
 import android.accounts.Account;
+import android.app.LoaderManager;
 import android.content.ComponentName;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
@@ -34,75 +39,37 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class FeedActivity extends ActivityWithAccount implements Feed.Listener, OnItemClickListener {
+import eu.e43.impeller.content.PumpContentProvider;
+
+public class FeedActivity extends ActivityWithAccount implements OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 	static final String TAG = "FeedActivity";
-	FeedConnection		m_feedConn  		= new FeedConnection();
-	Feed        		m_feed      		= null;
-	ActivityAdapter		m_adapter   		= null;
+	ActivityAdapter		m_adapter;
 	ListView			m_list				= null;
 	
 	@Override
 	protected void onCreateEx() {
-		startService(new Intent(this, FeedService.class));
-		
 		m_list = new ListView(this);
 		setContentView(m_list);
 	    m_list.setOnItemClickListener(this);
+
+        m_adapter = new ActivityAdapter(this);
+        m_list.setAdapter(m_adapter);
 	}
 	
 	@Override
-    protected void onResume() {
-		super.onResume();
-		if(m_feed != null)
-			m_feed.clearUnread();
-	}
-	
-	private final class FeedConnection implements ServiceConnection {
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder bind) {
-			System.out.println("Bound feed");
-			m_feed    = (Feed) bind;
-			m_adapter = new ActivityAdapter(FeedActivity.this, m_feed);
-			
-			m_feed.addListener(FeedActivity.this);
-			
-	        m_list.setAdapter(m_adapter);
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			m_feed.removeListener(FeedActivity.this);
-			m_list.setAdapter(null);
-			m_adapter.close();
-			m_adapter = null;
-			m_feed = null;
-		}
-	}
-	
-	public void updateStarted(Feed feed)
-	{
-		Toast.makeText(this, "Update started", Toast.LENGTH_SHORT).show();
-	}
-	
-	public void feedUpdated(Feed feed, int unread, List<JSONObject> items)
-	{
-		Toast.makeText(this, "Updated, " + unread + " new notifications", Toast.LENGTH_SHORT).show();
+    protected void onStart() {
+		super.onStart();
+        Log.v(TAG, "onStart() - requesting sync");
+        getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
 	}
 
     @Override
     protected void onDestroy() {
-    	if(m_feedConn != null)
-    		unbindService(m_feedConn);
-    	
     	super.onDestroy();
     }
 
 	protected void gotAccount(Account acct) {
-		Uri uri = Feed.getMainFeedUri(this, acct);
-		Intent feedIntent = new Intent(Intent.ACTION_VIEW, uri, this, FeedService.class);
-		feedIntent.putExtra("account", acct);
-		Log.i(TAG, "Loading feed " + feedIntent);
-		bindService(feedIntent, m_feedConn, BIND_AUTO_CREATE);
+        getLoaderManager().initLoader(0, null, this);
 	}
 
     @Override
@@ -113,8 +80,7 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
     }
     
     public void refresh(MenuItem itm) {
-    	if(m_feed != null)
-    		m_feed.pollNow();
+        getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
     }
     
     public void openSettings(MenuItem itm) {
@@ -166,5 +132,27 @@ public class FeedActivity extends ActivityWithAccount implements Feed.Listener, 
 			startActivity(objectIntent);
 		}
 	}
-    
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        Uri uri =
+                Uri.parse(PumpContentProvider.FEED_URL).buildUpon()
+                        .appendPath(m_account.name)
+                        .build();
+
+        return new CursorLoader(this, uri,
+                new String[] { "_json" },
+                "verb='share' OR (verb='post' AND object.objectType<>'comment')", null,
+                "object.updated DESC");
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> objectLoader, Cursor o) {
+        m_adapter.updateCursor(o);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> objectLoader) {
+        m_adapter.updateCursor(null);
+    }
 }
