@@ -49,5 +49,7 @@ public class ImpellerApplication extends Application {
                 getContentResolver().setSyncAutomatically(a, PumpContentProvider.AUTHORITY, true);
             }
         }
+
+        prefs.edit().putInt("version", versionCode).apply();
     }
 }
