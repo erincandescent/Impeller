@@ -78,6 +78,7 @@ public class ObjectActivity extends ActivityWithAccount {
         if(m_object == null) {
             Toast.makeText(this, "Error getting object", Toast.LENGTH_SHORT).show();
             this.finish();
+            return;
         }
 
         LayoutInflater vi = LayoutInflater.from(this);
