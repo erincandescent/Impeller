@@ -24,12 +24,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,14 +46,20 @@ public class ObjectActivity extends ActivityWithAccount {
 	private CommentAdapter		m_commentAdapter;
 	private Menu				m_menu;
 	private ListView			m_commentsView;
-	private ViewFlipper			m_flipper;
 
 	@Override
 	protected void onCreateEx() {
+        // Show the progress bar
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        setProgressBarIndeterminate(true);
+        setProgressBarIndeterminateVisibility(true);
+
         m_commentsView = new ListView(this);
         setContentView(m_commentsView);
+        LayoutInflater li = LayoutInflater.from(this);
 
-        // Show the Up button in the action bar.
+        m_commentsView.addHeaderView(li.inflate(R.layout.activity_object, null));
+
         setupActionBar();
 	}
 	
@@ -65,14 +73,19 @@ public class ObjectActivity extends ActivityWithAccount {
                 new String[] { "_json" },
                 "id=?", new String[] { uri.toString() },
                 null);
-
-        if(c.getCount() != 0) {
-            c.moveToFirst();
-            try {
-                m_object = new JSONObject(c.getString(0));
-            } catch(JSONException ex) {
-                Log.e(TAG, "Bad object in database", ex);
+        try {
+            if(c.getCount() != 0) {
+                c.moveToFirst();
+                try {
+                    m_object = new JSONObject(c.getString(0));
+                } catch(JSONException ex) {
+                    Toast.makeText(this, "Bad object in database", Toast.LENGTH_SHORT).show();
+                    this.finish();
+                    return;
+                }
             }
+        } finally {
+            c.close();
         }
 
         if(m_object == null) {
@@ -81,9 +94,14 @@ public class ObjectActivity extends ActivityWithAccount {
             return;
         }
 
-        LayoutInflater vi = LayoutInflater.from(this);
-        LinearLayout container = (LinearLayout) vi.inflate(R.layout.activity_object, null);
-        m_commentsView.addHeaderView(container);
+        try {
+            Log.v(TAG, "Object is " + m_object.toString(4));
+        } catch(JSONException e) {
+            return;
+        }
+
+        setProgressBarIndeterminate(false);
+        setProgressBarIndeterminateVisibility(false);
 
         ImageView authorIcon   = (ImageView)    findViewById(R.id.actorImage);
         TextView titleView     = (TextView)     findViewById(R.id.actorName);
@@ -107,23 +125,21 @@ public class ObjectActivity extends ActivityWithAccount {
         if(image != null) {
             ImageView iv = new ImageView(this);
             getImageLoader().setImage(iv, Utils.getImageUrl(image));
-            iv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-            container.addView(iv);
+            //iv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            m_commentsView.addHeaderView(iv);
         }
 
         WebView wv = new WebView(this);
-        wv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        //wv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         String url  = m_object.optString("url");
         String data = m_object.optString("content", "No content");
         wv.loadDataWithBaseURL(url, data, "text/html", "utf-8", null);
         wv.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
-        container.addView(wv);
+        m_commentsView.addHeaderView(wv);
 
         JSONObject replies = m_object.optJSONObject("replies");
-        if(replies != null) {
-            m_commentAdapter = new CommentAdapter(this, replies, false);
-            m_commentsView.setAdapter(m_commentAdapter);
-        }
+        m_commentAdapter = new CommentAdapter(this, replies, false);
+        m_commentsView.setAdapter(m_commentAdapter);
 
         updateMenu();
 

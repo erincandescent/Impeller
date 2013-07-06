@@ -27,7 +27,10 @@ public class CommentAdapter extends BaseAdapter {
 	public CommentAdapter(ActivityWithAccount act, JSONObject collection, boolean forceUpdate) {
 		m_ctx = act;
 		m_collection = collection;
-		m_comments = collection.optJSONArray("items");
+        if(m_collection == null)
+            m_collection = new JSONObject();
+
+		m_comments = m_collection.optJSONArray("items");
 		if(m_comments == null)
 			m_comments = new JSONArray();
 		
