@@ -20,6 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -267,23 +268,60 @@ public class PumpContentProvider extends ContentProvider {
         }
     }
 
+    private JSONObject mergeEntry(JSONObject newObj) {
+        Cursor c = m_database.query(
+                "objects",
+                new String[] { "_json" },
+                "id=?",
+                new String[] { newObj.optString("id") },
+                null, null, null, null);
+
+        try {
+            if(c.moveToFirst()) {
+                JSONObject oldObj = new JSONObject(c.getString(0));
+                for(Iterator<String> i = newObj.keys(); i.hasNext();) {
+                    String key = i.next();
+                    oldObj.put(key, newObj.get(key));
+                }
+
+                return oldObj;
+            } else {
+                return newObj;
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "Database parse error", e);
+            return newObj;
+        } finally {
+            c.close();
+        }
+    }
+
     private void ensureEntry(String table, ContentValues vals) {
         try {
             m_database.insertOrThrow(table, null, vals);
         } catch(SQLiteConstraintException ex) {
             // Already exists
-            m_database.update(table, vals, "id=?", new String[] { vals.getAsString("id") });
+            m_database.update("objects", vals, "id=?", new String[] { vals.getAsString("id") });
         }
     }
 
-    private String ensureActivity(JSONObject obj) {
+    private String ensureActivity(JSONObject act) {
         try {
-            String id           = obj.getString("id");
-            String verb         = obj.optString("verb", "post");
-            long published      = parseDate(obj.optString("published"));
-            String actor        = ensureObject(obj.optJSONObject("actor"));
-            String object       = ensureObject(obj.optJSONObject("object"));
-            String target       = ensureObject(obj.optJSONObject("target"));
+            act = mergeEntry(act);
+
+            String id           = act.getString("id");
+            String verb         = act.optString("verb", "post");
+            long published      = parseDate(act.optString("published"));
+
+            JSONObject obj = act.optJSONObject("object");
+            if(obj != null) {
+                if(!obj.has("author"))
+                    obj.put("author", act.optJSONObject("actor"));
+            }
+
+            String actor        = ensureObject(act.optJSONObject("actor"));
+            String object       = ensureObject(obj);
+            String target       = ensureObject(act.optJSONObject("target"));
 
             ContentValues vals = new ContentValues();
             vals.put("id",          id);
@@ -295,10 +333,10 @@ public class PumpContentProvider extends ContentProvider {
 
             ensureEntry("activities", vals);
 
-            obj.put("objectType", "activity");
-            if(!obj.has("author"))
-                obj.put("author", obj.opt("actor"));
-            ensureObject(obj);
+            act.put("objectType", "activity");
+            if(!act.has("author"))
+                act.put("author", act.opt("actor"));
+            ensureObject(act);
 
             return id;
         } catch(JSONException e) {
@@ -313,6 +351,8 @@ public class PumpContentProvider extends ContentProvider {
             return null;
 
         try {
+            obj = mergeEntry(obj);
+
             String id           = obj.getString("id");
             String objectType   = obj.optString("objectType", "note");
             String publishedStr = obj.optString("published");
