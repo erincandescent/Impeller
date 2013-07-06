@@ -112,6 +112,7 @@ public class LoginActivity extends AccountAuthenticatorActivity implements OnCli
 		String[] parts = id.split("@");
 		if(parts.length != 2) {
 			m_idView.setError("Not a valid ID");
+            return;
 		}
 		
 		showView(m_loginStatusView);
