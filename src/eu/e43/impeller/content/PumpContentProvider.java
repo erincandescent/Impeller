@@ -301,7 +301,7 @@ public class PumpContentProvider extends ContentProvider {
             m_database.insertOrThrow(table, null, vals);
         } catch(SQLiteConstraintException ex) {
             // Already exists
-            m_database.update("objects", vals, "id=?", new String[] { vals.getAsString("id") });
+            m_database.update(table, vals, "id=?", new String[] { vals.getAsString("id") });
         }
     }
 
