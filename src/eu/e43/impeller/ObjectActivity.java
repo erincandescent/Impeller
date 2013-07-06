@@ -27,11 +27,13 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
+import android.widget.AbsListView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +49,11 @@ public class ObjectActivity extends ActivityWithAccount {
 	private Menu				m_menu;
 	private ListView			m_commentsView;
 
+    private int toDIP(int dip) {
+        final float density = getResources().getDisplayMetrics().density;
+        return (int) (density * dip + 0.5f);
+    }
+
 	@Override
 	protected void onCreateEx() {
         // Show the progress bar
@@ -57,8 +64,12 @@ public class ObjectActivity extends ActivityWithAccount {
         m_commentsView = new ListView(this);
         setContentView(m_commentsView);
         LayoutInflater li = LayoutInflater.from(this);
+        RelativeLayout header = (RelativeLayout) li.inflate(R.layout.activity_object, null);
+        int height = toDIP(80);
 
-        m_commentsView.addHeaderView(li.inflate(R.layout.activity_object, null));
+        header.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, height));
+
+        m_commentsView.addHeaderView(header);
 
         setupActionBar();
 	}
