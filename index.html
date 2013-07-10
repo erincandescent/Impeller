@@ -1,61 +1,69 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Impeller by oshepherd</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<head>
+    <title>Impeller - an Android social client for Pump.io</title>
+    <style>
+    @import url(http://fonts.googleapis.com/css?family=Rouge+Script);
 
-  </head>
-  <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/oshepherd/Impeller">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/oshepherd/Impeller/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/oshepherd/Impeller/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
+    html {
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+        color: #000;
+        font-family: Helvetica, Arial, Sans;
+        font-size: 1.4em;
+    }
 
-    <div class="wrapper">
+    body {
+        width: 900px;
+        margin: 0 auto;
+        padding: 0;
+        text-align: center;
+    }
 
-      <section>
-        <div id="title">
-          <h1>Impeller</h1>
-          <p>An Android client for Pump.io</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/oshepherd">oshepherd</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
-        </div>
+    #pic {
+        width: 100%;
+        height: auto;
+    }
 
-        <p><img src="https://dl.dropboxusercontent.com/u/64151759/Impeller.png" alt="Impeller"></p>
+    h1 {
+        font-size: 64px;
+    }
 
-<h1>What is it</h1>
+    h1 img {
+        height: 1em;
+        width: auto;
+    }
 
-<p>An early, quite incomplete client for <a href="http://pump.io">Pump.io</a> which runs on Android Ice Cream
-Sandwich and later.</p>
+    #or {
+        font-family: 'Rogue Script', 'Segoe Script', cursive;
+        font-size: 1.4em;
+    }
 
-<p>At present, it solves only ~10% of the problem: getting your feed and notifying 
-you of updates. Fortunately, that happens to be the most important 10%.</p>
+    #or:before, #or:after { content: "  ~  ";}
 
-<p>For my future directions, see <a href="https://microca.st/oshepherd/note/Rtud1lE6TzKxdo8YC47Hhg">this post</a>
-on my feed</p>
+    #main ul {
+        margin: none;
+        padding: 0;
+    }
 
-<p>To try it out, either <a href="https://github.com/oshepherd/Impeller">check out and build</a> the source or download a <a href="https://dl.dropboxusercontent.com/u/64151759/Impeller.apk">precompiled version</a></p>
-      </section>
-
+    #main ul > li {
+        display: inline;
+    }
+    </style>
+</head>
+<body>
+    <h1><img src="Impeller.bw.png" alt=""> Impeller</h1>
+    <p>A rich client for <a href="http://pump.io/">pump.io</a></p>
+    <p><img id="pic" src="ImpellerShot.png" alt=""></p>
+    <div id="main">
+        <p><a href="https://play.google.com/store/apps/details?id=eu.e43.impeller"><img alt="Get it on Google Play" src="https://developer.android.com/images/brand/en_generic_rgb_wo_60.png" /></a></p>
+        <p id="or">or</p>
+        <ul>
+            <li><a href="https://f-droid.org/repository/browse/?fdfilter=impeller&fdid=eu.e43.impeller">Get it on F-Droid</a></li>
+            <li><a href="https://dl.dropboxusercontent.com/u/64151759/Impeller.apk">Download directly</a></li>
+            <li><a href="https://github.com/oshepherd/Impeller/">Get the source</a></li>
+        </ul>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
-  </body>
+</body>
 </html>
