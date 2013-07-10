@@ -327,9 +327,9 @@ public class PumpContentProvider extends ContentProvider {
             vals.put("id",          id);
             vals.put("verb",        verb);
             vals.put("published",   published);
-            vals.put("actor",       actor);
-            vals.put("object",      object);
-            vals.put("target",      target);
+            if(actor  != null) vals.put("actor",       actor);
+            if(object != null) vals.put("object",      object);
+            if(target != null) vals.put("target",      target);
 
             ensureEntry("activities", vals);
 
@@ -351,13 +351,6 @@ public class PumpContentProvider extends ContentProvider {
             return null;
 
         try {
-            obj = mergeEntry(obj);
-
-            String id           = obj.getString("id");
-            String objectType   = obj.optString("objectType", "note");
-            String publishedStr = obj.optString("published");
-            long published      = parseDate(publishedStr);
-            long updated        = parseDate(obj.optString("updated", publishedStr));
             String author       = ensureObject(obj.optJSONObject("author"));
             String inReplyTo    = ensureObject(obj.optJSONObject("inReplyTo"));
 
@@ -374,6 +367,14 @@ public class PumpContentProvider extends ContentProvider {
                     }
                 }
             }
+
+            obj = mergeEntry(obj);
+
+            String id           = obj.getString("id");
+            String objectType   = obj.optString("objectType", "note");
+            String publishedStr = obj.optString("published");
+            long published      = parseDate(publishedStr);
+            long updated        = parseDate(obj.optString("updated", publishedStr));
 
             ContentValues vals = new ContentValues();
             vals.put("_json",       obj.toString());
