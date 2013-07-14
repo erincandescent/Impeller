@@ -19,6 +19,9 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.net.Uri;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -165,4 +168,35 @@ public class Utils {
 			url = img.optString("url");
 		return url;
 	}
+
+    public static void updateStatebar(View parent, JSONObject obj) {
+        TextView commentsIcon = (TextView) parent.findViewById(R.id.commentsIcon);
+        TextView  sharesIcon   = (TextView) parent.findViewById(R.id.sharesIcon);
+        TextView  likesIcon    = (TextView) parent.findViewById(R.id.likesIcon);
+
+        commentsIcon.setTypeface(ImpellerApplication.fontAwesome);
+        sharesIcon.setTypeface(ImpellerApplication.fontAwesome);
+        likesIcon.setTypeface(ImpellerApplication.fontAwesome);
+
+        TextView  commentCount = (TextView) parent.findViewById(R.id.commentsCount);
+        TextView  shareCount   = (TextView) parent.findViewById(R.id.sharesCount);
+        TextView  likeCount    = (TextView) parent.findViewById(R.id.likesCount);
+
+        if(obj != null) {
+            JSONObject replies  = obj.optJSONObject("replies");
+            JSONObject shares   = obj.optJSONObject("shares");
+            JSONObject likes    = obj.optJSONObject("likes");
+            if(replies != null) {
+                commentCount.setText(String.valueOf(replies.optInt("totalItems")));
+            }
+
+            if(shares != null) {
+                shareCount.setText(String.valueOf(shares.optInt("totalItems")));
+            }
+
+            if(likes != null) {
+                likeCount.setText(String.valueOf(likes.optInt("totalItems")));
+            }
+        }
+    }
 }

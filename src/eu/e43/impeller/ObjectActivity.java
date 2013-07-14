@@ -274,6 +274,9 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
 			return;
 		
 		MenuItem itm = m_menu.findItem(R.id.action_like);
+        if(itm == null)
+            return;
+
 		if(m_object != null && m_object.optBoolean("liked", false))
 			itm.setTitle(R.string.action_unlike);
 		else

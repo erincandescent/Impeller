@@ -30,11 +30,6 @@
             android:text="Caption"
             android:textAppearance="?android:attr/textAppearanceMedium" />            
 
-        <!--<WebView
-        	android:id="@+id/caption"
-        	android:layout_width="match_parent"
-        	android:layout_height="wrap_content" />-->
-        
+        <include layout="@layout/statebar" />
     </LinearLayout>
-
 </LinearLayout>

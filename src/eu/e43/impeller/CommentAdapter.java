@@ -114,7 +114,6 @@ public class CommentAdapter extends BaseAdapter {
 		ImageView authorImage  = (ImageView) v.findViewById(R.id.commentAuthorImage);
 		TextView  commentBody  = (TextView)  v.findViewById(R.id.commentBody);
 		TextView  commentMeta  = (TextView)  v.findViewById(R.id.commentMeta);
-		TextView  commentState = (TextView)  v.findViewById(R.id.commentState);
 		
 		JSONObject author = comment.optJSONObject("author");
 		if(author != null) {
@@ -124,27 +123,7 @@ public class CommentAdapter extends BaseAdapter {
 			commentMeta.setText("By " + author.optString("displayName") + " at " + comment.optString("published"));
 		}
 		
-		JSONObject likes = comment.optJSONObject("likes");
-		if(likes != null) {
-			int items = likes.optInt("totalItems", 0);
-			//commentState.setVisibility(View.VISIBLE);
-			if(comment.optBoolean("liked", false)) {
-				// You and N other people like this
-				if(items > 0) {
-					commentState.setText("You and " + (items - 1) + " other people like this");
-				} else {
-					commentState.setText("You like this");
-				}
-			} else {
-				// N people like this
-				if(items > 0) {
-					commentState.setText(items + " people like this");
-				} else {
-					commentState.setText("Nobody likes this =(");
-					//commentState.setVisibility(View.INVISIBLE);
-				}
-			}
-		}
+        Utils.updateStatebar(v, comment);
 		
 		PumpHtml.setFromHtml(m_ctx, commentBody, comment.optString("content"));
 		

@@ -39,14 +39,13 @@
         android:text="Small Text"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
-    <TextView
-        android:id="@+id/commentState"
-        android:layout_width="wrap_content"
+    <include
+        layout="@layout/statebar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/commentMeta"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/commentMeta"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@android:color/holo_blue_dark" />
+        android:layout_below="@+id/commentMeta"/>
+
 
 </RelativeLayout>

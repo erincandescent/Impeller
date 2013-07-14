@@ -130,7 +130,7 @@ public class ActivityAdapter extends BaseAdapter {
 		    TextView   caption    = (TextView)   v.findViewById(R.id.caption);
 		    TextView  description = (TextView)  v.findViewById(R.id.description);
 		    ImageView image       = (ImageView) v.findViewById(R.id.image);
-		    
+
 			description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
 		    try {
 		    	JSONObject obj = json.getJSONObject("object");
@@ -163,6 +163,10 @@ public class ActivityAdapter extends BaseAdapter {
 	    	}
 	    	break;
 	    }
+
+        if(type == 1 || type == 2) {
+            Utils.updateStatebar(v, json.optJSONObject("object"));
+        }
 		
 		return v;
 	}
