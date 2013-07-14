@@ -89,7 +89,9 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
                 items = collection.getJSONArray("items");
 
                 ArrayList<ContentProviderOperation> actions = new ArrayList<ContentProviderOperation>();
-                for(int i = 0; i < items.length(); i++) {
+
+                // Process backwards for linear history order
+                for(int i = items.length() - 1; i >= 0; i--) {
                     JSONObject item = items.getJSONObject(i);
                     actions.add(
                             ContentProviderOperation.newInsert(feedContentUri)
