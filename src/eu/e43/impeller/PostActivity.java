@@ -79,7 +79,7 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 			obj.put("content", Html.toHtml((Spanned) m_content.getText()));
 			
 			JSONObject act = new JSONObject();
-			act.put("generator", new JSONObject(generator));
+            act.put("generator", new JSONObject(generator));
 			act.put("verb", "post");
 			act.put("object", obj);
 			
