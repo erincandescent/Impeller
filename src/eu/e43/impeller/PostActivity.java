@@ -2,6 +2,7 @@ package eu.e43.impeller;
 
 
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +28,7 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 	private static final String EXTRA_HTML_TEXT = "android.intent.extra.HTML_TEXT";
 	
 	TextView 	m_content;
+    CheckBox    m_isPublic;
 	Account  	m_account;
 	JSONObject	m_inReplyTo = null;
 	
@@ -34,6 +37,7 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 		setContentView(R.layout.activity_post);
 		
 		m_content = (TextView) findViewById(R.id.content);
+        m_isPublic = (CheckBox) findViewById(R.id.isPublic);
 		findViewById(R.id.action_post).setOnClickListener(this);
 		findViewById(R.id.action_cancel).setOnClickListener(this);
 		
@@ -77,8 +81,18 @@ public class PostActivity extends ActivityWithAccount implements OnClickListener
 				obj.put("inReplyTo", m_inReplyTo);
 			}
 			obj.put("content", Html.toHtml((Spanned) m_content.getText()));
-			
-			JSONObject act = new JSONObject();
+
+            JSONObject act = new JSONObject();
+            if(m_isPublic.isChecked()) {
+                JSONObject thePublic = new JSONObject();
+                thePublic.put("id",         "http://activityschema.org/collection/public");
+                thePublic.put("objectType", "collection");
+
+                JSONArray to = new JSONArray();
+                to.put(thePublic);
+                act.put("to", to);
+            }
+
             act.put("generator", new JSONObject(generator));
 			act.put("verb", "post");
 			act.put("object", obj);

@@ -17,10 +17,18 @@
     	android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:ems="10"
         android:inputType="textMultiLine" />
-    
+
+    <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/public_post"
+            android:id="@+id/isPublic"
+            android:layout_below="@+id/content"
+            android:layout_alignLeft="@+id/content"/>
+
     <View
         android:id="@+id/buttonDivider"
-        android:layout_below="@+id/content"
+        android:layout_below="@+id/isPublic"
     	android:layout_width="fill_parent"
     	android:layout_height="1dip"
     	android:layout_alignParentLeft="true"
@@ -36,7 +44,8 @@
     	android:layout_alignParentLeft="true"
     	android:layout_alignParentRight="true"
     	android:layout_below="@+id/buttonDivider">
-	    <Button
+
+	    <Button
 	        android:id="@+id/action_cancel"
 	        style="?android:attr/borderlessButtonStyle"
 	        android:layout_width="fill_parent"
