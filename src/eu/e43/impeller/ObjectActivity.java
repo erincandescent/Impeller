@@ -16,6 +16,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NavUtils;
+import android.text.Html;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -29,6 +30,8 @@ import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
 import android.widget.AbsListView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -41,7 +44,7 @@ import android.widget.ViewFlipper;
 
 import eu.e43.impeller.content.PumpContentProvider;
 
-public class ObjectActivity extends ActivityWithAccount {
+public class ObjectActivity extends ActivityWithAccount implements View.OnClickListener {
 	private static final String TAG = "ObjectActivity";
 	public static final String ACTION = "eu.e43.impeller.SHOW_OBJECT";
 	private JSONObject			m_object;
@@ -65,11 +68,13 @@ public class ObjectActivity extends ActivityWithAccount {
         setContentView(m_commentsView);
         LayoutInflater li = LayoutInflater.from(this);
         RelativeLayout header = (RelativeLayout) li.inflate(R.layout.activity_object, null);
+        RelativeLayout footer = (RelativeLayout) li.inflate(R.layout.activity_object_reply, null);
         int height = toDIP(80);
 
         header.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, height));
 
         m_commentsView.addHeaderView(header);
+        m_commentsView.addFooterView(footer);
 
         setupActionBar();
 	}
@@ -117,6 +122,8 @@ public class ObjectActivity extends ActivityWithAccount {
         ImageView authorIcon   = (ImageView)    findViewById(R.id.actorImage);
         TextView titleView     = (TextView)     findViewById(R.id.actorName);
         TextView dateView      = (TextView)     findViewById(R.id.objectDate);
+        Button   replyButton   = (Button)       findViewById(R.id.replyButton);
+        replyButton.setOnClickListener(this);
 
         setTitle(m_object.optString("displayName", "Object"));
 
@@ -187,13 +194,7 @@ public class ObjectActivity extends ActivityWithAccount {
 				//
 				NavUtils.navigateUpFromSameTask(this);
 				return true;
-				
-			case R.id.action_reply:
-				Intent replyIntent = new Intent(PostActivity.ACTION_REPLY, null, this, PostActivity.class);
-				replyIntent.putExtra("inReplyTo", this.m_object.toString());
-				startActivityForResult(replyIntent, 0);
-				return true;
-				
+
 			case R.id.action_like:
 				new DoLike(m_object);
 				return true;
@@ -253,9 +254,10 @@ public class ObjectActivity extends ActivityWithAccount {
 			return super.onContextItemSelected(item);
 		}
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        /* Will come back later - "rich comments" */
 		if(requestCode == 0) {
 			// Post comment
 			if(resultCode == RESULT_OK) {
@@ -277,8 +279,30 @@ public class ObjectActivity extends ActivityWithAccount {
 		else
 			itm.setTitle(R.string.action_like);
 	}
-	
-	private class DoLike implements PostTask.Callback {
+
+    @Override
+    public void onClick(View view) {
+        switch(view.getId()) {
+            case R.id.replyButton:
+                EditText editor = (EditText) findViewById(R.id.replyText);
+                editor.clearComposingText();
+
+                view.setEnabled(false);
+                editor.setEnabled(false);
+                JSONObject comment = new JSONObject();
+                try {
+                    comment.put("objectType", "comment");
+                    comment.put("inReplyTo", m_object);
+                    comment.put("content", Html.toHtml(editor.getText()));
+                } catch(JSONException e) {
+                    throw new RuntimeException(e);
+                }
+
+                new PostReply(comment);
+        }
+    }
+
+    private class DoLike implements PostTask.Callback {
 		private JSONObject m_object;
 		
 		public DoLike(JSONObject object) {
@@ -304,15 +328,56 @@ public class ObjectActivity extends ActivityWithAccount {
 
 		@Override
 		public void call(JSONObject obj) {
-			// TODO Auto-generated method stub
-			try {
-				m_object.put("liked", !m_object.optBoolean("liked", false));
-			} catch (JSONException e) {
-				Log.v(TAG, "Swallowing exception", e);
-			}
-			updateMenu();
+            if(obj != null) {
+			    try {
+				    m_object.put("liked", !m_object.optBoolean("liked", false));
+			    } catch (JSONException e) {
+				    Log.v(TAG, "Swallowing exception", e);
+			    }
+			    updateMenu();
+            }
 			
 			getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
 		}
 	}
+
+    private class PostReply implements PostTask.Callback {
+        private JSONObject m_object;
+
+        public PostReply(JSONObject object) {
+            String action;
+            m_object = object;
+
+            JSONObject obj = new JSONObject();
+            try {
+                obj.put("verb", "post");
+                obj.put("object", object);
+            } catch(JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+            PostTask task = new PostTask(ObjectActivity.this, this);
+            task.execute(obj.toString());
+        }
+
+        @Override
+        public void call(JSONObject obj) {
+            EditText editor      = (EditText) findViewById(R.id.replyText);
+            Button   replyButton = (Button)   findViewById(R.id.replyButton);
+
+            if(obj != null) {
+                if(m_commentAdapter != null)
+                    m_commentAdapter.updateComments();
+
+                editor.setText("");
+
+                getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+            } else {
+                Toast.makeText(ObjectActivity.this, "Error posting reply", Toast.LENGTH_SHORT).show();
+            }
+
+            editor.setEnabled(true);
+            replyButton.setEnabled(true);
+        }
+    }
 }
