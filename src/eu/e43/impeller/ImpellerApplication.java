@@ -24,6 +24,8 @@ import eu.e43.impeller.content.PumpContentProvider;
         resNotifText = R.string.crash_notification_text,
         resDialogText = R.string.crash_notification_dialog_text)
 public class ImpellerApplication extends Application {
+    public static Typeface fontAwesome;
+
     @Override
     public void onCreate() {
         Api.init(this);
