@@ -15,6 +15,8 @@
 
 package eu.e43.impeller;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.json.JSONObject;
@@ -45,7 +47,8 @@ public class FeedActivity extends ActivityWithAccount implements OnItemClickList
 	static final String TAG = "FeedActivity";
 	ActivityAdapter		m_adapter;
 	ListView			m_list				= null;
-	
+	Calendar            m_nextFetch         = null;
+
 	@Override
 	protected void onCreateEx() {
 		m_list = new ListView(this);
@@ -60,7 +63,13 @@ public class FeedActivity extends ActivityWithAccount implements OnItemClickList
     protected void onStart() {
 		super.onStart();
         Log.v(TAG, "onStart() - requesting sync");
-        getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+
+        Calendar now = GregorianCalendar.getInstance();
+        if(m_nextFetch == null || m_nextFetch.before(now)) {
+            getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+            now.add(Calendar.MINUTE, 5);
+            m_nextFetch = now;
+        }
 	}
 
     @Override
