@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Iterator;
 
 import eu.e43.impeller.account.OAuth;
 import oauth.signpost.OAuthConsumer;
@@ -88,7 +89,6 @@ public class PostActivity extends ActivityWithAccount {
             case TYPE_NOTE:
             case TYPE_COMMENT:
                 setContentView(R.layout.activity_post);
-                m_content       = (EditText)  findViewById(R.id.content);
 
                 if(intent.hasExtra(EXTRA_HTML_TEXT)) {
                     PumpHtml.setFromHtml(this, m_content, intent.getStringExtra(EXTRA_HTML_TEXT));
@@ -100,16 +100,17 @@ public class PostActivity extends ActivityWithAccount {
 
             case TYPE_IMAGE:
                 setContentView(R.layout.activity_post_image);
-                //m_title         = (EditText)  findViewById(R.id.title);
+                m_title         = (EditText)  findViewById(R.id.title);
                 m_imageView     = (ImageView) findViewById(R.id.image);
                 m_imageView.setImageURI(m_extraUri);
                 break;
         }
+        m_content       = (EditText)  findViewById(R.id.content);
         m_isPublic      = (CheckBox)  findViewById(R.id.isPublic);
 
-        //if(m_title != null && intent.hasExtra(Intent.EXTRA_SUBJECT)) {
-        //    m_title.setText(intent.getStringExtra(Intent.EXTRA_SUBJECT));
-        //}
+        if(m_title != null && intent.hasExtra(Intent.EXTRA_SUBJECT)) {
+            m_title.setText(intent.getStringExtra(Intent.EXTRA_SUBJECT));
+        }
 
         if(ACTION_REPLY.equals(intent.getAction())) {
             this.setTitle(R.string.title_activity_post_reply);
@@ -162,8 +163,6 @@ public class PostActivity extends ActivityWithAccount {
         try {
             switch(m_type) {
                 case TYPE_IMAGE:
-                    //String title = Html.escapeHtml(m_title.getText());
-
                     PostImageTask t = new PostImageTask();
                     t.execute(m_extraUri);
                     return;
@@ -179,8 +178,6 @@ public class PostActivity extends ActivityWithAccount {
                     throw new RuntimeException("Bad type");
 
             }
-            String content = Html.toHtml((Spanned) m_content.getText());
-            obj.put("content", content);
             postPhase2(obj);
         } catch(Exception ex) {
             Log.e(TAG, "Error creating object", ex);
@@ -249,10 +246,15 @@ public class PostActivity extends ActivityWithAccount {
 
 		try {
             Log.v(TAG, "Begin phase 2");
+            obj.put("content", Html.toHtml((Spanned) m_content.getText()));
 
             if(m_inReplyTo != null) {
 				obj.put("inReplyTo", m_inReplyTo);
 			}
+
+            if(m_type == TYPE_IMAGE) {
+                obj.put("displayName", Html.escapeHtml(m_title.getText()));
+            }
 
 
             JSONObject act = new JSONObject();
@@ -271,15 +273,44 @@ public class PostActivity extends ActivityWithAccount {
             act.put("verb", "post");
             act.put("object", obj);
 
-            PostTask t = new PostTask(this, new PostCallback());
-            t.execute(act.toString());
+            if(m_type == TYPE_IMAGE) {
+                JSONObject updateAct = new JSONObject();
+                for(Iterator<String> i = act.keys(); i.hasNext();) {
+                    String k = i.next();
+                    updateAct.put(k, act.get(k));
+                }
 
+                updateAct.put("verb", "update");
+
+                UpdateCallback uc = new UpdateCallback();
+                uc.m_originalActivity = act;
+                PostTask t = new PostTask(this, uc);
+                t.execute(updateAct.toString());
+            } else {
+                PostTask t = new PostTask(this, new PostCallback());
+                t.execute(act.toString());
+            }
         } catch(Exception ex) {
             Toast.makeText(this, "Error creating post: " + ex.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
             m_progress.dismiss();
         }
     }
-	
+
+    private class UpdateCallback implements PostTask.Callback {
+        public JSONObject m_originalActivity;
+
+        @Override
+        public void call(JSONObject activity) {
+            if(activity != null) {
+                PostTask t = new PostTask(PostActivity.this, new PostCallback());
+                t.execute(m_originalActivity.toString());
+            } else {
+                m_progress.dismiss();
+                Toast.makeText(PostActivity.this, "Error updating object", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 	private class PostCallback implements PostTask.Callback {
 		@Override
 		public void call(JSONObject obj) {
