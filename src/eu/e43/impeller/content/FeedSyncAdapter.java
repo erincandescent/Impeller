@@ -7,10 +7,12 @@ import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -28,13 +30,15 @@ import eu.e43.impeller.account.OAuth;
  */
 public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = "FeedSyncAdapter";
-
-    Context m_context;
+    Context             m_context;
+    SharedPreferences   m_syncState;
 
     FeedSyncAdapter(Context context) {
         super(context, true, true);
         Log.i(TAG, "Created");
         m_context = context;
+
+        m_syncState = m_context.getSharedPreferences("FeedSync", Context.MODE_PRIVATE);
     }
 
     private Uri getFeedUri(Account account) {
@@ -44,20 +48,26 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private String getLastId(ContentResolver res, Uri feed) {
-        Cursor c = res.query(
+        String id = m_syncState.getString(feed.getLastPathSegment(), null);
+        if(id != null) {
+            return id;
+        } else {
+            // For upgraders
+            Cursor c = res.query(
                 feed,
                 new String[] { "id" },
                 null,
                 null,
                 "feed_entries.published DESC");
-        if(c.getCount() > 0) {
-            c.moveToFirst();
-            String id = c.getString(0);
-            c.close();
-            return id;
-        } else {
-            c.close();
-            return null;
+            if(c.getCount() > 0) {
+                c.moveToFirst();
+                id = c.getString(0);
+                c.close();
+                return id;
+            } else {
+                c.close();
+                return null;
+            }
         }
     }
 
@@ -100,6 +110,10 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
                     syncResult.stats.numEntries++;
                 }
                 res.applyBatch(PumpContentProvider.AUTHORITY, actions);
+
+                SharedPreferences.Editor e = m_syncState.edit();
+                if(items.length() != 0)
+                    e.putString(account.name, items.getJSONObject(0).getString("id"));
             } while(items.length() == 50);
         } catch(Exception e) {
             Log.e(TAG, "Sync exception", e);
