@@ -114,6 +114,7 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
                 SharedPreferences.Editor e = m_syncState.edit();
                 if(items.length() != 0)
                     e.putString(account.name, items.getJSONObject(0).getString("id"));
+                e.apply();
             } while(items.length() == 50);
         } catch(Exception e) {
             Log.e(TAG, "Sync exception", e);
