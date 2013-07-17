@@ -88,27 +88,28 @@ public class PostActivity extends ActivityWithAccount {
             case TYPE_NOTE:
             case TYPE_COMMENT:
                 setContentView(R.layout.activity_post);
+                m_content       = (EditText)  findViewById(R.id.content);
+
+                if(intent.hasExtra(EXTRA_HTML_TEXT)) {
+                    PumpHtml.setFromHtml(this, m_content, intent.getStringExtra(EXTRA_HTML_TEXT));
+                } else if(intent.hasExtra(Intent.EXTRA_TEXT)) {
+                    m_content.setText(intent.getCharSequenceExtra(Intent.EXTRA_TEXT));
+                }
+
                 break;
 
             case TYPE_IMAGE:
                 setContentView(R.layout.activity_post_image);
-                m_title         = (EditText)  findViewById(R.id.title);
+                //m_title         = (EditText)  findViewById(R.id.title);
                 m_imageView     = (ImageView) findViewById(R.id.image);
                 m_imageView.setImageURI(m_extraUri);
                 break;
         }
-        m_content       = (EditText)  findViewById(R.id.content);
         m_isPublic      = (CheckBox)  findViewById(R.id.isPublic);
 
-        if(intent.hasExtra(EXTRA_HTML_TEXT)) {
-            PumpHtml.setFromHtml(this, m_content, intent.getStringExtra(EXTRA_HTML_TEXT));
-        } else if(intent.hasExtra(Intent.EXTRA_TEXT)) {
-            m_content.setText(intent.getCharSequenceExtra(Intent.EXTRA_TEXT));
-        }
-
-        if(m_title != null && intent.hasExtra(Intent.EXTRA_SUBJECT)) {
-            m_title.setText(intent.getStringExtra(Intent.EXTRA_SUBJECT));
-        }
+        //if(m_title != null && intent.hasExtra(Intent.EXTRA_SUBJECT)) {
+        //    m_title.setText(intent.getStringExtra(Intent.EXTRA_SUBJECT));
+        //}
 
         if(ACTION_REPLY.equals(intent.getAction())) {
             this.setTitle(R.string.title_activity_post_reply);
@@ -151,13 +152,18 @@ public class PostActivity extends ActivityWithAccount {
 
     private void onPost() {
         JSONObject obj = new JSONObject();
+        if(m_title != null) m_title.clearComposingText();
+        if(m_content != null) m_content.clearComposingText();
+
+        m_progress = ProgressDialog.show(this, "Posting...", "Submitting post");
+        m_progress.setIndeterminate(true);
+
 
         try {
-            m_progress = ProgressDialog.show(this, "Posting...", "Submitting post");
-            m_progress.setIndeterminate(true);
-
             switch(m_type) {
                 case TYPE_IMAGE:
+                    //String title = Html.escapeHtml(m_title.getText());
+
                     PostImageTask t = new PostImageTask();
                     t.execute(m_extraUri);
                     return;
@@ -173,6 +179,8 @@ public class PostActivity extends ActivityWithAccount {
                     throw new RuntimeException("Bad type");
 
             }
+            String content = Html.toHtml((Spanned) m_content.getText());
+            obj.put("content", content);
             postPhase2(obj);
         } catch(Exception ex) {
             Log.e(TAG, "Error creating object", ex);
@@ -180,18 +188,23 @@ public class PostActivity extends ActivityWithAccount {
         }
     }
 
-    class PostImageTask extends AsyncTask<Uri, Void, JSONObject> {
+    class PostImageTask extends AsyncTask<Object, Void, JSONObject> {
         @Override
-        protected JSONObject doInBackground(Uri... uris) {
+        protected JSONObject doInBackground(Object... uris) {
             Log.v(TAG, "Posting image");
-            Uri imageUri = uris[0];
+            Uri    imageUri    = (Uri) uris[0];
+
             try {
                 String type = getContentResolver().getType(imageUri);
                 AssetFileDescriptor imgFile = getContentResolver().openAssetFileDescriptor(imageUri, "r");
                 InputStream is = imgFile.createInputStream();
                 OAuthConsumer cons = OAuth.getConsumerForAccount(PostActivity.this, m_account);
 
-                URL uploadUrl = new URL(Utils.getUserUri(PostActivity.this, m_account, "uploads").toString());
+                Uri uploadUri = Utils.getUserUri(PostActivity.this, m_account, "uploads");
+
+                Log.v(TAG, "Uploading to " + uploadUri);
+
+                URL uploadUrl = new URL(uploadUri.toString());
                 HttpURLConnection conn = (HttpURLConnection) uploadUrl.openConnection();
 
                 conn.setRequestMethod("POST");
@@ -214,17 +227,7 @@ public class PostActivity extends ActivityWithAccount {
                 }
 
                 String json = Utils.readAll(conn.getInputStream());
-                JSONObject orig = new JSONObject(json);
-                JSONObject obj = new JSONObject();
-
-                // Hack around lacking features
-                obj.put("image",     orig.optJSONObject("image"));
-                obj.put("fullImage", orig.optJSONObject("fullImage"));
-                obj.put("objectType", "image");
-                JSONArray dupes = new JSONArray();
-                dupes.put(orig.optString("id"));
-                obj.put("upstreamDuplicates", dupes);
-                return obj;
+                return new JSONObject(json);
             } catch (Exception e) {
                 Log.e(TAG, "Error posting image", e);
                 return null;
@@ -241,82 +244,17 @@ public class PostActivity extends ActivityWithAccount {
         if(obj == null) {
             Toast.makeText(this, "Error creating object", Toast.LENGTH_SHORT).show();
             m_progress.dismiss();
+            return;
         }
 
 		try {
             Log.v(TAG, "Begin phase 2");
-            m_title.clearComposingText();
-			m_content.clearComposingText();
-			
-			switch(m_type) {
-                case TYPE_IMAGE:
-                    obj.put("displayName", Html.escapeHtml(m_title.getText()));
-                    break;
-            }
 
             if(m_inReplyTo != null) {
 				obj.put("inReplyTo", m_inReplyTo);
 			}
-			obj.put("content", Html.toHtml((Spanned) m_content.getText()));
 
-            // if(obj.has("id")) {
-            //    // Update object
-            //    UpdateObjectTask t = new UpdateObjectTask();
-            //    t.execute(obj);
-            //} else {
-                // Continue
-                //Log.v(TAG, "No update - to phase 3");
-                postPhase3(obj);
-            //}
-        } catch(Exception ex) {
-            Toast.makeText(this, "Error creating post: " + ex.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-            m_progress.dismiss();
-        }
-    }
 
-    /*
-    class UpdateObjectTask extends AsyncTask<JSONObject, Void, JSONObject> {
-        @Override
-        protected JSONObject doInBackground(JSONObject... jsonObjects) {
-            JSONObject obj = jsonObjects[0];
-            try {
-                Log.v(TAG, "PUT object for update: " + obj.toString(4));
-                URL url = new URL(obj.getString("id"));
-
-                OAuthConsumer cons = OAuth.getConsumerForAccount(PostActivity.this, m_account);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-                conn.setRequestMethod("PUT");
-                conn.setRequestProperty("Content-Type", "application/json");
-                cons.sign(conn);
-
-                OutputStream os = conn.getOutputStream();
-                OutputStreamWriter wr = new OutputStreamWriter(os, "UTF-8");
-                wr.write(obj.toString());
-                wr.close();
-
-                int code = conn.getResponseCode();
-                if(code != 200) {
-                    Log.e(TAG, "Response " + code + "; error " + Utils.readAll(conn.getErrorStream()));
-                }
-
-                conn.getInputStream().close();
-            } catch(Exception ex) {
-                Log.w(TAG, "Error updating object", ex);
-            }
-            return obj;
-        }
-
-        @Override
-        protected void onPostExecute(JSONObject obj) {
-            postPhase3(obj);
-        }
-    }
-    */
-
-    private void postPhase3(JSONObject obj) {
-        try {
-            Log.v(TAG, "Begin phase 3");
             JSONObject act = new JSONObject();
             if(m_isPublic.isChecked()) {
                 JSONObject thePublic = new JSONObject();
@@ -330,16 +268,17 @@ public class PostActivity extends ActivityWithAccount {
 
             String generator = Utils.readAll(getResources().openRawResource(R.raw.generator));
             act.put("generator", new JSONObject(generator));
-			act.put("verb", "post");
-			act.put("object", obj);
-			
-			PostTask t = new PostTask(this, new PostCallback());
-			t.execute(act.toString());
-		} catch(Exception ex) {
-			Toast.makeText(this, "Error creating post: " + ex.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+            act.put("verb", "post");
+            act.put("object", obj);
+
+            PostTask t = new PostTask(this, new PostCallback());
+            t.execute(act.toString());
+
+        } catch(Exception ex) {
+            Toast.makeText(this, "Error creating post: " + ex.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
             m_progress.dismiss();
-		}
-	}
+        }
+    }
 	
 	private class PostCallback implements PostTask.Callback {
 		@Override

@@ -35,28 +35,39 @@ import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONObject;
 
 public class Utils {
-    public static Uri getUserUri(Context ctx, Account user, String... components) {
+    public static Uri getHostUri(Context ctx, Account user, String... components) {
         AccountManager am = AccountManager.get(ctx);
         String host     = am.getUserData(user, "host");
-        String username = am.getUserData(user, "username");
 
         Uri.Builder b = new Uri.Builder();
         b.scheme("https");
         b.authority(host);
-        b.appendPath("api");
-        b.appendPath("user");
-        b.appendPath(username);
+
         for(String s : components) {
             b.appendPath(s);
         }
 
         return b.build();
+    }
+
+    public static Uri getUserUri(Context ctx, Account user, String... components) {
+        AccountManager am = AccountManager.get(ctx);
+        String username = am.getUserData(user, "username");
+        ArrayList<String> parts = new ArrayList<String>();
+        parts.add("api");
+        parts.add("user");
+        parts.add(username);
+        for(String s : components)
+            parts.add(s);
+
+        return getHostUri(ctx, user, parts.toArray(components));
     }
 
 
