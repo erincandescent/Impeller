@@ -50,10 +50,8 @@ public class PostActivity extends ActivityWithAccount {
 
     // UI widgets
 
-    TextView        m_titleLabel;
     EditText        m_title;
     ImageView       m_imageView;
-    TextView        m_contentLabel;
 	EditText 	    m_content;
     CheckBox        m_isPublic;
     ProgressDialog  m_progress;
@@ -64,17 +62,7 @@ public class PostActivity extends ActivityWithAccount {
     int         m_type;
 	
 	@Override
-	protected void onCreateEx() {
-		setContentView(R.layout.activity_post);
-
-        m_titleLabel    = (TextView)  findViewById(R.id.titleLabel);
-        m_title         = (EditText)  findViewById(R.id.title);
-        m_imageView     = (ImageView) findViewById(R.id.image);
-        m_contentLabel  = (TextView)  findViewById(R.id.contentLabel);
-		m_content       = (EditText)  findViewById(R.id.content);
-        m_isPublic      = (CheckBox)  findViewById(R.id.isPublic);
-
-		Intent intent = getIntent();
+	protected void onCreateEx() {		Intent intent = getIntent();
         String type = intent.getType();
         Log.v(TAG, "MIME Type is " + type);
         if(type == null || type.startsWith("text/")) {
@@ -83,11 +71,6 @@ public class PostActivity extends ActivityWithAccount {
             } else {
                 m_type = TYPE_NOTE;
             }
-
-            m_titleLabel.setVisibility(View.INVISIBLE);
-            m_title.setVisibility(View.INVISIBLE);
-            m_imageView.setVisibility(View.INVISIBLE);
-            m_contentLabel.setVisibility(View.INVISIBLE);
         } else if(type.startsWith("image/")) {
             m_type = TYPE_IMAGE;
             m_extraUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
@@ -96,29 +79,47 @@ public class PostActivity extends ActivityWithAccount {
                 setResult(RESULT_CANCELED);
                 finish();
             }
-
-            m_imageView.setImageURI(m_extraUri);
         } else {
             setResult(RESULT_CANCELED);
             finish();
         }
 
-		if(Intent.ACTION_SEND.equals(intent.getAction())) {
-			if(intent.hasExtra(EXTRA_HTML_TEXT)) {
-				PumpHtml.setFromHtml(this, m_content, intent.getStringExtra(EXTRA_HTML_TEXT));
-			} else if(intent.hasExtra(Intent.EXTRA_TEXT)) {
-				m_content.setText(intent.getCharSequenceExtra(Intent.EXTRA_TEXT));
-			}
-		} else if(ACTION_REPLY.equals(intent.getAction())) {
-			this.setTitle(R.string.title_activity_post_reply);
-			try {
-				m_inReplyTo = new JSONObject(intent.getStringExtra("inReplyTo"));
-			} catch (JSONException e) {
-				Log.e(TAG, "Error parsing inReplyTo", e);
-				setResult(RESULT_CANCELED);
-				finish();
-			}
-		}
+        switch(m_type) {
+            case TYPE_NOTE:
+            case TYPE_COMMENT:
+                setContentView(R.layout.activity_post);
+                break;
+
+            case TYPE_IMAGE:
+                setContentView(R.layout.activity_post_image);
+                m_title         = (EditText)  findViewById(R.id.title);
+                m_imageView     = (ImageView) findViewById(R.id.image);
+                m_imageView.setImageURI(m_extraUri);
+                break;
+        }
+        m_content       = (EditText)  findViewById(R.id.content);
+        m_isPublic      = (CheckBox)  findViewById(R.id.isPublic);
+
+        if(intent.hasExtra(EXTRA_HTML_TEXT)) {
+            PumpHtml.setFromHtml(this, m_content, intent.getStringExtra(EXTRA_HTML_TEXT));
+        } else if(intent.hasExtra(Intent.EXTRA_TEXT)) {
+            m_content.setText(intent.getCharSequenceExtra(Intent.EXTRA_TEXT));
+        }
+
+        if(m_title != null && intent.hasExtra(Intent.EXTRA_SUBJECT)) {
+            m_title.setText(intent.getStringExtra(Intent.EXTRA_SUBJECT));
+        }
+
+        if(ACTION_REPLY.equals(intent.getAction())) {
+            this.setTitle(R.string.title_activity_post_reply);
+            try {
+                m_inReplyTo = new JSONObject(intent.getStringExtra("inReplyTo"));
+            } catch (JSONException e) {
+                Log.e(TAG, "Error parsing inReplyTo", e);
+                setResult(RESULT_CANCELED);
+                finish();
+            }
+        }
 	}
 
     @Override
