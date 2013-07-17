@@ -73,6 +73,7 @@ public final class SyncOperation {
             m_isNew = false;
             m_rawContactId = c.getLong(0);
         }
+        c.close();
 
         // Add the identity (pump.io account reference, i.e. acct:person@example.com)
         // Used by Android to unique contacts
@@ -106,9 +107,11 @@ public final class SyncOperation {
             if(c.moveToFirst()) {
                 long id = c.getLong(0);
                 Log.v(TAG, "Already have a " + mimetype + " with ID - update" + id);
+                c.close();
                 return withContact(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI))
                         .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(id)});
             }
+            c.close();
         }
 
         return withContact(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI))

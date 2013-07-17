@@ -43,11 +43,14 @@ public class ActivityAdapter extends BaseAdapter {
 	}
 
     public void updateCursor(Cursor c) {
+        if(m_cursor != null) m_cursor.close();
         m_cursor = c;
         notifyDataSetChanged();
     }
 	
 	public void close() {
+        if(m_cursor != null)
+            m_cursor.close();
 		m_cursor = null;
 	}
 

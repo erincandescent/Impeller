@@ -167,6 +167,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
                 }
             }
+            c.close();
 
         } catch(Exception e) {
             Log.e(TAG, "Sync exception", e);
