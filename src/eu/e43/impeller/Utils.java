@@ -41,7 +41,7 @@ import java.util.Map;
 import org.json.JSONObject;
 
 public class Utils {
-    public static Uri getFeedUri(Context ctx, Account user, String... feed) {
+    public static Uri getUserUri(Context ctx, Account user, String... components) {
         AccountManager am = AccountManager.get(ctx);
         String host     = am.getUserData(user, "host");
         String username = am.getUserData(user, "username");
@@ -52,7 +52,7 @@ public class Utils {
         b.appendPath("api");
         b.appendPath("user");
         b.appendPath(username);
-        for(String s : feed) {
+        for(String s : components) {
             b.appendPath(s);
         }
 

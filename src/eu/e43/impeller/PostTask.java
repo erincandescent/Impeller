@@ -36,7 +36,7 @@ public class PostTask extends AsyncTask<String, Void, JSONObject> {
 			Log.i(TAG, "Posting " + activity);
 			OAuthConsumer cons = OAuth.getConsumerForAccount(m_ctx, m_ctx.m_account);
 		
-			Uri outboxUri = Utils.getFeedUri(m_ctx, m_ctx.m_account, "feed");
+			Uri outboxUri = Utils.getUserUri(m_ctx, m_ctx.m_account, "feed");
 		
 			URL url = new URL(outboxUri.toString());
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();

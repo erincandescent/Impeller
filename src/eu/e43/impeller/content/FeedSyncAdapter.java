@@ -74,7 +74,7 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
             Uri feedContentUri = getFeedUri(account);
 
             do {
-                Uri.Builder b = Utils.getFeedUri(m_context, account, "inbox").buildUpon();
+                Uri.Builder b = Utils.getUserUri(m_context, account, "inbox").buildUpon();
                 String lastId = getLastId(res, feedContentUri);
                 if(lastId != null)
                     b.appendQueryParameter("since", lastId);
