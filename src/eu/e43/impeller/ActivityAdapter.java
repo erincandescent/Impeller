@@ -120,7 +120,7 @@ public class ActivityAdapter extends BaseAdapter {
 	    	}
 	    	
 	    	TextView text = (TextView) v.findViewById(android.R.id.text1);
-	    	text.setText(Html.fromHtml(json.optJSONObject("object").optString("objectType", "(Missing")));
+	    	text.setText(Html.fromHtml(json.optJSONObject("object").optString("content", "(Item with missing summary)")));
 	    	break;
 	    	
 	    case 1:
