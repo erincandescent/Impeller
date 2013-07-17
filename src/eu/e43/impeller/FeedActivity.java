@@ -126,6 +126,7 @@ public class FeedActivity extends ActivityWithAccount implements OnItemClickList
                 if(resultCode == RESULT_OK){
                     Uri selectedImage = data.getData();
                     Intent postIntent = new Intent(this, PostActivity.class);
+                    postIntent.setType("image/*");
                     postIntent.putExtra(Intent.EXTRA_STREAM, selectedImage);
                     postIntent.putExtra("account", m_account);
                     startActivity(postIntent);
