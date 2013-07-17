@@ -219,6 +219,7 @@ public class PostActivity extends ActivityWithAccount {
                 // Hack around lacking features
                 obj.put("image",     orig.optJSONObject("image"));
                 obj.put("fullImage", orig.optJSONObject("fullImage"));
+                obj.put("objectType", "image");
                 JSONArray dupes = new JSONArray();
                 dupes.put(orig.optString("id"));
                 obj.put("upstreamDuplicates", dupes);
