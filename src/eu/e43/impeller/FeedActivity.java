@@ -49,6 +49,9 @@ public class FeedActivity extends ActivityWithAccount implements OnItemClickList
 	ListView			m_list				= null;
 	Calendar            m_nextFetch         = null;
 
+    // Activity IDs
+    private static final int ACTIVITY_SELECT_PHOTO = 1;
+
 	@Override
 	protected void onCreateEx() {
 		m_list = new ListView(this);
@@ -105,11 +108,35 @@ public class FeedActivity extends ActivityWithAccount implements OnItemClickList
             	startActivity(postIntent);
             	return true;
 
+            case R.id.action_post_image:
+                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                photoPickerIntent.setType("image/*");
+                startActivityForResult(photoPickerIntent, ACTIVITY_SELECT_PHOTO);
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-    
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case ACTIVITY_SELECT_PHOTO:
+                if(resultCode == RESULT_OK){
+                    Uri selectedImage = data.getData();
+                    Intent postIntent = new Intent(this, PostActivity.class);
+                    postIntent.putExtra(Intent.EXTRA_STREAM, selectedImage);
+                    postIntent.putExtra("account", m_account);
+                    startActivity(postIntent);
+                }
+                return;
+
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
 	@Override
 	public void onItemClick(AdapterView<?> list, View view, int pos, long id) {
 		JSONObject act = (JSONObject) m_adapter.getItem(pos);

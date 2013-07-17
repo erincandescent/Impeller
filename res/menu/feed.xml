@@ -13,4 +13,11 @@
             android:enabled="true"
             android:visible="true"
             android:showAsAction="always"/>
+    <item   android:id="@+id/action_post_image"
+            android:menuCategory="container"
+            android:title="@string/action_post_image"
+            android:checked="false"
+            android:enabled="true"
+            android:visible="true"
+            android:showAsAction="never"/>
 </menu>

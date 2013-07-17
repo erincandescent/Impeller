@@ -10,10 +10,14 @@
     <string name="title_activity_post">New post</string>
     <string name="post_button">Post</string>
     <string name="action_post">New Post</string>
+    <string name="action_post_image">Post Image</string>
     <string name="action_reply">Reply</string>
     <string name="title_activity_post_reply">Reply</string>
     <string name="action_like">Like</string>
     <string name="action_unlike">Unlike</string>
-    <string name="cancel_button">Cancel</string><string name="public_post">Make post public</string><string name="post_description">Description:</string><string name="post_title">Title:</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="public_post">Make post public</string>
+    <string name="post_description">Description:</string>
+    <string name="post_title">Title:</string>
 
 </resources>
