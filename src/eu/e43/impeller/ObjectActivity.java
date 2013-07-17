@@ -149,7 +149,7 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
 
         WebView wv = new WebView(this);
         //wv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        String url  = m_object.optString("url");
+        String url  = m_object.optString("url", "about:blank");
         String data = m_object.optString("content", "No content");
         wv.loadDataWithBaseURL(url, data, "text/html", "utf-8", null);
         wv.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
