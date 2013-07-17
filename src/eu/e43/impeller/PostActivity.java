@@ -352,7 +352,9 @@ public class PostActivity extends ActivityWithAccount {
                     JSONObject targetObj = obj.optJSONObject("object");
                     if(targetObj != null) {
 					    String url = targetObj.optString("id");
-					    startActivity(new Intent(ObjectActivity.ACTION, Uri.parse(url), PostActivity.this, ObjectActivity.class));
+                        Intent postIntent = new Intent(ObjectActivity.ACTION, Uri.parse(url), PostActivity.this, ObjectActivity.class);
+                        postIntent.putExtra("account", m_account);
+					    startActivity(postIntent);
                     }
 				}
 				setResult(RESULT_OK);
