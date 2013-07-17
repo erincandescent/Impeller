@@ -32,12 +32,14 @@
             android:enabled="true"
             android:exported="true"
             android:syncable="true"
+            android:process=":sync"
             />
 
         <service
                 android:name="eu.e43.impeller.account.AuthenticatorService"
                 android:enabled="true"
-                android:exported="true" >
+                android:exported="true"
+                android:process=":sync">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -49,7 +51,8 @@
 
         <service
                 android:name="eu.e43.impeller.content.FeedSyncService"
-                android:exported="true">
+                android:exported="true"
+                android:process=":sync">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -61,7 +64,8 @@
 
         <service
                 android:name="eu.e43.impeller.contacts.SyncService"
-                android:exported="true">
+                android:exported="true"
+                android:process=":sync">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -73,8 +77,6 @@
                     android:name="android.provider.CONTACTS_STRUCTURE"
                     android:resource="@xml/contact_profile" />
         </service>
-
-        <service android:name=".contacts.SyncService"/>
 
         <activity
                 android:name="eu.e43.impeller.FeedActivity"
