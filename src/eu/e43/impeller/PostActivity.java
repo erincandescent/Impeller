@@ -253,7 +253,7 @@ public class PostActivity extends ActivityWithAccount {
 			}
 
             if(m_type == TYPE_IMAGE) {
-                obj.put("displayName", Html.escapeHtml(m_title.getText()));
+                obj.put("displayName", m_title.getText().toString());
             }
 
 
