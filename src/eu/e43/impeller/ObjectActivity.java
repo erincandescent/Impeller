@@ -139,9 +139,19 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
         }
         dateView.setText(m_object.optString("published"));
 
-        JSONObject image = m_object.optJSONObject("image");
+        JSONObject pump_io = m_object.optJSONObject("pump_io");
+        JSONObject image = m_object.optJSONObject("fullImage");
+        if(image == null && pump_io != null) {
+            image = pump_io.optJSONObject("fullImage");
+        }
+
+        if(image == null) {
+            image = m_object.optJSONObject("image");
+        }
+
         if(image != null) {
             ImageView iv = new ImageView(this);
+            iv.setAdjustViewBounds(true);
             getImageLoader().setImage(iv, Utils.getImageUrl(image));
             //iv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             m_commentsView.addHeaderView(iv);

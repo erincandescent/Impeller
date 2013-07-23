@@ -15,7 +15,8 @@
         android:id="@+id/imageImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_launcher" />
+        android:src="@drawable/ic_launcher"
+        android:adjustViewBounds="true" />
 
     <include layout="@layout/statebar" />
 </LinearLayout>
