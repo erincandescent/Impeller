@@ -10,9 +10,11 @@ import java.util.HashMap;
 import android.accounts.Account;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.LruCache;
 import android.widget.ImageView;
@@ -137,8 +139,12 @@ public class ImageLoader {
 				URL url = m_uri.toURL();
 			
 				HttpURLConnection conn = OAuth.fetchAuthenticated(m_ctx, m_account, url);
-				BitmapDrawable dw = new BitmapDrawable(m_ctx.getResources(), conn.getInputStream());
-				dw.setBounds(0, 0, dw.getIntrinsicWidth(), dw.getIntrinsicHeight());
+                BitmapFactory.Options opts = new BitmapFactory.Options();
+                opts.inDensity = 96;
+                opts.inScaled = false;
+                Bitmap bmp = BitmapFactory.decodeStream(conn.getInputStream(), null, opts);
+				BitmapDrawable dw = new BitmapDrawable(m_ctx.getResources(), bmp);
+				//dw.setBounds(0, 0, dw.getIntrinsicWidth(), dw.getIntrinsicHeight());
 				return dw;
 			} catch(Exception ex) {
 				Log.e(TAG, "Error getting " + m_uri, ex);
