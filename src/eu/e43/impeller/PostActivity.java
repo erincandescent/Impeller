@@ -205,6 +205,13 @@ public class PostActivity extends ActivityWithAccount {
                 HttpURLConnection conn = (HttpURLConnection) uploadUrl.openConnection();
 
                 conn.setRequestMethod("POST");
+
+                long length = imgFile.getLength();
+                if(length == AssetFileDescriptor.UNKNOWN_LENGTH || length >= Integer.MAX_VALUE) {
+                    conn.setChunkedStreamingMode(4096);
+                } else {
+                    conn.setFixedLengthStreamingMode((int) length);
+                }
                 conn.setRequestProperty("Content-Type", type);
                 cons.sign(conn);
                 OutputStream os = conn.getOutputStream();
