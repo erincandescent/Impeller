@@ -177,7 +177,9 @@ public class FeedActivity extends ActivityWithAccount implements OnItemClickList
 
     @Override
     public void onLoadFinished(Loader<Cursor> objectLoader, Cursor o) {
-        o.setNotificationUri(getContentResolver(), ((CursorLoader) objectLoader).getUri());
+        if(objectLoader != null && o != null) {
+            o.setNotificationUri(getContentResolver(), ((CursorLoader) objectLoader).getUri());
+        }
         m_adapter.updateCursor(o);
     }
 
