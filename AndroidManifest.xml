@@ -99,10 +99,10 @@
             android:name="eu.e43.impeller.PostActivity"
             android:label="@string/title_activity_post"
             android:theme="@style/AppTheme"
-            android:parentActivityName="eu.e43.impeller.FeedActivity">
+            android:parentActivityName="eu.e43.impeller.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="eu.e43.impeller.FeedActivity" />
+                android:value="eu.e43.impeller.MainActivity" />
             
 			<intent-filter>
                 <action android:name="android.intent.action.SEND" />
