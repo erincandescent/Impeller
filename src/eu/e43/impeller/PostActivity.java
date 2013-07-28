@@ -10,27 +10,28 @@ import android.accounts.Account;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.support.v4.app.NavUtils;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
@@ -103,7 +104,9 @@ public class PostActivity extends ActivityWithAccount {
                 setContentView(R.layout.activity_post_image);
                 m_title         = (EditText)  findViewById(R.id.title);
                 m_imageView     = (ImageView) findViewById(R.id.image);
-                m_imageView.setImageURI(m_extraUri);
+                SetupImageTask t = new SetupImageTask();
+                t.execute();
+
                 break;
         }
         m_content       = (EditText)  findViewById(R.id.content);
@@ -151,6 +154,48 @@ public class PostActivity extends ActivityWithAccount {
 	protected void gotAccount(Account a) {
 		m_account = a;
 	}
+
+    private class SetupImageTask extends AsyncTask<Void, Void, Bitmap> {
+
+        @Override
+        protected Bitmap doInBackground(Void... voids) {
+            try {
+                InputStream is = getContentResolver().openInputStream(m_extraUri);
+                Bitmap bmp = BitmapFactory.decodeStream(is);
+                is.close();
+                Display disp = getWindowManager().getDefaultDisplay();
+
+                Point size = new Point();
+                disp.getSize(size);
+
+                int dispLargest = size.x > size.y ? size.x : size.y;
+                int imgLargest = bmp.getWidth() > bmp.getHeight() ? bmp.getWidth() : bmp.getHeight();
+                if(imgLargest > dispLargest) {
+                    int newWidth  = bmp.getWidth()  * dispLargest / imgLargest;
+                    int newHeight = bmp.getHeight() * dispLargest / imgLargest;
+
+                    Log.i(TAG, "Scaling image from " + bmp.getWidth() + "x" + bmp.getHeight()
+                            + " to " + newWidth + "x" + newHeight);
+
+                    bmp = Bitmap.createScaledBitmap(bmp, newWidth, newHeight, true);
+                }
+                return bmp;
+            } catch(IOException e) {
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            if(bitmap != null) {
+                m_imageView.setImageBitmap(bitmap);
+            } else {
+                Toast.makeText(PostActivity.this, "File not found", Toast.LENGTH_SHORT).show();
+                setResult(RESULT_CANCELED);
+                finish();
+            }
+        }
+    }
 
     private void onPost() {
         JSONObject obj = new JSONObject();
@@ -324,17 +369,7 @@ public class PostActivity extends ActivityWithAccount {
 		public void call(JSONObject obj) {
 			m_progress.dismiss();
 			if(obj != null) {
-				if(ACTION_REPLY.equals(getIntent().getAction())) {
-					Toast.makeText(PostActivity.this, "Posted", Toast.LENGTH_SHORT);
-				} else {
-                    JSONObject targetObj = obj.optJSONObject("object");
-                    if(targetObj != null) {
-					    String url = targetObj.optString("id");
-                        Intent postIntent = new Intent(ObjectActivity.ACTION, Uri.parse(url), PostActivity.this, ObjectActivity.class);
-                        postIntent.putExtra("account", m_account);
-					    startActivity(postIntent);
-                    }
-				}
+                Toast.makeText(PostActivity.this, "Posted", Toast.LENGTH_SHORT);
 				setResult(RESULT_OK);
 				finish();
 			} else {
