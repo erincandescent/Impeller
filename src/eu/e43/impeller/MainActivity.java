@@ -111,6 +111,9 @@ public class MainActivity extends ActivityWithAccount {
         objFrag.setArguments(args);
 
         FragmentManager fm = getFragmentManager();
+        if(m_objectFragment != null) {
+            fm.popBackStack();
+        }
         FragmentTransaction txn = fm.beginTransaction();
         txn.replace(R.id.content_fragment, objFrag);
         txn.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
