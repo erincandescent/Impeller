@@ -6,6 +6,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android.accounts.Account;
 import android.content.Context;
@@ -22,9 +24,13 @@ import eu.e43.impeller.account.OAuth;
 
 public class ImageLoader {
 	static final String TAG = "ImageLoader";
-	Context       m_ctx;
-	Account		  m_account;
-	
+	private Context m_ctx;
+	private Account m_account;
+    private static ExecutorService ms_threadpool;
+    private static HashMap<URI, FetchTask> ms_tasks = new HashMap<URI, FetchTask>();
+    // Needed to prevent issues when a ListView/etc recycles an ImageView
+    private static HashMap<ImageView, URI> ms_viewUris = new HashMap<ImageView, URI>();
+
 	public interface Listener {
 		public void loaded(Drawable dr, URI uri);
 		public void error(URI uri);
@@ -33,6 +39,10 @@ public class ImageLoader {
 	public ImageLoader(Context ctx, Account acct) {
 		m_ctx       = ctx;
 		m_account	= acct;
+
+        if(ms_threadpool == null) {
+            ms_threadpool = Executors.newCachedThreadPool();
+        }
 	}
 	
 	public void load(Listener l, URI uri) {
@@ -52,7 +62,7 @@ public class ImageLoader {
 			task = new FetchTask();
 			ms_tasks.put(uri,  task);
 			task.m_listeners.add(l);
-			task.execute(uri);
+            task.executeOnExecutor(ms_threadpool, uri);
 		} else {
 			task.m_listeners.add(l);
 		}
@@ -123,10 +133,6 @@ public class ImageLoader {
 			return 0;
 		}
 	};
-	private static HashMap<URI, FetchTask> ms_tasks = new HashMap<URI, FetchTask>();
-	
-	// Needed to prevent issues when a ListView/etc recycles an ImageView
-	private static HashMap<ImageView, URI> ms_viewUris = new HashMap<ImageView, URI>();
 	
 	class FetchTask extends AsyncTask<Object, Void, BitmapDrawable> {
 		private URI 			   m_uri;
