@@ -63,7 +63,8 @@ public class PostActivity extends ActivityWithAccount {
     int         m_type;
 	
 	@Override
-	protected void onCreateEx() {		Intent intent = getIntent();
+	protected void onCreateEx(Bundle _) {
+        Intent intent = getIntent();
         String type = intent.getType();
         Log.v(TAG, "MIME Type is " + type);
         if(type == null || type.startsWith("text/")) {

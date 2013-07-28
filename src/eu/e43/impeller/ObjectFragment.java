@@ -1,20 +1,17 @@
 package eu.e43.impeller;
 
-import java.net.MalformedURLException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.accounts.Account;
-import android.content.ComponentName;
+import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.ListFragment;
 import android.content.ContentResolver;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.app.NavUtils;
 import android.text.Html;
 import android.util.Log;
@@ -22,8 +19,10 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.webkit.WebSettings.LayoutAlgorithm;
@@ -33,58 +32,71 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ViewFlipper;
 
 import eu.e43.impeller.content.PumpContentProvider;
 
-public class ObjectActivity extends ActivityWithAccount implements View.OnClickListener {
-	private static final String TAG = "ObjectActivity";
+public class ObjectFragment extends ListFragment implements View.OnClickListener {
+	private static final String TAG = "ObjectFragment";
 	public static final String ACTION = "eu.e43.impeller.SHOW_OBJECT";
+    private Account             m_account;
 	private JSONObject			m_object;
 	private CommentAdapter		m_commentAdapter;
 	private Menu				m_menu;
-	private ListView			m_commentsView;
+
+    public MainActivity getMainActivity() {
+        return (MainActivity) getActivity();
+    }
 
     private int toDIP(int dip) {
         final float density = getResources().getDisplayMetrics().density;
         return (int) (density * dip + 0.5f);
     }
 
-	@Override
-	protected void onCreateEx() {
-        // Show the progress bar
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        setProgressBarIndeterminate(true);
-        setProgressBarIndeterminateVisibility(true);
+    private ImageLoader getImageLoader() {
+        return getMainActivity().getImageLoader();
+    }
 
-        m_commentsView = new ListView(this);
-        setContentView(m_commentsView);
-        LayoutInflater li = LayoutInflater.from(this);
-        RelativeLayout header = (RelativeLayout) li.inflate(R.layout.activity_object, null);
-        RelativeLayout footer = (RelativeLayout) li.inflate(R.layout.activity_object_reply, null);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+	@Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if(savedInstanceState != null) {
+            m_account = savedInstanceState.getParcelable("account");
+        } else {
+            m_account = getMainActivity().getAccount();
+        }
+
+        getMainActivity().onShowObjectFragment(this);
+	}
+
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        ListView lv = new ListView(getActivity());
+        lv.setBackgroundColor(0xFFFFFFFF);
+
+        RelativeLayout header = (RelativeLayout) inflater.inflate(R.layout.object_header, null);
+        RelativeLayout footer = (RelativeLayout) inflater.inflate(R.layout.object_reply, null);
         int height = toDIP(80);
 
         header.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, height));
 
-        m_commentsView.addHeaderView(header);
-        m_commentsView.addFooterView(footer);
+        lv.addHeaderView(header);
+        lv.addFooterView(footer);
 
-        setupActionBar();
-	}
-	
-	@Override
-	protected void gotAccount(Account a) {
-        Log.i(TAG, "Got account, " + a.name + "; fetching " + getIntent().getData());
-        Uri uri      = getIntent().getData();
+        Uri uri = this.getArguments().getParcelable("id");
 
-        ContentResolver res = getContentResolver();
+        ContentResolver res = getActivity().getContentResolver();
         Cursor c = res.query(Uri.parse(PumpContentProvider.OBJECT_URL),
                 new String[] { "_json" },
                 "id=?", new String[] { uri.toString() },
@@ -95,9 +107,9 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
                 try {
                     m_object = new JSONObject(c.getString(0));
                 } catch(JSONException ex) {
-                    Toast.makeText(this, "Bad object in database", Toast.LENGTH_SHORT).show();
-                    this.finish();
-                    return;
+                    Toast.makeText(getActivity(), "Bad object in database", Toast.LENGTH_SHORT).show();
+                    getFragmentManager().popBackStack();
+                    return lv;
                 }
             }
         } finally {
@@ -105,27 +117,18 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
         }
 
         if(m_object == null) {
-            Toast.makeText(this, "Error getting object", Toast.LENGTH_SHORT).show();
-            this.finish();
-            return;
+            Toast.makeText(getActivity(), "Error getting object", Toast.LENGTH_SHORT).show();
+            getFragmentManager().popBackStack();
+            return lv;
         }
 
-        try {
-            Log.v(TAG, "Object is " + m_object.toString(4));
-        } catch(JSONException e) {
-            return;
-        }
-
-        setProgressBarIndeterminate(false);
-        setProgressBarIndeterminateVisibility(false);
-
-        ImageView authorIcon   = (ImageView)    findViewById(R.id.actorImage);
-        TextView titleView     = (TextView)     findViewById(R.id.actorName);
-        TextView dateView      = (TextView)     findViewById(R.id.objectDate);
-        Button   replyButton   = (Button)       findViewById(R.id.replyButton);
+        ImageView authorIcon   = (ImageView)    header.findViewById(R.id.actorImage);
+        TextView titleView     = (TextView)     header.findViewById(R.id.actorName);
+        TextView dateView      = (TextView)     header.findViewById(R.id.objectDate);
+        Button   replyButton   = (Button)       footer.findViewById(R.id.replyButton);
         replyButton.setOnClickListener(this);
 
-        setTitle(m_object.optString("displayName", "Object"));
+        //setTitle(m_object.optString("displayName", "Object"));
 
         JSONObject author = m_object.optJSONObject("author");
         if(author != null) {
@@ -135,7 +138,7 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
                 getImageLoader().setImage(authorIcon, Utils.getImageUrl(img));
             }
         } else {
-            titleView.setText("No author. How bizzare.");
+            titleView.setText("No author.");
         }
         dateView.setText(m_object.optString("published"));
 
@@ -150,61 +153,48 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
         }
 
         if(image != null) {
-            ImageView iv = new ImageView(this);
+            ImageView iv = new ImageView(getActivity());
             iv.setAdjustViewBounds(true);
             getImageLoader().setImage(iv, Utils.getImageUrl(image));
-            //iv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-            m_commentsView.addHeaderView(iv);
+            lv.addHeaderView(iv);
         }
 
-        WebView wv = new WebView(this);
-        //wv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        WebView wv = new WebView(getActivity());
         String url  = m_object.optString("url", "about:blank");
         String data = m_object.optString("content", "No content");
         wv.loadDataWithBaseURL(url, data, "text/html", "utf-8", null);
         wv.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
-        m_commentsView.addHeaderView(wv);
+        lv.addHeaderView(wv);
 
         JSONObject replies = m_object.optJSONObject("replies");
-        m_commentAdapter = new CommentAdapter(this, replies, false);
-        m_commentsView.setAdapter(m_commentAdapter);
+        m_commentAdapter = new CommentAdapter((ActivityWithAccount) getActivity(), replies, false);
+        setListAdapter(m_commentAdapter);
+
+        registerForContextMenu(lv);
 
         updateMenu();
-
-        registerForContextMenu(m_commentsView);
         Log.i(TAG, "Finished showing object");
-	}
 
-	/**
-	 * Set up the {@link android.app.ActionBar}.
-	 */
-	private void setupActionBar() {
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-	}
+        return lv;
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        getMainActivity().onHideObjectFragment(this);
+    }
+
+    @Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.object, menu);
+		inflater.inflate(R.menu.object, menu);
 		m_menu = menu;
 		updateMenu();
-		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case android.R.id.home:
-				// This ID represents the Home or Up button. In the case of this
-				// activity, the Up button is shown. Use NavUtils to allow users
-				// to navigate up one level in the application structure. For
-				// more details, see the Navigation pattern on Android Design:
-				//
-				// http://developer.android.com/design/patterns/navigation.html#up-vs-back
-				//
-				NavUtils.navigateUpFromSameTask(this);
-				return true;
-
 			case R.id.action_like:
 				new DoLike(m_object);
 				return true;
@@ -222,7 +212,7 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
 		
 		AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) menuInfo_;
 		
-		JSONObject comment = (JSONObject) m_commentsView.getItemAtPosition(menuInfo.position);
+		JSONObject comment = (JSONObject) getListView().getItemAtPosition(menuInfo.position);
 		if(comment == null) return;
 		
 		JSONObject author = comment.optJSONObject("author");
@@ -232,7 +222,7 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
 		}
 		
 		menu.setHeaderTitle(title);
-		getMenuInflater().inflate(R.menu.comment, menu);
+		getActivity().getMenuInflater().inflate(R.menu.comment, menu);
 		if(comment.optBoolean("liked", false)) {
 			menu.findItem(R.id.action_like).setTitle(R.string.action_unlike);
 		}
@@ -241,7 +231,7 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
-		JSONObject comment = (JSONObject) m_commentsView.getItemAtPosition(menuInfo.position);
+		JSONObject comment = (JSONObject) getListView().getItemAtPosition(menuInfo.position);
 		
 		
 		switch(item.getItemId()) {
@@ -254,10 +244,12 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
 			if(author == null)
 				return true;
 			
-			Intent authorIntent = new Intent(ObjectActivity.ACTION, Uri.parse(author.optString("id")), this, ObjectActivity.class);
-			authorIntent.putExtra("account", m_account);
-			authorIntent.putExtra("proxyURL", Utils.getProxyUrl(author));
-			startActivity(authorIntent);
+			//Intent authorIntent = new Intent(
+            //        ObjectFragment.ACTION,  Uri.parse(author.optString("id")),
+            //        getActivity(), ObjectFragment.class);
+			//authorIntent.putExtra("account", m_account);
+			//authorIntent.putExtra("proxyURL", Utils.getProxyUrl(author));
+			//startActivity(authorIntent);
 			return true;
 		
 		default:
@@ -266,11 +258,11 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
         /* Will come back later - "rich comments" */
 		if(requestCode == 0) {
 			// Post comment
-			if(resultCode == RESULT_OK) {
+			if(resultCode == Activity.RESULT_OK) {
 				if(m_commentAdapter != null)
 					m_commentAdapter.updateComments();
 			}
@@ -297,7 +289,7 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
     public void onClick(View view) {
         switch(view.getId()) {
             case R.id.replyButton:
-                EditText editor = (EditText) findViewById(R.id.replyText);
+                EditText editor = (EditText) getListView().findViewById(R.id.replyText);
                 editor.clearComposingText();
 
                 view.setEnabled(false);
@@ -335,7 +327,7 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
 				throw new RuntimeException(e);
 			}
 			
-			PostTask task = new PostTask(ObjectActivity.this, this);
+			PostTask task = new PostTask((ActivityWithAccount) getActivity(), this);
 			task.execute(obj.toString());
 		}
 
@@ -350,7 +342,8 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
 			    updateMenu();
             }
 			
-			getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+			getActivity().getContentResolver().requestSync(
+                    m_account, PumpContentProvider.AUTHORITY, new Bundle());
 		}
 	}
 
@@ -369,14 +362,14 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
                 throw new RuntimeException(e);
             }
 
-            PostTask task = new PostTask(ObjectActivity.this, this);
+            PostTask task = new PostTask((ActivityWithAccount) getActivity(), this);
             task.execute(obj.toString());
         }
 
         @Override
         public void call(JSONObject obj) {
-            EditText editor      = (EditText) findViewById(R.id.replyText);
-            Button   replyButton = (Button)   findViewById(R.id.replyButton);
+            EditText editor      = (EditText) getListView().findViewById(R.id.replyText);
+            Button   replyButton = (Button)   getListView().findViewById(R.id.replyButton);
 
             if(obj != null) {
                 if(m_commentAdapter != null)
@@ -384,9 +377,10 @@ public class ObjectActivity extends ActivityWithAccount implements View.OnClickL
 
                 editor.setText("");
 
-                getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+                getActivity().getContentResolver().requestSync(
+                        m_account, PumpContentProvider.AUTHORITY, new Bundle());
             } else {
-                Toast.makeText(ObjectActivity.this, "Error posting reply", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Error posting reply", Toast.LENGTH_SHORT).show();
             }
 
             editor.setEnabled(true);

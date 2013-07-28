@@ -23,8 +23,12 @@ public abstract class ActivityWithAccount extends Activity {
 	public ActivityWithAccount() {
 		super();
 	}
-	
-	protected abstract void onCreateEx();
+
+    public Account getAccount() {
+        return m_account;
+    }
+
+	protected abstract void onCreateEx(Bundle savedInstanceState);
 
 	@Override
 	protected final void onCreate(Bundle savedInstanceState) {
@@ -39,15 +43,24 @@ public abstract class ActivityWithAccount extends Activity {
 				Log.w(TAG, "Creating response cache", e);
 			}
 		}
-		
-		onCreateEx();
+
+        if(savedInstanceState != null && savedInstanceState.containsKey("account")) {
+            m_account = savedInstanceState.getParcelable("account");
+        }
+
+		onCreateEx(savedInstanceState);
+
+        if(m_account != null) {
+            gotAccount(m_account, savedInstanceState);
+            return;
+        }
 				
 		Intent startIntent = getIntent();
 		if(startIntent.hasExtra("account")) {
 			Account a = (Account) startIntent.getParcelableExtra("account");
 			if(a.type.equals(Authenticator.ACCOUNT_TYPE)) {
 				m_account = a;
-				gotAccount(a);
+				gotAccount(a, savedInstanceState);
 				return;
 			}
 		}
@@ -59,8 +72,14 @@ public abstract class ActivityWithAccount extends Activity {
 	    Intent chooseIntent = AccountManager.newChooseAccountIntent(null, null, accountTypes, false, null, "", features, extras);
 	    this.startActivityForResult(chooseIntent, LOGIN_REQUEST_CODE);
 	}
-	
-	protected void onStop() {
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(m_account != null) outState.putParcelable("account", m_account);
+    }
+
+    protected void onStop() {
 		super.onStop();
 		
 		HttpResponseCache cache = HttpResponseCache.getInstalled();
@@ -78,7 +97,7 @@ public abstract class ActivityWithAccount extends Activity {
 				Log.i(TAG, "Logged in " + accountName);
 			
 				m_account = new Account(accountName, accountType);
-				gotAccount(m_account);
+				gotAccount(m_account, null);
 			} else {
 				finish();
 			}
@@ -86,8 +105,9 @@ public abstract class ActivityWithAccount extends Activity {
 			super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
-	
-	protected abstract void gotAccount(Account a);
+
+    protected void gotAccount(Account a, Bundle savedInstanceState) { gotAccount(a); }
+	protected void gotAccount(Account a) {}
 	
 	protected ImageLoader getImageLoader() {
 		if(m_imageLoader == null) {
