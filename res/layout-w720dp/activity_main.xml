@@ -22,7 +22,8 @@
             android:orientation="horizontal">
         <View   android:layout_width="1dip"
                 android:layout_height="match_parent"
-                android:background="?android:attr/dividerHorizontal"/>
+                android:background="?android:attr/dividerHorizontal"
+                android:id="@+id/content_spacer" />
 
         <FrameLayout android:id="@+id/content_fragment"
                      android:layout_width="fill_parent"

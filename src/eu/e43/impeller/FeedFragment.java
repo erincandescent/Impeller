@@ -225,7 +225,7 @@ public class FeedFragment
             @Override
             public void run() {
                 if(m_menu == null) return;
-                
+
                 MenuItem itm = m_menu.findItem(R.id.action_refresh);
                 if(itm == null) return;
 
@@ -236,6 +236,9 @@ public class FeedFragment
                     if(itm.getActionView() != null) return;
                     Context themedContext = getActivity().getActionBar().getThemedContext();
                     ProgressBar pbar = new ProgressBar(themedContext);
+
+                    // Set an ID to prevent data being restored for view with different ID
+                    pbar.setId(R.id.syncProgress);
                     pbar.setIndeterminate(true);
                     itm.setActionView(pbar);
                 } else {
