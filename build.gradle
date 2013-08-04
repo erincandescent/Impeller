@@ -1,0 +1,46 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.5.5'
+    }
+}
+
+apply plugin: 'android'
+
+android {
+    compileSdkVersion 17
+    buildToolsVersion "17.0.0"
+
+    sourceSets {
+        main {
+            // We use the traditional project directory structure
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+
+        instrumentTest.setRoot('tests')
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Support library/libraries
+    compile 'com.android.support:support-v4:13.0.0'
+
+    // Signpost OAuth
+    compile 'oauth.signpost:signpost-core:1.2'
+
+    // JIRA Mobile Connect
+    compile project(':jiraconnect-android-main')
+}
