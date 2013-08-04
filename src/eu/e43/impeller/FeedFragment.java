@@ -224,6 +224,8 @@ public class FeedFragment
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(m_menu == null) return;
+                
                 MenuItem itm = m_menu.findItem(R.id.action_refresh);
                 if(itm == null) return;
 
