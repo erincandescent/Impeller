@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.ListFragment;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -42,6 +43,7 @@ import eu.e43.impeller.content.PumpContentProvider;
 public class ObjectFragment extends ListFragment implements View.OnClickListener {
 	private static final String TAG = "ObjectFragment";
 	public static final String ACTION = "eu.e43.impeller.SHOW_OBJECT";
+    private Context             m_appContext;
     private Account             m_account;
 	private JSONObject			m_object;
 	private CommentAdapter		m_commentAdapter;
@@ -69,6 +71,7 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 	@Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        m_appContext = getActivity().getApplicationContext();
 
         getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -341,8 +344,8 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 			    }
 			    updateMenu();
             }
-			
-			getActivity().getContentResolver().requestSync(
+
+            m_appContext.getContentResolver().requestSync(
                     m_account, PumpContentProvider.AUTHORITY, new Bundle());
 		}
 	}
@@ -377,10 +380,10 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 
                 editor.setText("");
 
-                getActivity().getContentResolver().requestSync(
+                m_appContext.getContentResolver().requestSync(
                         m_account, PumpContentProvider.AUTHORITY, new Bundle());
             } else {
-                Toast.makeText(getActivity(), "Error posting reply", Toast.LENGTH_SHORT).show();
+                Toast.makeText(m_appContext, "Error posting reply", Toast.LENGTH_SHORT).show();
             }
 
             editor.setEnabled(true);
