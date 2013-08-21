@@ -311,8 +311,8 @@ public class PumpContentProvider extends ContentProvider {
             Object obj = newObj.get(key);
             if(obj instanceof JSONObject) {
                 JSONObject jobj = (JSONObject) obj;
-                Object oobj = oldObj.get(key);
-                if(oobj instanceof JSONObject) {
+                Object oobj = oldObj.opt(key);
+                if(oobj != null && oobj instanceof JSONObject) {
                     oldObj.put(key, mergeJSON((JSONObject) oobj, jobj));
                 } else {
                     oldObj.put(key, jobj);
