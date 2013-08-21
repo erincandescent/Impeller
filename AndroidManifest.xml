@@ -37,6 +37,13 @@
             android:process=":sync"
             />
 
+        <receiver
+            android:name="eu.e43.impeller.content.ContentUpdateReceiver"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":sync"
+            />
+
         <service
                 android:name="eu.e43.impeller.account.AuthenticatorService"
                 android:enabled="true"
