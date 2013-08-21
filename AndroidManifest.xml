@@ -111,6 +111,12 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
+
+        <activity android:name="org.acra.CrashReportDialog"
+                  android:theme="@style/AppDialogTheme"
+                  android:launchMode="singleInstance"
+                  android:excludeFromRecents="true"
+                  android:finishOnTaskLaunch="true" />
     </application>
 
 </manifest>
