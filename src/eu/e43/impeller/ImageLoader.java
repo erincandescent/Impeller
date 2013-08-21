@@ -120,9 +120,9 @@ public class ImageLoader {
 	public Drawable getCachedImage(String url) {
 		try {
 			return getCachedImage(new URI(url));
-		} catch(Exception e) {
-			throw new RuntimeException(e);
-		}
+		} catch(URISyntaxException ex) {
+            return null;
+        }
 	}
 	
 	static LruCache<URI, BitmapDrawable> ms_images = new LruCache<URI, BitmapDrawable>(10 * 1024 * 1024) {
