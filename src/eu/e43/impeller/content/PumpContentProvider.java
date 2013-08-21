@@ -304,6 +304,26 @@ public class PumpContentProvider extends ContentProvider {
         }
     }
 
+    private JSONObject mergeJSON(JSONObject oldObj, JSONObject newObj) throws JSONException {
+        for(Iterator<String> i = newObj.keys(); i.hasNext();) {
+            String key = i.next();
+
+            Object obj = newObj.get(key);
+            if(obj instanceof JSONObject) {
+                JSONObject jobj = (JSONObject) obj;
+                Object oobj = oldObj.get(key);
+                if(oobj instanceof JSONObject) {
+                    oldObj.put(key, mergeJSON((JSONObject) oobj, jobj));
+                } else {
+                    oldObj.put(key, jobj);
+                }
+            } else {
+                oldObj.put(key, obj);
+            }
+        }
+        return oldObj;
+    }
+
     private JSONObject mergeEntry(JSONObject newObj) {
         Cursor c = m_database.query(
                 "objects",
@@ -315,12 +335,8 @@ public class PumpContentProvider extends ContentProvider {
         try {
             if(c.moveToFirst()) {
                 JSONObject oldObj = new JSONObject(c.getString(0));
-                for(Iterator<String> i = newObj.keys(); i.hasNext();) {
-                    String key = i.next();
-                    oldObj.put(key, newObj.get(key));
-                }
 
-                return oldObj;
+                return mergeJSON(oldObj, newObj);
             } else {
                 return newObj;
             }
