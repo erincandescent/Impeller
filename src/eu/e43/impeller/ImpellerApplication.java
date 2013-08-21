@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.os.Debug;
 
 import com.atlassian.jconnect.droid.Api;
 
@@ -28,7 +29,10 @@ public class ImpellerApplication extends Application {
 
     @Override
     public void onCreate() {
-        Api.init(this);
+        if(!Debug.isDebuggerConnected()) {
+            Api.init(this);
+        }
+
         super.onCreate();
 
         int versionCode;
