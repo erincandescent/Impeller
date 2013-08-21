@@ -115,6 +115,7 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        data.setNotificationUri(m_ctx.getActivity().getContentResolver(), Uri.parse(PumpContentProvider.OBJECT_URL));
         m_cursor = data;
     }
 
