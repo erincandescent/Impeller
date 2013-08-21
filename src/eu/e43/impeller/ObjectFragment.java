@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.ListFragment;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -175,7 +176,10 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 
         registerForContextMenu(lv);
 
-        updateReplies();
+        getActivity().sendOrderedBroadcast(new Intent(
+                ContentUpdateReceiver.UPDATE_REPLIES, Uri.parse(m_object.optString("id")),
+                getActivity(), ContentUpdateReceiver.class
+        ).putExtra("account", getMainActivity().getAccount()), null);
         updateMenu();
         Log.i(TAG, "Finished showing object");
 
@@ -268,19 +272,12 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 		if(requestCode == 0) {
 			// Post comment
 			if(resultCode == Activity.RESULT_OK) {
-                updateReplies();
+                // Add it!
 			}
 		} else {
 			super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
-
-    private void updateReplies() {
-        getActivity().sendOrderedBroadcast(new Intent(
-            ContentUpdateReceiver.UPDATE_REPLIES, Uri.parse(m_object.optString("id")),
-            getActivity(), ContentUpdateReceiver.class
-        ).putExtra("account", getMainActivity().getAccount()), null);
-    }
 
 	private void updateMenu() {
 		if(m_menu == null)
@@ -383,12 +380,15 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
             Button   replyButton = (Button)   getListView().findViewById(R.id.replyButton);
 
             if(obj != null) {
-                updateReplies();
 
                 editor.setText("");
 
+                ContentValues cv = new ContentValues();
+                cv.put("_json", obj.toString());
+                m_appContext.getContentResolver().insert(Uri.parse(PumpContentProvider.OBJECT_URL), cv);
+
                 m_appContext.getContentResolver().requestSync(
-                        m_account, PumpContentProvider.AUTHORITY, new Bundle());
+                    m_account, PumpContentProvider.AUTHORITY, new Bundle());
             } else {
                 Toast.makeText(m_appContext, "Error posting reply", Toast.LENGTH_SHORT).show();
             }
