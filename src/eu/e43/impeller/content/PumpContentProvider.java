@@ -1,6 +1,7 @@
 package eu.e43.impeller.content;
 
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -249,9 +250,8 @@ public class PumpContentProvider extends ContentProvider {
                             .appendPath(id)
                             .build();
 
-                    getContext().getContentResolver().notifyChange(path, null);
-                    getContext().getContentResolver().notifyChange(uri, null);
-                    return path;
+
+                    break;
 
                 case OBJECTS:
                     id = ensureObject(obj);
@@ -260,15 +260,22 @@ public class PumpContentProvider extends ContentProvider {
                     path = new Uri.Builder()
                             .scheme("content")
                             .authority(AUTHORITY)
-                            .appendPath("activity")
+                            .appendPath("object")
                             .appendPath(id)
                             .build();
 
-                    getContext().getContentResolver().notifyChange(path, null);
-                    getContext().getContentResolver().notifyChange(uri, null);
-                    return path;
+                    break;
+
                 default: throw new IllegalArgumentException("Bad URI");
             }
+
+            ContentResolver res = getContext().getContentResolver();
+            res.notifyChange(path, null);
+            res.notifyChange(uri, null);
+            res.notifyChange(Uri.parse(ACTIVITY_URL), null);
+            res.notifyChange(Uri.parse(OBJECT_URL), null);
+            res.notifyChange(Uri.parse(FEED_URL), null);
+            return path;
         } finally {
             m_database.endTransaction();
         }
