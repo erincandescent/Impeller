@@ -184,6 +184,7 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        getActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
         getMainActivity().onHideObjectFragment(this);
     }
 
