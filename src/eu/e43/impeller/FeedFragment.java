@@ -137,7 +137,7 @@ public class FeedFragment
                         .build();
 
         return new CursorLoader(getActivity(), uri,
-                new String[] { "_json", "object" },
+                new String[] { "_json", "replies", "likes", "shares" },
                 "verb='share' OR (verb='post' AND object.objectType<>'comment')", null,
                 "object.updated DESC");
     }

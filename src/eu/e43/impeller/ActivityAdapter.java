@@ -127,6 +127,10 @@ public class ActivityAdapter extends BaseAdapter {
                 }
             }
 
+            act.put("_replies", m_cursor.getInt(1));
+            act.put("_likes",   m_cursor.getInt(2));
+            act.put("_shares",  m_cursor.getInt(3));
+
             return act;
         } catch(JSONException e) {
             throw new RuntimeException(e);
@@ -170,7 +174,7 @@ public class ActivityAdapter extends BaseAdapter {
 	public View getView(int position, View v, ViewGroup parent) {
 	    JSONObject json = (JSONObject) getItem(position);
 	    int type = getItemViewType(json);
-	    
+
 	    switch(type) {
 	    case 0:
 	    	// Simple activity
@@ -190,9 +194,10 @@ public class ActivityAdapter extends BaseAdapter {
 		        v = new Wrapper(vi.inflate(R.layout.post_view, null));
 		    }
 
-		    TextView   caption    = (TextView)   v.findViewById(R.id.caption);
+		    TextView   caption    = (TextView)  v.findViewById(R.id.caption);
 		    TextView  description = (TextView)  v.findViewById(R.id.description);
 		    ImageView image       = (ImageView) v.findViewById(R.id.image);
+            ImageView originImage = (ImageView) v.findViewById(R.id.originImage);
 
 			description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
 		    try {
@@ -202,6 +207,15 @@ public class ActivityAdapter extends BaseAdapter {
 		    	PumpHtml.setFromHtml(m_ctx, caption, content);
 				
 				m_ctx.getImageLoader().setImage(image, getImage(json.getJSONObject("actor")));
+
+                String actorId  = json.getJSONObject("actor").getString("id");
+                String authorId = json.getJSONObject("object").getJSONObject("author").getString("id");
+                if(actorId.equals(authorId)) {
+                    originImage.setVisibility(View.GONE);
+                } else {
+                    originImage.setVisibility(View.VISIBLE);
+                    m_ctx.getImageLoader().setImage(originImage, getImage(json.getJSONObject("object").getJSONObject("author")));
+                }
 			} catch (JSONException e) {
 				caption.setText(Html.fromHtml(e.getLocalizedMessage()));
 				//caption.loadData(e.getLocalizedMessage(), "text/plain", "utf-8");
@@ -228,7 +242,10 @@ public class ActivityAdapter extends BaseAdapter {
 	    }
 
         if(type == 1 || type == 2) {
-            Utils.updateStatebar(v, json.optJSONObject("object"));
+            int replies = json.optInt("_replies");
+            int likes   = json.optInt("_likes");
+            int shares  = json.optInt("_shares");
+            Utils.updateStatebar(v, replies, likes, shares);
         }
 		
 		return v;

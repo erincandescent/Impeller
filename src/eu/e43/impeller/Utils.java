@@ -180,7 +180,21 @@ public class Utils {
 		return url;
 	}
 
+    public static int getCollectionItemCount(JSONObject obj, String collection) {
+        JSONObject col = obj.optJSONObject("collection");
+        if(col != null) {
+            return col.optInt("totalItems");
+        } else return 0;
+    }
+
     public static void updateStatebar(View parent, JSONObject obj) {
+        updateStatebar(parent,
+                getCollectionItemCount(obj, "replies"),
+                getCollectionItemCount(obj, "likes"),
+                getCollectionItemCount(obj, "shares"));
+    }
+
+    public static void updateStatebar(View parent, int replies, int likes, int shares) {
         TextView commentsIcon = (TextView) parent.findViewById(R.id.commentsIcon);
         TextView  sharesIcon   = (TextView) parent.findViewById(R.id.sharesIcon);
         TextView  likesIcon    = (TextView) parent.findViewById(R.id.likesIcon);
@@ -193,21 +207,8 @@ public class Utils {
         TextView  shareCount   = (TextView) parent.findViewById(R.id.sharesCount);
         TextView  likeCount    = (TextView) parent.findViewById(R.id.likesCount);
 
-        if(obj != null) {
-            JSONObject replies  = obj.optJSONObject("replies");
-            JSONObject shares   = obj.optJSONObject("shares");
-            JSONObject likes    = obj.optJSONObject("likes");
-            if(replies != null) {
-                commentCount.setText(String.valueOf(replies.optInt("totalItems")));
-            }
-
-            if(shares != null) {
-                shareCount.setText(String.valueOf(shares.optInt("totalItems")));
-            }
-
-            if(likes != null) {
-                likeCount.setText(String.valueOf(likes.optInt("totalItems")));
-            }
-        }
+        commentCount.setText(String.valueOf(replies));
+        shareCount.setText(String.valueOf(shares));
+        likeCount.setText(String.valueOf(likes));
     }
 }

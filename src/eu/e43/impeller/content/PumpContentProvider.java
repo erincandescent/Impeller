@@ -39,6 +39,8 @@ public class PumpContentProvider extends ContentProvider {
 
     private static final String TAG = "PumpContentProvider";
     private static final UriMatcher ms_uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    private static final Map<String,String>  ms_objectProjection
+            = new HashMap<String, String>();
     private static final Map<String, String> ms_activityProjection
             = new HashMap<String, String>();
     private static final Map<String, String> ms_feedProjection
@@ -53,6 +55,12 @@ public class PumpContentProvider extends ContentProvider {
     private static final int ACTIVITY   = 4;
     private static final int FEED       = 5;
 
+    private static void addStateProjections(Map<String, String> proj, String idField) {
+        proj.put("replies",     "(SELECT COUNT(*) from objects as _rob WHERE _rob.inReplyTo=" + idField +")");
+        proj.put("likes",       "(SELECT COUNT(*) from activities as _lac WHERE _lac.object=" + idField + " AND _lac.verb IN ('like', 'favorite'))");
+        proj.put("shares",      "(SELECT COUNT(*) from activities as _sac WHERE _sac.object=" + idField + " AND _sac.verb='share')");
+    }
+
     static {
         ms_uriMatcher.addURI(AUTHORITY, "object",     OBJECTS);
         ms_uriMatcher.addURI(AUTHORITY, "object/*",   OBJECT);
@@ -60,15 +68,25 @@ public class PumpContentProvider extends ContentProvider {
         ms_uriMatcher.addURI(AUTHORITY, "activity/*", ACTIVITY);
         ms_uriMatcher.addURI(AUTHORITY, "feed/*",     FEED);
 
-        ms_activityProjection.put("id",        "activity.id");
-        ms_activityProjection.put("verb",      "activity.verb");
-        ms_activityProjection.put("actor",     "activity.actor");
-        ms_activityProjection.put("object",    "activity.object");
-        ms_activityProjection.put("target",    "activity.target");
-        ms_activityProjection.put("published", "activity.published");
-        ms_activityProjection.put("updated",   "object.updated");
-        ms_activityProjection.put("objectType","object.objectType");
-        ms_activityProjection.put("_json",     "activity_object._json");
+        ms_objectProjection.put("id", "id");
+        ms_objectProjection.put("objectType", "objectType");
+        ms_objectProjection.put("author", "author");
+        ms_objectProjection.put("published", "published");
+        ms_objectProjection.put("updated", "updated");
+        ms_objectProjection.put("inReplyTo", "inReplyTo");
+        ms_objectProjection.put("_json", "_json");
+        addStateProjections(ms_objectProjection, "id");
+
+        ms_activityProjection.put("id",             "activity.id");
+        ms_activityProjection.put("verb",           "activity.verb");
+        ms_activityProjection.put("actor",          "activity.actor");
+        ms_activityProjection.put("object",         "activity.object");
+        ms_activityProjection.put("target",         "activity.target");
+        ms_activityProjection.put("published",      "activity.published");
+        ms_activityProjection.put("updated",        "object.updated");
+        ms_activityProjection.put("objectType",     "object.objectType");
+        ms_activityProjection.put("_json",          "activity_object._json");
+        addStateProjections(ms_activityProjection,  "activity.object");
 
         ms_feedProjection.put("id",                 "feed_entries.id");
         ms_feedProjection.put("published",          "feed_entries.published");
@@ -80,6 +98,7 @@ public class PumpContentProvider extends ContentProvider {
         ms_feedProjection.put("updated",            "object.updated");
         ms_feedProjection.put("objectType",         "object.objectType");
         ms_feedProjection.put("_json",              "activity_object._json");
+        addStateProjections(ms_feedProjection,      "activity.object");
     }
 
     @Override
@@ -90,8 +109,10 @@ public class PumpContentProvider extends ContentProvider {
         m_database.beginTransaction();
         try {
             int version = m_database.getVersion();
+            Log.i(TAG, "Database opened - version is " + version);
             switch(version) {
                 case 0:
+                    Log.i(TAG, "Initializing database");
                     String sql;
                     try {
                         sql = Utils.readAll(getContext().getResources().openRawResource(R.raw.init_content));
@@ -107,6 +128,19 @@ public class PumpContentProvider extends ContentProvider {
 
                     m_database.setVersion(1);
                 case 1:
+                    Log.i(TAG, "Performing database migration to v2");
+                    m_database.execSQL(
+                        "UPDATE activities SET verb=LOWER(verb)");
+                    m_database.setVersion(2);
+
+                case 2:
+                    Log.i(TAG, "Performing database migration to v3");
+                    m_database.execSQL(
+                        "CREATE INDEX ix_activities_related ON activities (object, verb)");
+                    m_database.execSQL(
+                        "CREATE INDEX ix_objects_inReplyTo ON objects (inReplyTo)");
+                    m_database.setVersion(3);
+                case 3:
                     break;
                 default:
                     throw new RuntimeException("Unsupported database version");
@@ -147,6 +181,7 @@ public class PumpContentProvider extends ContentProvider {
                 qb.appendWhereEscapeString(uri.getLastPathSegment());
             case OBJECTS:
                 qb.setTables("objects");
+                qb.setProjectionMap(ms_objectProjection);
                 return qb.query(m_database, projection, selection, selectionArgs, null, null, sortOrder);
 
             case FEED:
@@ -158,6 +193,7 @@ public class PumpContentProvider extends ContentProvider {
                 qb.setProjectionMap(ms_feedProjection);
                 qb.appendWhere("account=");
                 qb.appendWhereEscapeString(uri.getLastPathSegment());
+
                 return qb.query(m_database, projection, selection, selectionArgs, null, null, sortOrder);
 
             default:
@@ -325,7 +361,7 @@ public class PumpContentProvider extends ContentProvider {
 
             ContentValues vals = new ContentValues();
             vals.put("id",          id);
-            vals.put("verb",        verb);
+            vals.put("verb",        verb.toLowerCase());
             vals.put("published",   published);
             if(actor  != null) vals.put("actor",       actor);
             if(object != null) vals.put("object",      object);

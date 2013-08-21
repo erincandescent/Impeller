@@ -7,7 +7,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Fragment;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,84 +24,39 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import eu.e43.impeller.account.OAuth;
+import eu.e43.impeller.content.PumpContentProvider;
 
-public class CommentAdapter extends BaseAdapter {
+public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final String TAG = "CommentAdapter";
-	private JSONObject m_collection;
-	private JSONArray m_comments;
-	private ActivityWithAccount  m_ctx;
+	private Fragment            m_ctx;
+    private String              m_objectId;
+    private Cursor              m_cursor;
 	
-	public CommentAdapter(ActivityWithAccount act, JSONObject collection, boolean forceUpdate) {
-		m_ctx = act;
-		m_collection = collection;
-        if(m_collection == null)
-            m_collection = new JSONObject();
+	public CommentAdapter(Fragment ctx, int loaderId, String objectId) {
+		m_ctx       = ctx;
+        m_objectId  = objectId;
+        m_cursor    = null;
 
-		m_comments = m_collection.optJSONArray("items");
-		if(m_comments == null)
-			m_comments = new JSONArray();
-		
-		updateComments();
+        LoaderManager lm = m_ctx.getLoaderManager();
+        lm.initLoader(loaderId, null, this);
 	}
-	
-	public void updateComments() {
-		// Try for proxy_url
-		JSONObject pumpIo = m_collection.optJSONObject("pump_io");
-		if(pumpIo != null && pumpIo.has("proxyURL")) {
-			CommentFetchTask t = new CommentFetchTask();
-			t.execute(pumpIo.optString("proxyURL"));
-		} else if(m_collection.has("url")) {
-			CommentFetchTask t = new CommentFetchTask();
-			t.execute(m_collection.optString("url"));
-		}
-	}
-	
-	private class CommentFetchTask extends AsyncTask<String, Void, JSONArray> {
-		@Override
-		protected JSONArray doInBackground(String... url_) {
-			String urlString = url_[0];
-			try {
-				URL url = new URL(urlString);
-				HttpURLConnection conn = OAuth.fetchAuthenticated(m_ctx, m_ctx.m_account, url);
-				
-				if(conn.getResponseCode() != 200) {
-					Log.e(TAG, "Error getting comments" + Utils.readAll(conn.getErrorStream()));
-					return null;
-				}
-				
-				JSONObject collection = new JSONObject(Utils.readAll(conn.getInputStream()));
-				return collection.optJSONArray("items");				
-			} catch (Exception e) {
-				Log.e(TAG, "Error fetching complete comments", e);
-				return null;
-			}
-		}
-		
-		@Override
-		protected void onPostExecute(JSONArray items) {
-			if(items != null) {
-				m_comments = items;
-				notifyDataSetChanged();
-			}
-		}
-		
-	}
+
 	
 	@Override
 	public int getCount() {
-		return m_comments.length();
+		return m_cursor != null ? m_cursor.getCount() : 0;
 	}
 
 	@Override
 	public JSONObject getItem(int idx) {
 		Log.v(TAG, "getItem(" + idx + ")");
-		try {
-			return m_comments.getJSONObject(m_comments.length() - idx - 1);
-		} catch(JSONException ex) {
-			Log.e(TAG, "Error getting comment", ex);
-			return new JSONObject();
-		}
-	}
+        try {
+            m_cursor.moveToPosition(idx);
+            return new JSONObject(m_cursor.getString(0));
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 	@Override
 	public long getItemId(int idx) {
@@ -104,14 +66,26 @@ public class CommentAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View v, ViewGroup parent) {
 		Log.v(TAG, "getView(" + position + ")");
+
+        ActivityWithAccount activity = (ActivityWithAccount) m_ctx.getActivity();
 		if(v == null) {
-			LayoutInflater vi = LayoutInflater.from(m_ctx);
+			LayoutInflater vi = LayoutInflater.from(m_ctx.getActivity());
 			v = vi.inflate(R.layout.comment_view, null);
 		}
-		
-		JSONObject comment = getItem(position);
-		
-		ImageView authorImage  = (ImageView) v.findViewById(R.id.commentAuthorImage);
+
+        if(m_cursor == null) {
+            return v;
+        }
+
+        m_cursor.moveToPosition(position);
+        JSONObject comment = null;
+        try {
+            comment = new JSONObject(m_cursor.getString(0));
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+        ImageView authorImage  = (ImageView) v.findViewById(R.id.commentAuthorImage);
 		TextView  commentBody  = (TextView)  v.findViewById(R.id.commentBody);
 		TextView  commentMeta  = (TextView)  v.findViewById(R.id.commentMeta);
 		
@@ -119,15 +93,33 @@ public class CommentAdapter extends BaseAdapter {
 		if(author != null) {
 			JSONObject image = author.optJSONObject("image");
 			if(image != null)
-				m_ctx.getImageLoader().setImage(authorImage, Utils.getImageUrl(image));
+				activity.getImageLoader().setImage(authorImage, Utils.getImageUrl(image));
 			commentMeta.setText("By " + author.optString("displayName") + " at " + comment.optString("published"));
 		}
 		
-        Utils.updateStatebar(v, comment);
-		
-		PumpHtml.setFromHtml(m_ctx, commentBody, comment.optString("content"));
+        Utils.updateStatebar(v, m_cursor.getInt(1), m_cursor.getInt(2), m_cursor.getInt(3));
+		PumpHtml.setFromHtml(activity, commentBody, comment.optString("content"));
 		
 		return v;
 	}
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(m_ctx.getActivity(),
+                Uri.parse(PumpContentProvider.OBJECT_URL),
+                new String[] { "_json", "replies", "likes", "shares" },
+                "inReplyTo=?",
+                new String[] { m_objectId },
+                "published ASC");
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        m_cursor = data;
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        m_cursor = null;
+    }
 }

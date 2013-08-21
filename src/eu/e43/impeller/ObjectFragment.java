@@ -38,6 +38,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import eu.e43.impeller.content.ContentUpdateReceiver;
 import eu.e43.impeller.content.PumpContentProvider;
 
 public class ObjectFragment extends ListFragment implements View.OnClickListener {
@@ -169,12 +170,12 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         wv.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
         lv.addHeaderView(wv);
 
-        JSONObject replies = m_object.optJSONObject("replies");
-        m_commentAdapter = new CommentAdapter((ActivityWithAccount) getActivity(), replies, false);
+        m_commentAdapter = new CommentAdapter(this, 0, uri.toString());
         setListAdapter(m_commentAdapter);
 
         registerForContextMenu(lv);
 
+        updateReplies();
         updateMenu();
         Log.i(TAG, "Finished showing object");
 
@@ -267,14 +268,20 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 		if(requestCode == 0) {
 			// Post comment
 			if(resultCode == Activity.RESULT_OK) {
-				if(m_commentAdapter != null)
-					m_commentAdapter.updateComments();
+                updateReplies();
 			}
 		} else {
 			super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
-	
+
+    private void updateReplies() {
+        getActivity().sendOrderedBroadcast(new Intent(
+            ContentUpdateReceiver.UPDATE_REPLIES, Uri.parse(m_object.optString("id")),
+            getActivity(), ContentUpdateReceiver.class
+        ).putExtra("account", getMainActivity().getAccount()), null);
+    }
+
 	private void updateMenu() {
 		if(m_menu == null)
 			return;
@@ -376,8 +383,7 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
             Button   replyButton = (Button)   getListView().findViewById(R.id.replyButton);
 
             if(obj != null) {
-                if(m_commentAdapter != null)
-                    m_commentAdapter.updateComments();
+                updateReplies();
 
                 editor.setText("");
 
