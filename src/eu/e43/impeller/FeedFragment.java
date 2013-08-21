@@ -229,6 +229,7 @@ public class FeedFragment
                 MenuItem itm = m_menu.findItem(R.id.action_refresh);
                 if(itm == null) return;
 
+                if(getActivity() == null) return;
                 boolean syncing = getActivity().getContentResolver().isSyncActive(
                         m_account, PumpContentProvider.AUTHORITY);
 
