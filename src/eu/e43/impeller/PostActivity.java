@@ -91,13 +91,6 @@ public class PostActivity extends ActivityWithAccount {
             case TYPE_NOTE:
             case TYPE_COMMENT:
                 setContentView(R.layout.activity_post);
-
-                if(intent.hasExtra(EXTRA_HTML_TEXT)) {
-                    PumpHtml.setFromHtml(this, m_content, intent.getStringExtra(EXTRA_HTML_TEXT));
-                } else if(intent.hasExtra(Intent.EXTRA_TEXT)) {
-                    m_content.setText(intent.getCharSequenceExtra(Intent.EXTRA_TEXT));
-                }
-
                 break;
 
             case TYPE_IMAGE:
@@ -114,6 +107,14 @@ public class PostActivity extends ActivityWithAccount {
 
         if(m_title != null && intent.hasExtra(Intent.EXTRA_SUBJECT)) {
             m_title.setText(intent.getStringExtra(Intent.EXTRA_SUBJECT));
+        }
+
+        if(m_content == null) {
+            // Pass
+        } else if(intent.hasExtra(EXTRA_HTML_TEXT)) {
+            PumpHtml.setFromHtml(this, m_content, intent.getStringExtra(EXTRA_HTML_TEXT));
+        } else if(intent.hasExtra(Intent.EXTRA_TEXT)) {
+            m_content.setText(intent.getCharSequenceExtra(Intent.EXTRA_TEXT));
         }
 
         if(ACTION_REPLY.equals(intent.getAction())) {
