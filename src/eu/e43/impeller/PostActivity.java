@@ -156,6 +156,19 @@ public class PostActivity extends ActivityWithAccount {
 		m_account = a;
 	}
 
+    private void dismissProgress() {
+        if(m_progress != null) {
+            m_progress.dismiss();
+            m_progress = null;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        dismissProgress();
+        super.onDestroy();
+    }
+
     private class SetupImageTask extends AsyncTask<Void, Void, Bitmap> {
 
         @Override
@@ -294,7 +307,7 @@ public class PostActivity extends ActivityWithAccount {
 	private void postPhase2(JSONObject obj) {
         if(obj == null) {
             Toast.makeText(this, "Error creating object", Toast.LENGTH_SHORT).show();
-            m_progress.dismiss();
+            dismissProgress();
             return;
         }
 
@@ -346,7 +359,7 @@ public class PostActivity extends ActivityWithAccount {
             }
         } catch(Exception ex) {
             Toast.makeText(this, "Error creating post: " + ex.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-            m_progress.dismiss();
+            dismissProgress();
         }
     }
 
@@ -359,7 +372,7 @@ public class PostActivity extends ActivityWithAccount {
                 PostTask t = new PostTask(PostActivity.this, new PostCallback());
                 t.execute(m_originalActivity.toString());
             } else {
-                m_progress.dismiss();
+                dismissProgress();
                 Toast.makeText(PostActivity.this, "Error updating object", Toast.LENGTH_SHORT).show();
             }
         }
@@ -368,7 +381,8 @@ public class PostActivity extends ActivityWithAccount {
 	private class PostCallback implements PostTask.Callback {
 		@Override
 		public void call(JSONObject obj) {
-			m_progress.dismiss();
+            dismissProgress();
+            
 			if(obj != null) {
                 Toast.makeText(PostActivity.this, "Posted", Toast.LENGTH_SHORT);
 				setResult(RESULT_OK);
