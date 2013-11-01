@@ -376,13 +376,19 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 
         @Override
         public void call(JSONObject obj) {
-            EditText editor      = (EditText) getListView().findViewById(R.id.replyText);
-            Button   replyButton = (Button)   getListView().findViewById(R.id.replyButton);
+            try {
+                EditText editor      = (EditText) getListView().findViewById(R.id.replyText);
+                Button   replyButton = (Button)   getListView().findViewById(R.id.replyButton);
+                if(obj != null)
+                    editor.setText("");
+                editor.setEnabled(true);
+                replyButton.setEnabled(true);
+            } catch(IllegalStateException ex) {
+                // Content View not yet created
+                // Pass
+            }
 
             if(obj != null) {
-
-                editor.setText("");
-
                 ContentValues cv = new ContentValues();
                 cv.put("_json", obj.toString());
                 m_appContext.getContentResolver().insert(Uri.parse(PumpContentProvider.OBJECT_URL), cv);
@@ -392,9 +398,6 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
             } else {
                 Toast.makeText(m_appContext, "Error posting reply", Toast.LENGTH_SHORT).show();
             }
-
-            editor.setEnabled(true);
-            replyButton.setEnabled(true);
         }
     }
 }
