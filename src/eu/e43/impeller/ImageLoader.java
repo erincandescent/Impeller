@@ -1,5 +1,7 @@
 package eu.e43.impeller;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -10,22 +12,28 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.LruCache;
+import android.view.Display;
 import android.widget.ImageView;
 import eu.e43.impeller.account.OAuth;
 
 public class ImageLoader {
 	static final String TAG = "ImageLoader";
-	private Context m_ctx;
+	private Activity m_ctx;
 	private Account m_account;
+    // Largest edge of display (i.e. bigger of width/height)
+    private int m_largestEdge;
+
     private static ExecutorService ms_threadpool;
     private static HashMap<URI, FetchTask> ms_tasks = new HashMap<URI, FetchTask>();
     // Needed to prevent issues when a ListView/etc recycles an ImageView
@@ -36,9 +44,14 @@ public class ImageLoader {
 		public void error(URI uri);
 	}
 	
-	public ImageLoader(Context ctx, Account acct) {
+	public ImageLoader(Activity ctx, Account acct) {
 		m_ctx       = ctx;
 		m_account	= acct;
+
+        Display disp = ctx.getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        disp.getSize(size);
+        m_largestEdge = size.x > size.y ? size.x : size.y;
 
         if(ms_threadpool == null) {
             ms_threadpool = Executors.newCachedThreadPool();
@@ -148,8 +161,45 @@ public class ImageLoader {
                 BitmapFactory.Options opts = new BitmapFactory.Options();
                 opts.inDensity = 96;
                 opts.inScaled = false;
-                Bitmap bmp = BitmapFactory.decodeStream(conn.getInputStream(), null, opts);
-				BitmapDrawable dw = new BitmapDrawable(m_ctx.getResources(), bmp);
+
+                byte[] compressed = Utils.readAllBytes(conn.getInputStream());
+                InputStream in = new ByteArrayInputStream(compressed);
+
+                // Get the image bounds
+                opts.inJustDecodeBounds = true;
+                BitmapFactory.decodeStream(in, null, opts);
+
+                // Compute appropriate scale factor
+                int largestEdge = opts.outWidth > opts.outHeight ? opts.outWidth : opts.outHeight;
+                opts.inSampleSize = largestEdge / m_largestEdge;
+                opts.inJustDecodeBounds = false;
+
+                // Decode image. If we get OOM, try doubling the scale factor (blurry images are
+                // better than none or crashing)
+                Bitmap bmp = null;
+                int attemptCount = 0;
+                do {
+                    try {
+                        in.reset();
+                        bmp = BitmapFactory.decodeStream(in, null, opts);
+                        break;
+                    } catch(OutOfMemoryError ex) {
+                        attemptCount++;
+
+                        if(opts.inSampleSize <= 1) {
+                            opts.inSampleSize = 2;
+                        } else {
+                            opts.inSampleSize *= 2;
+                        }
+                    }
+                } while(attemptCount < 5);
+
+                if(bmp == null) {
+                    Log.e(TAG, "Error decoding image " + url);
+                    return null;
+                }
+
+                BitmapDrawable dw = new BitmapDrawable(m_ctx.getResources(), bmp);
 				//dw.setBounds(0, 0, dw.getIntrinsicWidth(), dw.getIntrinsicHeight());
 				return dw;
 			} catch(Exception ex) {
