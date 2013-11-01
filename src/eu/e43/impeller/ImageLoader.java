@@ -135,6 +135,8 @@ public class ImageLoader {
 			return getCachedImage(new URI(url));
 		} catch(URISyntaxException ex) {
             return null;
+        } catch(NullPointerException ex) {
+            return null;
         }
 	}
 	
