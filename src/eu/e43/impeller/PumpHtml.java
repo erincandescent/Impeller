@@ -48,7 +48,7 @@ public class PumpHtml implements ImageLoader.Listener, ImageGetter {
 	}
 	
 	@Override
-	public void loaded(Drawable dr, URI uri) {
+	public void loaded(BitmapDrawable dr, URI uri) {
 		m_outstanding--;	
 		Log.v(TAG, "loaded(" + uri + ") -> " + m_outstanding + " outstanding");
 		if(m_outstanding == 0) parse();

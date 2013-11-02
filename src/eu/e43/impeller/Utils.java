@@ -35,9 +35,14 @@ import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.json.JSONObject;
 
@@ -210,5 +215,26 @@ public class Utils {
         commentCount.setText(String.valueOf(replies));
         shareCount.setText(String.valueOf(shares));
         likeCount.setText(String.valueOf(likes));
+    }
+
+    public static long parseDate(String date) {
+        if(date == null)
+            return new Date().getTime();
+
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        df.setTimeZone(TimeZone.getTimeZone("Zulu"));
+        try {
+            return df.parse(date).getTime();
+        } catch (ParseException e) {
+            return new Date().getTime();
+        }
+    }
+
+    public static String humanDate(long milis) {
+        return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(new Date(milis));
+    }
+
+    public static String humanDate(String isoDate) {
+        return humanDate(parseDate(isoDate));
     }
 }

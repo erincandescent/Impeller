@@ -16,14 +16,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TimeZone;
 
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
@@ -281,23 +276,10 @@ public class PumpContentProvider extends ContentProvider {
         }
     }
 
-    private static long parseDate(String date) {
-        if(date == null)
-            return new Date().getTime();
-
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        df.setTimeZone(TimeZone.getTimeZone("Zulu"));
-        try {
-            return df.parse(date).getTime();
-        } catch (ParseException e) {
-            return new Date().getTime();
-        }
-    }
-
     private void insertFeedEntry(JSONObject obj, String account) {
         try {
             String id           = obj.getString("id");
-            long published      = parseDate(obj.optString("published"));
+            long published      = Utils.parseDate(obj.optString("published"));
 
             ContentValues vals = new ContentValues();
             vals.put("id",          id);
@@ -370,7 +352,7 @@ public class PumpContentProvider extends ContentProvider {
 
             String id           = act.getString("id");
             String verb         = act.optString("verb", "post");
-            long published      = parseDate(act.optString("published"));
+            long published      = Utils.parseDate(act.optString("published"));
 
             JSONObject obj = act.optJSONObject("object");
             if(obj != null) {
@@ -432,8 +414,8 @@ public class PumpContentProvider extends ContentProvider {
             String id           = obj.getString("id");
             String objectType   = obj.optString("objectType", "note");
             String publishedStr = obj.optString("published");
-            long published      = parseDate(publishedStr);
-            long updated        = parseDate(obj.optString("updated", publishedStr));
+            long published      = Utils.parseDate(publishedStr);
+            long updated        = Utils.parseDate(obj.optString("updated", publishedStr));
 
             ContentValues vals = new ContentValues();
             vals.put("_json",       obj.toString());

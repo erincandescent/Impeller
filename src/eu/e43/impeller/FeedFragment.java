@@ -15,10 +15,12 @@ import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
@@ -55,6 +57,8 @@ public class FeedFragment
         setHasOptionsMenu(true);
     }
 
+
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +87,11 @@ public class FeedFragment
                   ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE
                 | ContentResolver.SYNC_OBSERVER_TYPE_PENDING
                 | ContentResolver.SYNC_OBSERVER_TYPE_SETTINGS, this);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_feed, null);
     }
 
     @Override

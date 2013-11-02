@@ -382,7 +382,7 @@ public class PostActivity extends ActivityWithAccount {
 		@Override
 		public void call(JSONObject obj) {
             dismissProgress();
-            
+
 			if(obj != null) {
                 Toast.makeText(PostActivity.this, "Posted", Toast.LENGTH_SHORT);
 				setResult(RESULT_OK);

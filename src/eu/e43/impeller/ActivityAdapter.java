@@ -194,10 +194,10 @@ public class ActivityAdapter extends BaseAdapter {
 		        v = new Wrapper(vi.inflate(R.layout.post_view, null));
 		    }
 
-		    TextView   caption    = (TextView)  v.findViewById(R.id.caption);
-		    TextView  description = (TextView)  v.findViewById(R.id.description);
-		    ImageView image       = (ImageView) v.findViewById(R.id.image);
-            ImageView originImage = (ImageView) v.findViewById(R.id.originImage);
+		    TextView   caption      = (TextView)   v.findViewById(R.id.caption);
+		    TextView   description  = (TextView)   v.findViewById(R.id.description);
+		    AvatarView actorAvatar  = (AvatarView) v.findViewById(R.id.actorAvatar);
+            AvatarView authorAvatar = (AvatarView) v.findViewById(R.id.authorAvatar);
 
 			description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
 		    try {
@@ -206,15 +206,16 @@ public class ActivityAdapter extends BaseAdapter {
 		    	
 		    	PumpHtml.setFromHtml(m_ctx, caption, content);
 				
-				m_ctx.getImageLoader().setImage(image, getImage(json.getJSONObject("actor")));
+				m_ctx.getImageLoader().setImage(actorAvatar, getImage(json.getJSONObject("actor")));
 
                 String actorId  = json.getJSONObject("actor").getString("id");
                 String authorId = json.getJSONObject("object").getJSONObject("author").getString("id");
                 if(actorId.equals(authorId)) {
-                    originImage.setVisibility(View.GONE);
+                    authorAvatar.setVisibility(View.GONE);
                 } else {
-                    originImage.setVisibility(View.VISIBLE);
-                    m_ctx.getImageLoader().setImage(originImage, getImage(json.getJSONObject("object").getJSONObject("author")));
+                    authorAvatar.setVisibility(View.VISIBLE);
+                    m_ctx.getImageLoader().setImage(authorAvatar,
+                            getImage(json.getJSONObject("object").getJSONObject("author")));
                 }
 			} catch (JSONException e) {
 				caption.setText(Html.fromHtml(e.getLocalizedMessage()));

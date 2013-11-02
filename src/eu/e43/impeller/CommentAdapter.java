@@ -85,16 +85,17 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
             throw new RuntimeException(e);
         }
 
-        ImageView authorImage  = (ImageView) v.findViewById(R.id.commentAuthorImage);
-		TextView  commentBody  = (TextView)  v.findViewById(R.id.commentBody);
-		TextView  commentMeta  = (TextView)  v.findViewById(R.id.commentMeta);
+        AvatarView authorAvatar = (AvatarView) v.findViewById(R.id.commentAuthorAvatar);
+		TextView  commentBody   = (TextView)   v.findViewById(R.id.commentBody);
+		TextView  commentMeta   = (TextView)   v.findViewById(R.id.commentMeta);
 		
 		JSONObject author = comment.optJSONObject("author");
 		if(author != null) {
 			JSONObject image = author.optJSONObject("image");
 			if(image != null)
-				activity.getImageLoader().setImage(authorImage, Utils.getImageUrl(image));
-			commentMeta.setText("By " + author.optString("displayName") + " at " + comment.optString("published"));
+				activity.getImageLoader().setImage(authorAvatar, Utils.getImageUrl(image));
+			commentMeta.setText("By " + author.optString("displayName") + " at " +
+                    Utils.humanDate(comment.optString("published")));
 		}
 		
         Utils.updateStatebar(v, m_cursor.getInt(1), m_cursor.getInt(2), m_cursor.getInt(3));

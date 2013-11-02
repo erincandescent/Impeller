@@ -31,3 +31,4 @@ proguard/
 .gradle/
 build/
 gradle/
+atlassian-ide-plugin.xml

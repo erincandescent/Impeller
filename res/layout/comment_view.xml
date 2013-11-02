@@ -1,51 +1,55 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/commentLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
+    android:padding="4dp"
     tools:context=".CommentFragment" >
 
     <!-- TODO: Update blank fragment layout -->
 
-    <ImageView
-        android:id="@+id/commentAuthorImage"
+    <eu.e43.impeller.AvatarView
+        android:id="@+id/commentAuthorAvatar"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
+        android:layout_marginRight="8dp"
         android:maxHeight="48dp"
-        android:maxWidth="48dp"
-        android:src="@drawable/ic_launcher" />
+        android:maxWidth="48dp"/>
 
-    <TextView
-        android:id="@+id/commentBody"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="8dp"
-        android:layout_toRightOf="@+id/commentAuthorImage"
-        android:text="Medium Text"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:layout_width="fill_parent">
+        <TextView
+            android:id="@+id/commentBody"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="8dp"
+            android:layout_toRightOf="@+id/commentAuthorImage"
+            android:text="Medium Text"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <TextView
-        android:id="@+id/commentMeta"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/commentBody"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/commentBody"
-        android:text="Small Text"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        <TextView
+            android:id="@+id/commentMeta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/commentBody"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/commentBody"
+            android:text="Small Text"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
-    <include
-        layout="@layout/statebar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/commentMeta"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/commentMeta"/>
-
-
-</RelativeLayout>
+        <include
+            layout="@layout/statebar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/commentMeta"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/commentMeta"/>
+    </LinearLayout>
+</LinearLayout>

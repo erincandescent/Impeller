@@ -24,6 +24,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.LruCache;
 import android.view.Display;
+import android.view.View;
 import android.widget.ImageView;
 import eu.e43.impeller.account.OAuth;
 
@@ -36,11 +37,12 @@ public class ImageLoader {
 
     private static ExecutorService ms_threadpool;
     private static HashMap<URI, FetchTask> ms_tasks = new HashMap<URI, FetchTask>();
-    // Needed to prevent issues when a ListView/etc recycles an ImageView
-    private static HashMap<ImageView, URI> ms_viewUris = new HashMap<ImageView, URI>();
+    // Needed to prevent issues when a ListView/etc recycles a View
+    private static HashMap<View, URI> ms_viewUris = new HashMap<View, URI>();
+
 
 	public interface Listener {
-		public void loaded(Drawable dr, URI uri);
+		public void loaded(BitmapDrawable dr, URI uri);
 		public void error(URI uri);
 	}
 	
@@ -64,7 +66,7 @@ public class ImageLoader {
             return;
         }
 
-		Drawable dw = ms_images.get(uri);
+		BitmapDrawable dw = ms_images.get(uri);
 		if(dw != null) {
 			l.loaded(dw,  uri);
             return;
@@ -98,7 +100,7 @@ public class ImageLoader {
 		ms_viewUris.put(view,  uri);
 		load(new Listener() {
 			@Override
-			public void loaded(Drawable dr, URI uri) {
+			public void loaded(BitmapDrawable dr, URI uri) {
 				if(uri.equals(ms_viewUris.get(view))) {
 					view.setImageDrawable(dr);
 					ms_viewUris.remove(uri);
@@ -125,7 +127,40 @@ public class ImageLoader {
 		}
 		setImage(view, uri);
 	}
-	
+
+    public void setImage(final AvatarView view, URI uri) {
+        ms_viewUris.put(view,  uri);
+        view.setAvatar(null);
+        load(new Listener() {
+            @Override
+            public void loaded(BitmapDrawable dr, URI uri) {
+                URI viewUri = ms_viewUris.get(view);
+                if(viewUri != null && uri != null && uri.equals(viewUri)) {
+                    view.setAvatar(dr.getBitmap());
+                    ms_viewUris.remove(uri);
+                }
+            }
+
+            @Override
+            public void error(URI uri) {
+                URI viewUri = ms_viewUris.get(view);
+                if(viewUri != null && uri != null && uri.equals(viewUri)) {
+                    ms_viewUris.remove(uri);
+                }
+            }
+        }, uri);
+    }
+
+    public void setImage(AvatarView view, String imageUrl) {
+        URI uri;
+        try {
+            uri = new URI(imageUrl);
+        } catch(Exception e) {
+            uri = null;
+        }
+        setImage(view, uri);
+    }
+
 	public Drawable getCachedImage(URI uri) {
 		return ms_images.get(uri);
 	}

@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.text.Html;
+import android.text.Layout;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -34,6 +35,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -86,15 +88,21 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         getMainActivity().onShowObjectFragment(this);
 	}
 
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ListView lv = new ListView(getActivity());
-        lv.setBackgroundColor(0xFFFFFFFF);
+        return inflater.inflate(R.layout.object_fragment, null);
+    }
 
-        RelativeLayout header = (RelativeLayout) inflater.inflate(R.layout.object_header, null);
+    @Override
+    public void onViewCreated (View view, Bundle savedInstanceState) {
+        ListView lv = getListView();
+        LayoutInflater inflater = LayoutInflater.from(getActivity());
+
+        LinearLayout header   = (LinearLayout) inflater.inflate(R.layout.object_header, null);
         RelativeLayout footer = (RelativeLayout) inflater.inflate(R.layout.object_reply, null);
         int height = toDIP(80);
 
-        header.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, height));
+        //header.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, height));
 
         lv.addHeaderView(header);
         lv.addFooterView(footer);
@@ -114,7 +122,6 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
                 } catch(JSONException ex) {
                     Toast.makeText(getActivity(), "Bad object in database", Toast.LENGTH_SHORT).show();
                     getFragmentManager().popBackStack();
-                    return lv;
                 }
             }
         } finally {
@@ -124,13 +131,12 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         if(m_object == null) {
             Toast.makeText(getActivity(), "Error getting object", Toast.LENGTH_SHORT).show();
             getFragmentManager().popBackStack();
-            return lv;
         }
 
-        ImageView authorIcon   = (ImageView)    header.findViewById(R.id.actorImage);
-        TextView titleView     = (TextView)     header.findViewById(R.id.actorName);
-        TextView dateView      = (TextView)     header.findViewById(R.id.objectDate);
-        Button   replyButton   = (Button)       footer.findViewById(R.id.replyButton);
+        AvatarView authorIcon    = (AvatarView)    header.findViewById(R.id.actorImage);
+        TextView   titleView     = (TextView)     header.findViewById(R.id.actorName);
+        TextView   dateView      = (TextView)     header.findViewById(R.id.objectDate);
+        Button     replyButton   = (Button)       footer.findViewById(R.id.replyButton);
         replyButton.setOnClickListener(this);
 
         //setTitle(m_object.optString("displayName", "Object"));
@@ -145,7 +151,7 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         } else {
             titleView.setText("No author.");
         }
-        dateView.setText(m_object.optString("published"));
+        dateView.setText(Utils.humanDate(m_object.optString("published")));
 
         JSONObject pump_io = m_object.optJSONObject("pump_io");
         JSONObject image = m_object.optJSONObject("fullImage");
@@ -182,8 +188,6 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         ).putExtra("account", getMainActivity().getAccount()), null);
         updateMenu();
         Log.i(TAG, "Finished showing object");
-
-        return lv;
     }
 
     @Override
