@@ -29,6 +29,7 @@ import java.util.List;
 import eu.e43.impeller.Utils;
 import eu.e43.impeller.account.Authenticator;
 import eu.e43.impeller.account.OAuth;
+import eu.e43.impeller.content.PumpContentProvider;
 
 /**
  * Created by OShepherd on 27/06/13.
@@ -109,10 +110,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
 
             resolver.applyBatch(ContactsContract.AUTHORITY, operations);
+            operations.clear();
 
             // Now update all photos which are out of date
             Cursor c = resolver.query(ContactsContract.RawContacts.CONTENT_URI,
-                    new String[] { ContactsContract.RawContacts._ID },
+                    new String[] { ContactsContract.RawContacts._ID, ContactsContract.RawContacts.SOURCE_ID },
                     ContactsContract.RawContacts.ACCOUNT_TYPE + "=? AND "
                     + ContactsContract.RawContacts.ACCOUNT_NAME + "=?",
                     new String[] { account.type, account.name }, null);
@@ -166,8 +168,77 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         }
                     }
                 }
+                pic_c.close();
+            }
+
+            // Sync stream items
+
+            // Find the number to be stored
+            Cursor cMaxStreamItems = resolver.query(ContactsContract.StreamItems.CONTENT_LIMIT_URI,
+                    new String[] {ContactsContract.StreamItems.MAX_ITEMS}, null, null, null);
+            cMaxStreamItems.moveToFirst();
+            int maxItems = cMaxStreamItems.getInt(0);
+            cMaxStreamItems.close();
+
+            c.moveToFirst();
+            while(c.moveToNext()) {
+                long   _id       = c.getLong(0);
+                String accountId = c.getString(1);
+
+                // Get their most recent activity
+                Cursor cLatest = resolver.query(Uri.parse(PumpContentProvider.ACTIVITY_URL),
+                        new String[] { "_json", "published" },
+                        "(verb='share' OR (verb='post' AND object.objectType<>'comment')) AND actor=?",
+                        new String[] { accountId, },
+                        "activity.published DESC");
+
+                for(int i = 0; i < maxItems && cLatest.moveToNext(); i++) {
+                    JSONObject obj = new JSONObject(cLatest.getString(0));
+                    long timestamp = cLatest.getLong(1);
+
+                    // See if it exists...
+                    Cursor cEntry = resolver.query(Uri.withAppendedPath(
+                            ContentUris.withAppendedId(ContactsContract.RawContacts.CONTENT_URI, _id),
+                            ContactsContract.RawContacts.StreamItems.CONTENT_DIRECTORY),
+                        new String[] { ContactsContract.RawContacts.StreamItems._ID },
+                        ContactsContract.RawContacts.StreamItems.SYNC1 + "=?",
+                        new String[] { obj.getString("id") },
+                        null);
+
+                    ContentProviderOperation.Builder opBuilder = null;
+                    if(!cEntry.moveToFirst()) {
+                        // Insert
+                        ContentValues values = new ContentValues();
+                        Uri.Builder builder = ContactsContract.RawContacts.CONTENT_URI.buildUpon();
+                        ContentUris.appendId(builder, _id);
+                        builder.appendEncodedPath(ContactsContract.RawContacts.StreamItems.CONTENT_DIRECTORY);
+                        builder.appendQueryParameter(ContactsContract.RawContacts.ACCOUNT_NAME, account.name);
+                        builder.appendQueryParameter(ContactsContract.RawContacts.ACCOUNT_TYPE, account.type);
+                        opBuilder = ContentProviderOperation.newInsert(builder.build());
+                    } else {
+                        opBuilder = ContentProviderOperation.newUpdate(ContentUris.appendId(
+                                ContactsContract.StreamItems.CONTENT_URI.buildUpon(), cEntry.getLong(0))
+                                .build());
+                    }
+
+                    JSONObject theObj = obj.optJSONObject("object");
+                    String text = null;
+                    if(theObj != null) text = theObj.optString("content");
+
+                    operations.add(
+                            opBuilder
+                            .withValue(ContactsContract.RawContacts.StreamItems.TEXT,       text)
+                            .withValue(ContactsContract.RawContacts.StreamItems.COMMENTS,   obj.optString("content"))
+                            .withValue(ContactsContract.RawContacts.StreamItems.TIMESTAMP,  timestamp)
+                            .withValue(ContactsContract.RawContacts.StreamItems.SYNC1,      obj.getString("id"))
+                            .build());
+
+                    cEntry.close();
+                }
+                cLatest.close();
             }
             c.close();
+            resolver.applyBatch(ContactsContract.AUTHORITY, operations);
 
         } catch(Exception e) {
             Log.e(TAG, "Sync exception", e);

@@ -167,13 +167,13 @@ public class PumpContentProvider extends ContentProvider {
         qb.setStrict(true);
         switch(ms_uriMatcher.match(uri)) {
             case ACTIVITY:
-                qb.appendWhere("activities.id=");
+                qb.appendWhere("activity.id=");
                 qb.appendWhereEscapeString(uri.getLastPathSegment());
             case ACTIVITIES:
                 qb.setTables(
-                        "activities "
-                      + "LEFT OUTER JOIN objects AS activity_object ON (activities.id=activity_object.id) "
-                      + "LEFT OUTER JOIN objects AS object          ON (activities.object=object.id) ");
+                        "activities AS activity "
+                      + "LEFT OUTER JOIN objects AS activity_object ON (activity.id=activity_object.id) "
+                      + "LEFT OUTER JOIN objects AS object          ON (activity.object=object.id) ");
                 qb.setProjectionMap(ms_activityProjection);
                 return qb.query(m_database, projection, selection, selectionArgs, null, null, sortOrder);
 
