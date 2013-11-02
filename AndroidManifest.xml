@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="eu.e43.impeller"
-    android:versionCode="000006003"
-    android:versionName="0.6.3"
+    android:versionCode="000007000"
+    android:versionName="0.7.0"
     android:requiredAccountType="eu.e43.impeller">
 
     <uses-sdk
