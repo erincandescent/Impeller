@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Background for a section of a card, without including any corners or the bottom edge border
+ -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle"
             android:dither="true">
-
-            <corners android:radius="2dp"/>
-
             <solid android:color="#ccc" />
-
         </shape>
     </item>
 
-    <item android:bottom="2dp" android:right="1dp">
-        <shape android:shape="rectangle"
-            android:dither="true">
-
-            <corners android:radius="2dp" />
-
+    <item android:right="1dp">
+        <shape android:shape="rectangle" android:dither="true">
             <solid android:color="@android:color/white" />
-
             <padding android:bottom="8dp"
                 android:left="8dp"
                 android:right="8dp"
