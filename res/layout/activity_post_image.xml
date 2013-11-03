@@ -1,69 +1,81 @@
 
 <ScrollView
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-    <RelativeLayout
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:layout_margin="8dp"
         android:background="@drawable/card_bg">
+
+        <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/title"
+            android:hint="@string/post_title"
+            android:background="@android:color/transparent"
+            android:padding="4dp"
+            android:textStyle="normal"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:background="?android:attr/dividerVertical" />
+
+        <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/image"
+                android:src="@drawable/ic_launcher"
+                android:maxHeight="384dp"
+                android:adjustViewBounds="true"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:background="?android:attr/dividerVertical" />
+
         <EditText
             android:id="@+id/content"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:ems="10"
             android:inputType="textMultiLine"
-            android:layout_below="@+id/contentLabel"
-            android:layout_alignLeft="@+id/contentLabel"
-            android:layout_alignRight="@+id/contentLabel"/>
+            android:hint="@string/post_description"
+            android:background="@android:color/white"
+            android:padding="4dp"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:background="?android:attr/dividerVertical" />
+
+        <include
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            layout="@layout/view_post_location" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:background="?android:attr/dividerVertical" />
 
         <CheckBox
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/public_post"
-                android:id="@+id/isPublic"
-                android:layout_below="@+id/content"
-                android:layout_alignLeft="@+id/image"/>
+                android:id="@+id/isPublic"/>
 
-        <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/image"
-                android:src="@drawable/ic_launcher"
-                android:layout_below="@+id/title"
-                android:layout_alignParentLeft="false"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:maxHeight="384dp"
-                android:adjustViewBounds="true"/>
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/post_description"
-                android:id="@+id/contentLabel"
-                android:layout_below="@+id/image"
-                android:layout_alignLeft="@+id/image"
-                android:layout_alignRight="@+id/image"/>
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/post_title"
-                android:id="@+id/titleLabel"
-                android:layout_alignParentLeft="true"
-                android:layout_alignBaseline="@+id/title"/>
-
-        <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/title"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:layout_toRightOf="@+id/titleLabel"/>
-    </RelativeLayout>
+    </LinearLayout>
 </ScrollView>

@@ -5,27 +5,49 @@
     android:layout_height="wrap_content"
     android:padding="8dp">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:background="@drawable/card_bg">
+
         <EditText
             android:id="@+id/content"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:ems="10"
             android:inputType="textMultiLine"
-            android:layout_alignParentTop="true"
+            android:background="@android:color/white"
+            android:hint="Message..."
+            android:editable="true"
+            android:padding="4dp"
+            android:minLines="3"
+            android:textAlignment="viewStart" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"/>
+            android:layout_alignParentRight="true"
+            android:background="?android:attr/dividerVertical" />
+
+        <include
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            layout="@layout/view_post_location" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:background="?android:attr/dividerVertical" />
 
         <CheckBox
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/public_post"
-                android:id="@+id/isPublic"
-                android:layout_below="@+id/content"
-                android:layout_alignLeft="@+id/content"/>
+                android:id="@+id/isPublic"/>
 
-    </RelativeLayout>
+    </LinearLayout>
 </FrameLayout>

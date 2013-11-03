@@ -8,11 +8,13 @@ import org.json.JSONObject;
 
 import android.accounts.Account;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.location.Address;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import android.view.MenuItem;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -35,8 +38,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
 
+import eu.e43.impeller.LocationServices;
 import eu.e43.impeller.PostTask;
-import eu.e43.impeller.PumpHtml;
+import eu.e43.impeller.content.PumpContentProvider;
+import eu.e43.impeller.uikit.LocationAdapter;
+import eu.e43.impeller.uikit.PumpHtml;
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
 import eu.e43.impeller.account.OAuth;
@@ -58,13 +64,15 @@ public class PostActivity extends ActivityWithAccount {
     EditText        m_title;
     ImageView       m_imageView;
 	EditText 	    m_content;
+    Spinner         m_location;
     CheckBox        m_isPublic;
     ProgressDialog  m_progress;
 
-    Uri         m_extraUri;
-	Account  	m_account;
-	JSONObject	m_inReplyTo = null;
-    int         m_type;
+    Uri             m_extraUri;
+	Account  	    m_account;
+	JSONObject	    m_inReplyTo = null;
+    int             m_type;
+    LocationAdapter m_locations;
 	
 	@Override
 	protected void onCreateEx(Bundle _) {
@@ -105,6 +113,8 @@ public class PostActivity extends ActivityWithAccount {
 
                 break;
         }
+
+        m_location      = (Spinner)   findViewById(R.id.location);
         m_content       = (EditText)  findViewById(R.id.content);
         m_isPublic      = (CheckBox)  findViewById(R.id.isPublic);
 
@@ -130,6 +140,9 @@ public class PostActivity extends ActivityWithAccount {
                 finish();
             }
         }
+
+        m_locations = new LocationAdapter(this);
+        m_location.setAdapter(m_locations);
 	}
 
     @Override
@@ -341,6 +354,16 @@ public class PostActivity extends ActivityWithAccount {
             String generator = Utils.readAll(getResources().openRawResource(R.raw.generator));
             act.put("generator", new JSONObject(generator));
             act.put("verb", "post");
+
+            Address addr = (Address) m_location.getSelectedItem();
+            if(addr != null) {
+                JSONObject place = LocationServices.buildPlace(addr);
+                act.put("location", place);
+                if(!obj.has("location")) {
+                    obj.put("location", place);
+                }
+            }
+
             act.put("object", obj);
 
             if(m_type == TYPE_IMAGE) {
