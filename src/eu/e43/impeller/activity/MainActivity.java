@@ -13,46 +13,32 @@
  * limitations under the License.
  */
 
-package eu.e43.impeller;
+package eu.e43.impeller.activity;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.List;
-
-import org.json.JSONObject;
 
 import android.accounts.Account;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.app.LoaderManager;
-import android.content.ComponentName;
-import android.content.CursorLoader;
-import android.content.Intent;
-import android.content.Loader;
-import android.content.ServiceConnection;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewConfiguration;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.Toast;
 
+import eu.e43.impeller.fragment.FeedFragment;
+import eu.e43.impeller.fragment.ObjectFragment;
+import eu.e43.impeller.R;
+import eu.e43.impeller.fragment.SplashFragment;
 import eu.e43.impeller.content.PumpContentProvider;
 
 public class MainActivity extends ActivityWithAccount {
 	static final String TAG = "MainActivity";
 	private Calendar        m_nextFetch      = null;
     private boolean         m_twoPane        = false;
-    private FeedFragment    m_feedFragment   = null;
-    private ObjectFragment  m_objectFragment = null;
+    private FeedFragment m_feedFragment   = null;
+    private ObjectFragment m_objectFragment = null;
 
 	@Override
 	protected void onCreateEx(Bundle savedInstanceState) {

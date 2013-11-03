@@ -1,4 +1,4 @@
-package eu.e43.impeller;
+package eu.e43.impeller.uikit;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -15,6 +15,8 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
+
+import eu.e43.impeller.R;
 
 /**
  * Created by OShepherd on 02/11/13.

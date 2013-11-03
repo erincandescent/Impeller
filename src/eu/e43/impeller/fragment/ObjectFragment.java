@@ -1,11 +1,10 @@
-package eu.e43.impeller;
+package eu.e43.impeller.fragment;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.app.ListFragment;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -14,9 +13,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.text.Html;
-import android.text.Layout;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -26,11 +23,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.view.Window;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
-import android.widget.AbsListView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,8 +35,17 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import eu.e43.impeller.activity.PostActivity;
+import eu.e43.impeller.uikit.AvatarView;
+import eu.e43.impeller.uikit.CommentAdapter;
+import eu.e43.impeller.uikit.ImageLoader;
+import eu.e43.impeller.PostTask;
+import eu.e43.impeller.R;
+import eu.e43.impeller.Utils;
+import eu.e43.impeller.activity.MainActivity;
 import eu.e43.impeller.content.ContentUpdateReceiver;
 import eu.e43.impeller.content.PumpContentProvider;
+import eu.e43.impeller.activity.ActivityWithAccount;
 
 public class ObjectFragment extends ListFragment implements View.OnClickListener {
 	private static final String TAG = "ObjectFragment";
@@ -50,7 +53,7 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
     private Context             m_appContext;
     private Account             m_account;
 	private JSONObject			m_object;
-	private CommentAdapter		m_commentAdapter;
+	private CommentAdapter m_commentAdapter;
 	private Menu				m_menu;
 
     public MainActivity getMainActivity() {

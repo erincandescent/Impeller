@@ -1,9 +1,5 @@
-package eu.e43.impeller;
+package eu.e43.impeller.uikit;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,7 +9,6 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,8 +18,10 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import eu.e43.impeller.account.OAuth;
+import eu.e43.impeller.R;
+import eu.e43.impeller.Utils;
 import eu.e43.impeller.content.PumpContentProvider;
+import eu.e43.impeller.activity.ActivityWithAccount;
 
 public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final String TAG = "CommentAdapter";
@@ -70,7 +67,7 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
         ActivityWithAccount activity = (ActivityWithAccount) m_ctx.getActivity();
 		if(v == null) {
 			LayoutInflater vi = LayoutInflater.from(m_ctx.getActivity());
-			v = vi.inflate(R.layout.comment_view, null);
+			v = vi.inflate(R.layout.view_comment, null);
 		}
 
         if(m_cursor == null) {

@@ -13,18 +13,13 @@
  * limitations under the License.
  */
 
-package eu.e43.impeller;
-
-import java.util.List;
+package eu.e43.impeller.uikit;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
 import android.text.Html;
-import android.util.Log;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,11 +30,17 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import eu.e43.impeller.AvatarView;
+import eu.e43.impeller.PumpHtml;
+import eu.e43.impeller.R;
+import eu.e43.impeller.Utils;
+import eu.e43.impeller.activity.ActivityWithAccount;
+
 public class ActivityAdapter extends BaseAdapter {
 	static final String TAG = "ActivityAdapter";
 	
     Cursor                      m_cursor;
-	ActivityWithAccount		    m_ctx;
+	ActivityWithAccount m_ctx;
     LruCache<String, Integer>   m_objectPositions;
 
 	public ActivityAdapter(ActivityWithAccount ctx) {
@@ -227,7 +228,7 @@ public class ActivityAdapter extends BaseAdapter {
 	    	// Image
 	    	if(v == null) {
 	    		LayoutInflater vi = LayoutInflater.from(m_ctx);
-	    		v = new Wrapper(vi.inflate(R.layout.image_view, null));
+	    		v = new Wrapper(vi.inflate(R.layout.view_image, null));
 	    	}
 	    	
 	    	TextView imgDescription = (TextView)  v.findViewById(R.id.description);

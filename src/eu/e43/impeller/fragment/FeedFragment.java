@@ -1,9 +1,7 @@
-package eu.e43.impeller;
+package eu.e43.impeller.fragment;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.ContentResolver;
@@ -26,6 +24,10 @@ import android.widget.ProgressBar;
 
 import org.json.JSONObject;
 
+import eu.e43.impeller.uikit.ActivityAdapter;
+import eu.e43.impeller.R;
+import eu.e43.impeller.activity.MainActivity;
+import eu.e43.impeller.activity.PostActivity;
 import eu.e43.impeller.content.PumpContentProvider;
 
 /**
@@ -37,7 +39,7 @@ public class FeedFragment
         SyncStatusObserver
 {
     Account             m_account;
-    ActivityAdapter     m_adapter;
+    ActivityAdapter m_adapter;
     Menu                m_menu = null;
     boolean             m_jumpToSelection   = false;
     int                 m_selection         = -1;

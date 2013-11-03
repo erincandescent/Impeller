@@ -1,4 +1,4 @@
-package eu.e43.impeller;
+package eu.e43.impeller.uikit;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -13,20 +13,22 @@ import java.util.concurrent.Executors;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.LruCache;
 import android.view.Display;
 import android.view.View;
 import android.widget.ImageView;
+
+import eu.e43.impeller.R;
+import eu.e43.impeller.Utils;
 import eu.e43.impeller.account.OAuth;
+import eu.e43.impeller.uikit.AvatarView;
 
 public class ImageLoader {
 	static final String TAG = "ImageLoader";
@@ -135,7 +137,7 @@ public class ImageLoader {
             @Override
             public void loaded(BitmapDrawable dr, URI uri) {
                 URI viewUri = ms_viewUris.get(view);
-                if(viewUri != null && uri != null && uri.equals(viewUri)) {
+                if (viewUri != null && uri != null && uri.equals(viewUri)) {
                     view.setAvatar(dr.getBitmap());
                     ms_viewUris.remove(uri);
                 }
@@ -144,7 +146,7 @@ public class ImageLoader {
             @Override
             public void error(URI uri) {
                 URI viewUri = ms_viewUris.get(view);
-                if(viewUri != null && uri != null && uri.equals(viewUri)) {
+                if (viewUri != null && uri != null && uri.equals(viewUri)) {
                     ms_viewUris.remove(uri);
                 }
             }

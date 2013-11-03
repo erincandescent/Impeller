@@ -1,4 +1,4 @@
-package eu.e43.impeller;
+package eu.e43.impeller.activity;
 
 
 
@@ -16,7 +16,6 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 import android.support.v4.app.NavUtils;
 import android.text.Html;
 import android.text.Spanned;
@@ -36,6 +35,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
 
+import eu.e43.impeller.PostTask;
+import eu.e43.impeller.PumpHtml;
+import eu.e43.impeller.R;
+import eu.e43.impeller.Utils;
 import eu.e43.impeller.account.OAuth;
 import oauth.signpost.OAuthConsumer;
 

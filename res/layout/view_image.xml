@@ -28,7 +28,7 @@
             android:src="@drawable/ic_launcher"
             android:adjustViewBounds="true" />
 
-        <include layout="@layout/statebar"
+        <include layout="@layout/view_statebar"
             android:layout_margin="8dp" />
     </LinearLayout>
 </FrameLayout>

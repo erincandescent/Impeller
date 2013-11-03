@@ -4,6 +4,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import eu.e43.impeller.activity.ActivityWithAccount;
 import oauth.signpost.OAuthConsumer;
 
 import org.json.JSONObject;
@@ -21,7 +23,7 @@ public class PostTask extends AsyncTask<String, Void, JSONObject> {
 	}
 	
 	Callback			 	m_cb = null;
-	ActivityWithAccount		m_ctx = null;
+	ActivityWithAccount m_ctx = null;
 	
 	public PostTask(ActivityWithAccount ctx, Callback cb) {
 		super();

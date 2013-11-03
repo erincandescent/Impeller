@@ -1,15 +1,15 @@
-package eu.e43.impeller;
+package eu.e43.impeller.uikit;
 
 import java.net.URI;
 
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.Html.ImageGetter;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.TextView;
+
+import eu.e43.impeller.activity.ActivityWithAccount;
 
 public class PumpHtml implements ImageLoader.Listener, ImageGetter {
 	private static final String TAG = "PumpHtml";

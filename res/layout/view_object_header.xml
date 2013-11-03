@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:padding="8dp">
 
-    <eu.e43.impeller.AvatarView
+    <eu.e43.impeller.uikit.AvatarView
             android:id="@+id/actorImage"
             android:layout_width="48dp"
             android:layout_height="48dp" />

@@ -1,4 +1,4 @@
-package eu.e43.impeller;
+package eu.e43.impeller.activity;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,16 +9,17 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.http.HttpResponseCache;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
+
+import eu.e43.impeller.uikit.ImageLoader;
 import eu.e43.impeller.account.Authenticator;
 
 public abstract class ActivityWithAccount extends Activity {
 	public static final int LOGIN_REQUEST_CODE = 65536;
 	private static final String TAG = "ActivityWithAccount";
-	protected AccountManager 	m_accountManager 	= null;
-	protected Account           m_account           = null;
-	private ImageLoader			m_imageLoader		= null;
+	public    AccountManager 	m_accountManager 	= null;
+	public    Account           m_account           = null;
+	private ImageLoader m_imageLoader		= null;
 
 	public ActivityWithAccount() {
 		super();
@@ -109,7 +110,7 @@ public abstract class ActivityWithAccount extends Activity {
     protected void gotAccount(Account a, Bundle savedInstanceState) { gotAccount(a); }
 	protected void gotAccount(Account a) {}
 	
-	protected ImageLoader getImageLoader() {
+	public ImageLoader getImageLoader() {
 		if(m_imageLoader == null) {
 			m_imageLoader = new ImageLoader(this, m_account);
 		}

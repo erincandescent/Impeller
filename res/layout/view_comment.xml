@@ -9,7 +9,7 @@
 
     <!-- TODO: Update blank fragment layout -->
 
-    <eu.e43.impeller.AvatarView
+    <eu.e43.impeller.uikit.AvatarView
         android:id="@+id/commentAuthorAvatar"
         android:layout_width="48dp"
         android:layout_height="48dp"
