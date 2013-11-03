@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,8 +23,11 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.util.LruCache;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
+
+import com.google.common.collect.MapMaker;
 
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
@@ -62,40 +66,7 @@ public class ImageLoader {
         }
 	}
 	
-	public void load(Listener l, URI uri) {
-        if(uri == null) {
-            l.error(null);
-            return;
-        }
-
-		BitmapDrawable dw = ms_images.get(uri);
-		if(dw != null) {
-			l.loaded(dw,  uri);
-            return;
-        }
-		
-		FetchTask task = ms_tasks.get(uri);
-		if(task == null) {
-			task = new FetchTask();
-			ms_tasks.put(uri,  task);
-			task.m_listeners.add(l);
-            task.executeOnExecutor(ms_threadpool, uri);
-		} else {
-			task.m_listeners.add(l);
-		}
-	}
-	
-	public void load(Listener l, String uri) {
-		try {
-			if(uri != null) {
-				load(l, new URI(uri));
-			} else {
-				l.error(null);
-			}
-		} catch (Exception e) {
-			l.error(null);
-		}
-	}
+	// Utility Functions
 	
 	public void setImage(final ImageView view, URI uri) {
 		view.setImageDrawable(m_ctx.getResources().getDrawable(R.drawable.ic_image_loading));
@@ -176,16 +147,51 @@ public class ImageLoader {
             return null;
         }
 	}
-	
-	static LruCache<URI, BitmapDrawable> ms_images = new LruCache<URI, BitmapDrawable>(10 * 1024 * 1024) {
-		@Override
-		protected int sizeOf(URI key, BitmapDrawable value) { 
-			Bitmap bmp = value.getBitmap();
-			if(bmp != null) return bmp.getByteCount();
-			return 0;
-		}
-	};
-	
+
+    // Raw image loading
+
+    public void load(Listener l, URI uri) {
+        if(uri == null) {
+            l.error(null);
+            return;
+        }
+
+        BitmapDrawable dw = ms_images.get(uri);
+        if(dw != null) {
+            l.loaded(dw,  uri);
+            return;
+        }
+
+        dw = ms_weakImages.get(uri);
+        if(dw != null) {
+            ms_images.put(uri, dw);
+            l.loaded(dw, uri);
+            return;
+        }
+
+        FetchTask task = ms_tasks.get(uri);
+        if(task == null) {
+            task = new FetchTask();
+            ms_tasks.put(uri,  task);
+            task.m_listeners.add(l);
+            task.executeOnExecutor(ms_threadpool, uri);
+        } else {
+            task.m_listeners.add(l);
+        }
+    }
+
+    public void load(Listener l, String uri) {
+        try {
+            if(uri != null) {
+                load(l, new URI(uri));
+            } else {
+                l.error(null);
+            }
+        } catch (Exception e) {
+            l.error(null);
+        }
+    }
+
 	class FetchTask extends AsyncTask<Object, Void, BitmapDrawable> {
 		private URI 			   m_uri;
 		public ArrayList<Listener> m_listeners = new ArrayList<Listener>();
@@ -263,4 +269,31 @@ public class ImageLoader {
 		}
 		
 	};
+
+    static final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+    static final int cacheSize = maxMemory / 8;
+    static final ConcurrentMap<URI, BitmapDrawable> ms_weakImages = new MapMaker()
+        .weakValues()
+        .makeMap();
+
+    static final LruCache<URI, BitmapDrawable> ms_images = new LruCache<URI, BitmapDrawable>(cacheSize) {
+        @Override
+        protected int sizeOf(URI key, BitmapDrawable value) {
+            Bitmap bmp = value.getBitmap();
+            if(bmp != null) return bmp.getByteCount() / 1024;
+            return 0;
+        }
+
+        @Override
+        protected void entryRemoved(boolean evicted,
+                                    URI key,
+                                    BitmapDrawable oldValue,
+                                    BitmapDrawable newValue) {
+            if(evicted) {
+                ms_weakImages.put(key, oldValue);
+            } else {
+                ms_weakImages.put(key, newValue);
+            }
+        }
+    };
 }

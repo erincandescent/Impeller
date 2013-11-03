@@ -41,6 +41,9 @@ dependencies {
     // Signpost OAuth
     compile 'oauth.signpost:signpost-core:1.2'
 
+    // Guava
+    compile 'com.google.guava:guava:14.0.1'
+
     // JIRA Mobile Connect
     compile project(':jiraconnect-android-main')
 }
