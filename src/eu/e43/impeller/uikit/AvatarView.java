@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -28,6 +29,7 @@ public class AvatarView extends View {
     private Matrix m_shaderMatrix;
     private RectF m_srcRect;
     private RectF m_destRect;
+    private boolean m_drawCircle;
 
     public AvatarView(Context context) {
         super(context);
@@ -58,6 +60,8 @@ public class AvatarView extends View {
             bmp = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.noavatar);
         }
 
+        m_drawCircle = (Color.alpha(bmp.getPixel(0, 0)) != 0);
+
         m_avatar = bmp;
         m_paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         m_shader = new BitmapShader(m_avatar, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
@@ -72,9 +76,13 @@ public class AvatarView extends View {
         m_shaderMatrix.setRectToRect(m_destRect, m_srcRect, Matrix.ScaleToFit.CENTER);
         m_shader.setLocalMatrix(m_shaderMatrix);
 
-        final float halfWidth = canvas.getWidth() / 2;
-        final float halfHeight = canvas.getHeight() / 2;
-        final float radius = Math.max(halfWidth, halfHeight);
-        canvas.drawCircle(halfWidth, halfHeight, radius, m_paint);
+        if(m_drawCircle) {
+            final float halfWidth = canvas.getWidth() / 2;
+            final float halfHeight = canvas.getHeight() / 2;
+            final float radius = Math.max(halfWidth, halfHeight);
+            canvas.drawCircle(halfWidth, halfHeight, radius, m_paint);
+        } else {
+            canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), m_paint);
+        }
     }
 }
