@@ -411,6 +411,12 @@ public class PostActivity extends ActivityWithAccount {
 
 			if(obj != null) {
                 Toast.makeText(PostActivity.this, "Posted", Toast.LENGTH_SHORT);
+
+                ContentValues cv = new ContentValues();
+                cv.put("_json", obj.toString());
+                getContentResolver().insert(Uri.parse(PumpContentProvider.OBJECT_URL), cv);
+                getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+
 				setResult(RESULT_OK);
 				finish();
 			} else {
