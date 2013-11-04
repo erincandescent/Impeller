@@ -3,4 +3,5 @@
     <string name="icon_thumbs_up"></string>
     <string name="icon_share"></string>
     <string name="icon_comments"></string>
+    <string name="icon_globe">&#xf0ac;</string>
 </resources>

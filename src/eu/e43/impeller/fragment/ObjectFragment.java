@@ -46,6 +46,7 @@ import eu.e43.impeller.activity.MainActivity;
 import eu.e43.impeller.content.ContentUpdateReceiver;
 import eu.e43.impeller.content.PumpContentProvider;
 import eu.e43.impeller.activity.ActivityWithAccount;
+import eu.e43.impeller.uikit.LocationView;
 
 public class ObjectFragment extends ListFragment implements View.OnClickListener {
 	private static final String TAG = "ObjectFragment";
@@ -58,11 +59,6 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 
     public MainActivity getMainActivity() {
         return (MainActivity) getActivity();
-    }
-
-    private int toDIP(int dip) {
-        final float density = getResources().getDisplayMetrics().density;
-        return (int) (density * dip + 0.5f);
     }
 
     private ImageLoader getImageLoader() {
@@ -93,7 +89,7 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.object_fragment, null);
+        return inflater.inflate(R.layout.fragment_object, null);
     }
 
     @Override
@@ -101,11 +97,8 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         ListView lv = getListView();
         LayoutInflater inflater = LayoutInflater.from(getActivity());
 
-        LinearLayout header   = (LinearLayout) inflater.inflate(R.layout.object_header, null);
-        RelativeLayout footer = (RelativeLayout) inflater.inflate(R.layout.object_reply, null);
-        int height = toDIP(80);
-
-        //header.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, height));
+        ViewGroup header = (ViewGroup) inflater.inflate(R.layout.view_object_header, null);
+        ViewGroup footer = (ViewGroup) inflater.inflate(R.layout.view_object_reply, null);
 
         lv.addHeaderView(header);
         lv.addFooterView(footer);
@@ -179,6 +172,13 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         wv.loadDataWithBaseURL(url, data, "text/html", "utf-8", null);
         wv.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
         lv.addHeaderView(wv);
+        if(m_object.has("location")) {
+            JSONObject location = m_object.optJSONObject("location");
+            if(location != null) {
+                LocationView locView = new LocationView(getMainActivity(), location);
+                lv.addHeaderView(locView);
+            }
+        }
 
         m_commentAdapter = new CommentAdapter(this, 0, uri.toString());
         setListAdapter(m_commentAdapter);

@@ -134,6 +134,39 @@ public class ImageLoader {
         setImage(view, uri);
     }
 
+    public void setBackground(final View view, URI uri) {
+        ms_viewUris.put(view,  uri);
+        load(new Listener() {
+            @Override
+            public void loaded(BitmapDrawable dr, URI uri) {
+                URI viewUri = ms_viewUris.get(view);
+                if (viewUri != null && uri != null && uri.equals(viewUri)) {
+                    dr.setGravity(Gravity.CENTER | Gravity.FILL);
+                    view.setBackgroundDrawable(dr);
+                    ms_viewUris.remove(uri);
+                }
+            }
+
+            @Override
+            public void error(URI uri) {
+                URI viewUri = ms_viewUris.get(view);
+                if (viewUri != null && uri != null && uri.equals(viewUri)) {
+                    ms_viewUris.remove(uri);
+                }
+            }
+        }, uri);
+    }
+
+    public void setBackground(final View view, String imageUrl) {
+        URI uri;
+        try {
+            uri = new URI(imageUrl);
+        } catch(Exception e) {
+            uri = null;
+        }
+        setBackground(view, uri);
+    }
+
 	public Drawable getCachedImage(URI uri) {
 		return ms_images.get(uri);
 	}
