@@ -22,4 +22,6 @@
     <item name="android:fastScrollThumbDrawable">@drawable/fastscroll_thumb_holo</item>
   </style>
 
+  <style name="AppDialogTheme" parent="android:Theme.Holo.Light.Dialog"/>
+
 </resources>
