@@ -161,17 +161,23 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 
         if(image != null) {
             ImageView iv = new ImageView(getActivity());
+            iv.setBackgroundResource(R.drawable.card_middle_bg);
             iv.setAdjustViewBounds(true);
             getImageLoader().setImage(iv, Utils.getImageUrl(image));
             lv.addHeaderView(iv);
         }
 
-        WebView wv = new WebView(getActivity());
-        String url  = m_object.optString("url", "about:blank");
-        String data = m_object.optString("content", "No content");
-        wv.loadDataWithBaseURL(url, data, "text/html", "utf-8", null);
-        wv.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
-        lv.addHeaderView(wv);
+        if(m_object.has("content")) {
+            ViewGroup contentViews = (ViewGroup) inflater.inflate(R.layout.view_object_content, null);
+            WebView wv = (WebView) contentViews.findViewById(R.id.webView);
+
+            String url  = m_object.optString("url", "about:blank");
+            String data = m_object.optString("content", "No content");
+            wv.loadDataWithBaseURL(url, data, "text/html", "utf-8", null);
+            wv.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
+            lv.addHeaderView(contentViews);
+        }
+
         if(m_object.has("location")) {
             JSONObject location = m_object.optJSONObject("location");
             if(location != null) {

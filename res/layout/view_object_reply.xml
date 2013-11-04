@@ -2,25 +2,34 @@
 
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/card_bg">
+    android:background="@drawable/card_bottom_bg">
 
     <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
-            android:ems="10"
+        android:ems="10"
             android:id="@+id/replyText"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_toLeftOf="@+id/replyButton"/>
+        android:gravity="fill_horizontal|bottom|left|right|top"
+        android:hint="@string/hint_comment"
+        android:background="@android:color/transparent"
+        android:layout_gravity="bottom|left|top"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/replyButton"
+        android:layout_alignParentLeft="true"
+        android:minLines="2"
+        android:textAlignment="textStart" />
 
     <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/action_reply"
             android:id="@+id/replyButton"
-            android:layout_alignBottom="@+id/replyText"
-            android:layout_alignParentRight="true"/>
+        android:minHeight="24dp"
+        android:gravity="right"
+        android:layout_gravity="right"
+        android:layout_alignParentBottom="false"
+        android:layout_alignParentRight="true"
+        android:layout_alignBottom="@+id/replyText" />
 </RelativeLayout>

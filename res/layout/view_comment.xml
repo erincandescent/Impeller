@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="4dp"
-    tools:context=".CommentFragment" >
+    tools:context=".CommentFragment"
+    android:background="@drawable/card_middle_bg">
 
     <!-- TODO: Update blank fragment layout -->
 
@@ -45,7 +46,7 @@
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <include
-            layout="@layout/statebar"
+            layout="@layout/view_statebar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/commentMeta"
