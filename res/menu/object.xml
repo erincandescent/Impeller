@@ -6,4 +6,12 @@
             android:enabled="true"
             android:visible="true"
             android:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_replyImage"
+        android:menuCategory="container"
+        android:title="@string/action_replyImage"
+        android:enabled="true"
+        android:visible="true"
+        android:showAsAction="ifRoom"/>
 </menu>

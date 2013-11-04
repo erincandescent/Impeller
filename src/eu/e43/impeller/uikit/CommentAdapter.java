@@ -85,16 +85,26 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
         AvatarView authorAvatar = (AvatarView) v.findViewById(R.id.commentAuthorAvatar);
 		TextView  commentBody   = (TextView)   v.findViewById(R.id.commentBody);
 		TextView  commentMeta   = (TextView)   v.findViewById(R.id.commentMeta);
+        ImageView       image   = (ImageView)  v.findViewById(R.id.image);
 		
 		JSONObject author = comment.optJSONObject("author");
 		if(author != null) {
-			JSONObject image = author.optJSONObject("image");
-			if(image != null)
-				activity.getImageLoader().setImage(authorAvatar, Utils.getImageUrl(image));
-			commentMeta.setText("By " + author.optString("displayName") + " at " +
+			JSONObject imageObj = author.optJSONObject("image");
+			if(imageObj != null)
+				activity.getImageLoader().setImage(authorAvatar, Utils.getImageUrl(imageObj));
+
+            commentMeta.setText("By " + author.optString("displayName") + " at " +
                     Utils.humanDate(comment.optString("published")));
 		}
-		
+
+        JSONObject imageObj = comment.optJSONObject("image");
+        if(imageObj != null) {
+            image.setVisibility(View.VISIBLE);
+            activity.getImageLoader().setImage(image, Utils.getImageUrl(imageObj));
+        } else {
+            image.setVisibility(View.GONE);
+        }
+
         Utils.updateStatebar(v, m_cursor.getInt(1), m_cursor.getInt(2), m_cursor.getInt(3));
 		PumpHtml.setFromHtml(activity, commentBody, comment.optString("content"));
 		
@@ -114,11 +124,13 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         data.setNotificationUri(m_ctx.getActivity().getContentResolver(), Uri.parse(PumpContentProvider.OBJECT_URL));
+        notifyDataSetChanged();
         m_cursor = data;
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        notifyDataSetInvalidated();
         m_cursor = null;
     }
 }

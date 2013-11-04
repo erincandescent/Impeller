@@ -35,6 +35,16 @@
             android:text="Medium Text"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/image"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/picture_bg"
+            android:src="@drawable/noavatar"
+            android:visibility="gone"
+            android:maxHeight="64dp" />
+
         <TextView
             android:id="@+id/commentMeta"
             android:layout_width="wrap_content"

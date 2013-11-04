@@ -51,6 +51,8 @@ import eu.e43.impeller.uikit.LocationView;
 public class ObjectFragment extends ListFragment implements View.OnClickListener {
 	private static final String TAG = "ObjectFragment";
 	public static final String ACTION = "eu.e43.impeller.SHOW_OBJECT";
+    private static final int ACTIVITY_SELECT_REPLY_PHOTO = 100;
+    private static final int ACTIVITY_REPLY_POSTED       = 101;
     private Context             m_appContext;
     private Account             m_account;
 	private JSONObject			m_object;
@@ -220,12 +222,40 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 			case R.id.action_like:
 				new DoLike(m_object);
 				return true;
-				
+
+            case R.id.action_replyImage:
+                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                photoPickerIntent.setType("image/*");
+                startActivityForResult(photoPickerIntent, ACTIVITY_SELECT_REPLY_PHOTO);
+
 			default:
 				return super.onOptionsItemSelected(item);
 		}
 	}
-	
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case ACTIVITY_SELECT_REPLY_PHOTO:
+                if(resultCode == Activity.RESULT_OK){
+                    Uri selectedImage = data.getData();
+                    Intent postIntent = new Intent(getActivity(), PostActivity.class);
+                    postIntent.setAction(PostActivity.ACTION_REPLY);
+                    postIntent.setType("image/*");
+                    postIntent.putExtra(Intent.EXTRA_STREAM, selectedImage);
+                    postIntent.putExtra("account", m_account);
+                    postIntent.putExtra("inReplyTo", m_object.toString());
+                    startActivity(postIntent);
+                }
+                return;
+
+            case ACTIVITY_REPLY_POSTED:
+                break;
+
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
 	// At present context menus are only shown for comments
 	
 	@Override
@@ -276,19 +306,6 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 		
 		default:
 			return super.onContextItemSelected(item);
-		}
-	}
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        /* Will come back later - "rich comments" */
-		if(requestCode == 0) {
-			// Post comment
-			if(resultCode == Activity.RESULT_OK) {
-                // Add it!
-			}
-		} else {
-			super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
 
