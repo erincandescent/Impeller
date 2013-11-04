@@ -30,8 +30,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import eu.e43.impeller.AvatarView;
-import eu.e43.impeller.PumpHtml;
+import java.util.HashMap;
+
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
 import eu.e43.impeller.activity.ActivityWithAccount;
@@ -41,12 +41,16 @@ public class ActivityAdapter extends BaseAdapter {
 	
     Cursor                      m_cursor;
 	ActivityWithAccount m_ctx;
-    LruCache<String, Integer>   m_objectPositions;
+
+    HashMap<String, Integer>    m_objectPositions;
+    int m_lastScannedObjectPosition;
+
+    LruCache<Integer, JSONObject> m_objects = new LruCache<Integer, JSONObject>(20);
 
 	public ActivityAdapter(ActivityWithAccount ctx) {
 		m_cursor = null;
 		m_ctx  = ctx;
-        m_objectPositions = new LruCache<String, Integer>(20);
+        m_objectPositions = new HashMap<String, Integer>();
 	}
 
     public int findItemById(String id) {
@@ -54,11 +58,15 @@ public class ActivityAdapter extends BaseAdapter {
         if(pos == null) {
             if(m_cursor == null) return -1;
 
-            if(!m_cursor.moveToFirst()) return -1;
+            if(!m_cursor.moveToPosition(m_lastScannedObjectPosition)) return -1;
             do {
                 String objId = m_cursor.getString(1);
-                if(id.equals(objId))
-                    return m_cursor.getPosition();
+                pos = m_cursor.getPosition();
+                m_objectPositions.put(id, pos);
+                if(id.equals(objId)) {
+                    m_lastScannedObjectPosition = pos;
+                    return pos;
+                }
             } while(m_cursor.moveToNext());
             return -1;
         } else return pos;
@@ -97,8 +105,10 @@ public class ActivityAdapter extends BaseAdapter {
     public void updateCursor(Cursor c) {
         if(m_cursor != null && m_cursor != c) m_cursor.close();
         m_cursor = c;
+        m_objects.evictAll();
+        m_lastScannedObjectPosition = 0;
+        m_objectPositions.clear();
         notifyDataSetChanged();
-        m_objectPositions.evictAll();
     }
 	
 	public void close() {
@@ -117,24 +127,31 @@ public class ActivityAdapter extends BaseAdapter {
 
 	@Override
 	public Object getItem(int position) {
-        try {
-		    m_cursor.moveToPosition(position);
-            JSONObject act = new JSONObject(m_cursor.getString(0));
-            JSONObject obj = act.optJSONObject("object");
-            if(obj != null) {
-                String id = obj.optString("id");
-                if(id != null) {
-                    m_objectPositions.put(id, position);
-                }
-            }
-
-            act.put("_replies", m_cursor.getInt(1));
-            act.put("_likes",   m_cursor.getInt(2));
-            act.put("_shares",  m_cursor.getInt(3));
-
+        JSONObject act = m_objects.get(position);
+        if(act != null) {
             return act;
-        } catch(JSONException e) {
-            throw new RuntimeException(e);
+        } else {
+            try {
+                m_cursor.moveToPosition(position);
+                act = new JSONObject(m_cursor.getString(0));
+                JSONObject obj = act.optJSONObject("object");
+                if(obj != null) {
+                    String id = obj.optString("id");
+                    if(id != null) {
+                        m_objectPositions.put(id, position);
+                    }
+                }
+
+                act.put("_replies", m_cursor.getInt(1));
+                act.put("_likes",   m_cursor.getInt(2));
+                act.put("_shares",  m_cursor.getInt(3));
+
+                m_objects.put(position, act);
+                m_objectPositions.put(m_cursor.getString(1), position);
+                return act;
+            } catch(JSONException e) {
+                throw new RuntimeException(e);
+            }
         }
 	}
 
