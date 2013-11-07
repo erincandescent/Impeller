@@ -10,6 +10,7 @@ import android.accounts.Account;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,6 +19,7 @@ import android.location.Address;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.text.Html;
 import android.text.Spanned;
@@ -39,6 +41,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.LocationServices;
 import eu.e43.impeller.PostTask;
 import eu.e43.impeller.content.PumpContentProvider;
@@ -136,8 +139,14 @@ public class PostActivity extends ActivityWithAccount {
             }
         }
 
-        m_locations = new LocationAdapter(this);
-        m_location.setAdapter(m_locations);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if(Integer.parseInt(prefs.getString(Constants.PREF_MY_LOCATION, "0"))
+                >= Constants.MY_LOCATION_FETCH) {
+            m_locations = new LocationAdapter(this, m_location);
+            m_location.setAdapter(m_locations);
+        } else {
+            findViewById(R.id.location_container).setVisibility(View.GONE);
+        }
 	}
 
     @Override

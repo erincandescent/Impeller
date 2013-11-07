@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.content.PumpContentProvider;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
@@ -34,8 +35,11 @@ import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -241,8 +245,15 @@ public class LoginActivity extends AccountAuthenticatorActivity implements OnCli
 				Account account = new Account(tokenInfo.getString("username") + "@" + tokenInfo.getString("host"), Authenticator.ACCOUNT_TYPE);
 				m_accountManager.addAccountExplicitly(account, "(Ignored)", tokenInfo);
 
-                getContentResolver().setSyncAutomatically(
-                        account, PumpContentProvider.AUTHORITY, true);
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+                long frequency =
+                        Long.parseLong(prefs.getString(Constants.PREF_SYNC_FREQUENCY, "30")) * 60;
+                if(frequency > 0) {
+                    getContentResolver().addPeriodicSync(account, PumpContentProvider.AUTHORITY,
+                            null, frequency);
+                    getContentResolver().addPeriodicSync(account, ContactsContract.AUTHORITY,
+                            null, frequency);
+                }
 			
 				final Intent i = new Intent();
 				i.putExtra(AccountManager.KEY_ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE);

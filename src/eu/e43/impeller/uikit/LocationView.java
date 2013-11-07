@@ -2,8 +2,10 @@ package eu.e43.impeller.uikit;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,8 +23,10 @@ import org.json.JSONObject;
 import java.util.Formatter;
 import java.util.Locale;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.ImpellerApplication;
 import eu.e43.impeller.R;
+import eu.e43.impeller.Utils;
 import eu.e43.impeller.activity.ActivityWithAccount;
 
 /**
@@ -35,26 +39,23 @@ public class LocationView extends FrameLayout implements View.OnClickListener {
     private static final Uri GEO_BASE = Uri.parse("geo:");
     private ActivityWithAccount m_activity;
 
+    private SharedPreferences m_prefs;
     private JSONObject   m_addr;
     private FrameLayout  m_mapDisplay;
     private LinearLayout m_locationOverlay;
     private TextView     m_globe;
     private TextView     m_placeName;
 
-    private int dip(int dip) {
-        final float density = getResources().getDisplayMetrics().density;
-        return (int) (density * dip + 0.5f);
-    }
-
     public LocationView(ActivityWithAccount context, JSONObject addr) {
         super(context);
         m_activity = context;
         m_addr = addr;
+        m_prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         LayoutInflater.from(context).inflate(R.layout.view_location, this);
-        setLayoutParams(new ListView.LayoutParams(LayoutParams.MATCH_PARENT, dip(64)));
+        setLayoutParams(new ListView.LayoutParams(LayoutParams.MATCH_PARENT, Utils.dip(m_activity, 64)));
         setBackgroundResource(R.drawable.card_middle_bg);
-        setPadding(0, 0, dip(1), 0);
+        setPadding(0, 0, Utils.dip(m_activity, 1), 0);
 
         m_mapDisplay        = (FrameLayout)     findViewById(R.id.map_display);
         m_globe             = (TextView)        findViewById(R.id.location_globe_icon);
@@ -86,16 +87,18 @@ public class LocationView extends FrameLayout implements View.OnClickListener {
 
         if(oldh != h && w != oldw) {
             try {
-                JSONObject pos = m_addr.getJSONObject("position");
-                double longitude = pos.getDouble("longitude");
-                double latitude  = pos.getDouble("latitude");
+                if(m_prefs.getBoolean(Constants.PREF_LOCATION_MAPS, true)) {
+                    JSONObject pos = m_addr.getJSONObject("position");
+                    double longitude = pos.getDouble("longitude");
+                    double latitude  = pos.getDouble("latitude");
 
-                String url = String.format(Locale.ENGLISH, IMAGE_URL_FORMAT,
-                        latitude, longitude, w, h);
+                    String url = String.format(Locale.ENGLISH, IMAGE_URL_FORMAT,
+                            latitude, longitude, w, h);
 
-                Log.i(TAG, "Image URL is " + url);
+                    Log.i(TAG, "Image URL is " + url);
 
-                m_activity.getImageLoader().setBackground(m_mapDisplay, url);
+                    m_activity.getImageLoader().setBackground(m_mapDisplay, url);
+                }
             } catch (JSONException e) {
                 Log.w(TAG, "Error getting location information");
             }

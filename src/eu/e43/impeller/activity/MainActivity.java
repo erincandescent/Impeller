@@ -23,6 +23,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,6 +43,8 @@ public class MainActivity extends ActivityWithAccount {
 
 	@Override
 	protected void onCreateEx(Bundle savedInstanceState) {
+        PreferenceManager.setDefaultValues(this, R.xml.pref_general,   false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
         setContentView(R.layout.activity_main);
 
         m_twoPane = "two_pane".equals(findViewById(R.id.main_activity).getTag());

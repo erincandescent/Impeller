@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 
 import org.json.JSONObject;
 
+import eu.e43.impeller.activity.SettingsActivity;
 import eu.e43.impeller.uikit.ActivityAdapter;
 import eu.e43.impeller.R;
 import eu.e43.impeller.activity.MainActivity;
@@ -197,6 +198,10 @@ public class FeedFragment
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                 photoPickerIntent.setType("image/*");
                 startActivityForResult(photoPickerIntent, ACTIVITY_SELECT_PHOTO);
+                return true;
+
+            case R.id.action_settings:
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
                 return true;
 
             default:

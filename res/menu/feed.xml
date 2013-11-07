@@ -20,4 +20,9 @@
             android:enabled="true"
             android:visible="true"
             android:showAsAction="never"/>
+
+    <item   android:id="@+id/action_settings"
+            android:menuCategory="container"
+            android:title="Settings"
+            android:showAsAction="never"/>
 </menu>
