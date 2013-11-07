@@ -165,6 +165,7 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
             ImageView iv = new ImageView(getActivity());
             iv.setBackgroundResource(R.drawable.card_middle_bg);
             iv.setAdjustViewBounds(true);
+            iv.setMaxHeight(Utils.dip(getActivity(), 256));
             getImageLoader().setImage(iv, Utils.getImageUrl(image));
             lv.addHeaderView(iv);
         }

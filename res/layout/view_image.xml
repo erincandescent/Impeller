@@ -26,7 +26,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_launcher"
-            android:adjustViewBounds="true" />
+            android:adjustViewBounds="true"
+            android:layout_gravity="center"
+            android:maxHeight="128dp"
+            android:maxWidth="128dp"
+            android:background="@drawable/picture_bg" />
 
         <include layout="@layout/view_statebar"
             android:layout_margin="8dp" />

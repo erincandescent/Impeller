@@ -237,4 +237,10 @@ public class Utils {
     public static String humanDate(String isoDate) {
         return humanDate(parseDate(isoDate));
     }
+
+    public static int dip(Context ctx, int dip) {
+        final float density = ctx.getResources().getDisplayMetrics().density;
+        return (int) (density * dip + 0.5f);
+    }
+
 }
