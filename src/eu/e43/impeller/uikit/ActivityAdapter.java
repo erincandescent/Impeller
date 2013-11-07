@@ -165,7 +165,7 @@ public class ActivityAdapter extends BaseAdapter {
 	@Override
 	public int getViewTypeCount()
 	{
-		return 3;
+		return 2;
 	}
 	
 	@Override
@@ -181,10 +181,8 @@ public class ActivityAdapter extends BaseAdapter {
 			return 0;
 		} else if("image".equals(obj.optString("objectType"))) {
 			return 2;
-		} else if("note".equals(obj.optString("objectType"))) {
+		} else { //if("note".equals(obj.optString("objectType"))) {
 			return 1;
-		} else {
-			return 0;
 		}
 	}
 	
@@ -194,19 +192,8 @@ public class ActivityAdapter extends BaseAdapter {
 	    int type = getItemViewType(json);
 
 	    switch(type) {
-	    case 0:
-	    	// Simple activity
-	    	if(v == null) {
-	    		LayoutInflater vi = LayoutInflater.from(m_ctx);
-	    		v = new Wrapper(vi.inflate(android.R.layout.simple_list_item_1, null));
-	    	}
-	    	
-	    	TextView text = (TextView) v.findViewById(android.R.id.text1);
-	    	text.setText(Html.fromHtml(json.optJSONObject("object").optString("content", "(Item with missing summary)")));
-	    	break;
-	    	
 	    case 1:
-	    	// Note
+	    	// General case
 		    if (v == null) {
 		        LayoutInflater vi = LayoutInflater.from(m_ctx);
 		        v = new Wrapper(vi.inflate(R.layout.post_view, null));
