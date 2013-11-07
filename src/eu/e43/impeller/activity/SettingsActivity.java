@@ -72,7 +72,7 @@ public class SettingsActivity extends PreferenceActivity {
         // their values. When their values change, their summaries are updated
         // to reflect the new value, per the Android Design guidelines.
         bindPreferenceSummaryToValue(findPreference("my_location"));
-        bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+        bindPreferenceToListener(findPreference("sync_frequency"), sSyncFrequencyListener);
     }
 
     /**
@@ -109,16 +109,17 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             ContentResolver res = preference.getContext().getContentResolver();
-            Integer newValInt = (Integer) newValue;
+            Integer newValInt = Integer.parseInt(newValue.toString());
 
             AccountManager mgr = AccountManager.get(preference.getContext());
             for(Account acct : mgr.getAccountsByType(Authenticator.ACCOUNT_TYPE)) {
+                Bundle empty = new Bundle();
                 if(newValInt > 0) {
-                    res.addPeriodicSync(acct, PumpContentProvider.AUTHORITY, null, 60 * newValInt);
-                    res.addPeriodicSync(acct, ContactsContract.AUTHORITY, null, 60 * newValInt);
+                    res.addPeriodicSync(acct, PumpContentProvider.AUTHORITY, empty, 60 * newValInt);
+                    res.addPeriodicSync(acct, ContactsContract.AUTHORITY, empty, 60 * newValInt);
                 } else {
-                    res.removePeriodicSync(acct, PumpContentProvider.AUTHORITY, null);
-                    res.removePeriodicSync(acct, ContactsContract.AUTHORITY, null);
+                    res.removePeriodicSync(acct, PumpContentProvider.AUTHORITY, empty);
+                    res.removePeriodicSync(acct, ContactsContract.AUTHORITY, empty);
                 }
             }
 
@@ -136,12 +137,16 @@ public class SettingsActivity extends PreferenceActivity {
      * @see #sBindPreferenceSummaryToValueListener
      */
     private static void bindPreferenceSummaryToValue(Preference preference) {
+        bindPreferenceToListener(preference, sBindPreferenceSummaryToValueListener);
+    }
+
+    private static void bindPreferenceToListener(Preference preference, Preference.OnPreferenceChangeListener listener) {
         // Set the listener to watch for value changes.
-        preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
+        preference.setOnPreferenceChangeListener(listener);
 
         // Trigger the listener immediately with the preference's
         // current value.
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+        listener.onPreferenceChange(preference,
                 PreferenceManager
                         .getDefaultSharedPreferences(preference.getContext())
                         .getString(preference.getKey(), ""));

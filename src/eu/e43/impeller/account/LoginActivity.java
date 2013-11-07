@@ -249,10 +249,13 @@ public class LoginActivity extends AccountAuthenticatorActivity implements OnCli
                 long frequency =
                         Long.parseLong(prefs.getString(Constants.PREF_SYNC_FREQUENCY, "30")) * 60;
                 if(frequency > 0) {
+                    Bundle empty = new Bundle();
+                    getContentResolver().setSyncAutomatically(account, PumpContentProvider.AUTHORITY, true);
+                    getContentResolver().setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
                     getContentResolver().addPeriodicSync(account, PumpContentProvider.AUTHORITY,
-                            null, frequency);
+                            empty, frequency);
                     getContentResolver().addPeriodicSync(account, ContactsContract.AUTHORITY,
-                            null, frequency);
+                            empty, frequency);
                 }
 			
 				final Intent i = new Intent();
