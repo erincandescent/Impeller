@@ -178,11 +178,11 @@ public class ActivityAdapter extends BaseAdapter {
 	public int getItemViewType(JSONObject act) {
 		JSONObject obj = act.optJSONObject("object");
 		if(obj == null) {
-			return 0;
-		} else if("image".equals(obj.optString("objectType"))) {
-			return 2;
-		} else { //if("note".equals(obj.optString("objectType"))) {
 			return 1;
+		} else if("image".equals(obj.optString("objectType"))) {
+			return 1;
+		} else { //if("note".equals(obj.optString("objectType"))) {
+			return 0;
 		}
 	}
 	
@@ -192,7 +192,7 @@ public class ActivityAdapter extends BaseAdapter {
 	    int type = getItemViewType(json);
 
 	    switch(type) {
-	    case 1:
+	    case 0:
 	    	// General case
 		    if (v == null) {
 		        LayoutInflater vi = LayoutInflater.from(m_ctx);
@@ -228,7 +228,7 @@ public class ActivityAdapter extends BaseAdapter {
 			}
 		    break;
 		    
-	    case 2:
+	    case 1:
 	    	// Image
 	    	if(v == null) {
 	    		LayoutInflater vi = LayoutInflater.from(m_ctx);
@@ -247,12 +247,10 @@ public class ActivityAdapter extends BaseAdapter {
 	    	break;
 	    }
 
-        if(type == 1 || type == 2) {
-            int replies = json.optInt("_replies");
-            int likes   = json.optInt("_likes");
-            int shares  = json.optInt("_shares");
-            Utils.updateStatebar(v, replies, likes, shares);
-        }
+        int replies = json.optInt("_replies");
+        int likes   = json.optInt("_likes");
+        int shares  = json.optInt("_shares");
+        Utils.updateStatebar(v, replies, likes, shares);
 		
 		return v;
 	}
