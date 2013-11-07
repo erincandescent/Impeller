@@ -18,16 +18,18 @@
             android:layout_marginRight="8dp"
             android:orientation="vertical">
             <eu.e43.impeller.uikit.AvatarView
-                android:id="@+id/actorAvatar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/ic_launcher" />
+                    android:id="@+id/actorAvatar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/noavatar" />
+
             <eu.e43.impeller.uikit.AvatarView
                     android:id="@+id/authorAvatar"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:visibility="gone"
-                android:layout_marginTop="4dp" />
+                    android:src="@drawable/noavatar"
+                    android:layout_marginTop="8dp" />
         </LinearLayout>
 
         <LinearLayout
