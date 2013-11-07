@@ -13,5 +13,5 @@
         android:title="@string/action_replyImage"
         android:enabled="true"
         android:visible="true"
-        android:showAsAction="ifRoom"/>
+        android:showAsAction="never"/>
 </menu>
