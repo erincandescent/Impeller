@@ -1,6 +1,5 @@
-<FrameLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:padding="8dp">
@@ -9,7 +8,31 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@drawable/card_bg">
+        android:background="@drawable/card_bg"
+        android:showDividers="middle"
+        android:divider="?android:dividerVertical"
+        android:clickable="false"
+        android:padding="0dp">
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/title"
+            android:autoText="false"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:textAppearanceLarge"
+            android:capitalize="words"
+            android:hint="@string/hint_title"
+            android:padding="4dp"
+            android:layout_margin="4dp" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/image"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_image_loading"
+            android:visibility="gone" />
 
         <EditText
             android:id="@+id/content"
@@ -18,36 +41,25 @@
             android:ems="10"
             android:inputType="textMultiLine"
             android:background="@android:color/white"
-            android:hint="Message..."
+            android:hint="@string/hint_message"
             android:editable="true"
             android:padding="4dp"
             android:minLines="3"
-            android:textAlignment="viewStart" />
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dip"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
-            android:background="?android:attr/dividerVertical" />
+            android:gravity="top"
+            android:layout_margin="4dp" />
 
         <include
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            layout="@layout/view_post_location" />
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dip"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
-            android:background="?android:attr/dividerVertical" />
+            layout="@layout/view_post_location"
+            android:layout_margin="4dp" />
 
         <CheckBox
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/public_post"
-                android:id="@+id/isPublic"/>
+                android:id="@+id/isPublic"
+            android:layout_margin="4dp" />
 
     </LinearLayout>
-</FrameLayout>
+</ScrollView>

@@ -25,6 +25,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -78,6 +79,8 @@ public class PostActivity extends ActivityWithAccount {
 	protected void onCreateEx(Bundle _) {
         Intent intent = getIntent();
         String type = intent.getType();
+        setContentView(R.layout.activity_post);
+
         Log.v(TAG, "MIME Type is " + type);
         if(type == null || type.startsWith("text/")) {
             if(ACTION_REPLY.equals(intent.getAction())) {
@@ -98,40 +101,32 @@ public class PostActivity extends ActivityWithAccount {
             finish();
         }
 
-        switch(m_type) {
-            case TYPE_NOTE:
-            case TYPE_COMMENT:
-                setContentView(R.layout.activity_post);
-                break;
-
-            case TYPE_IMAGE:
-                setContentView(R.layout.activity_post_image);
-                m_title         = (EditText)  findViewById(R.id.title);
-                m_imageView     = (ImageView) findViewById(R.id.image);
-                SetupImageTask t = new SetupImageTask();
-                t.execute();
-
-                break;
-        }
-
+        m_title         = (EditText)  findViewById(R.id.title);
+        m_imageView     = (ImageView) findViewById(R.id.image);
         m_location      = (Spinner)   findViewById(R.id.location);
         m_content       = (EditText)  findViewById(R.id.content);
         m_isPublic      = (CheckBox)  findViewById(R.id.isPublic);
 
-        if(m_title != null && intent.hasExtra(Intent.EXTRA_SUBJECT)) {
+        if(m_type == TYPE_IMAGE) {
+            m_imageView.setVisibility(View.VISIBLE);
+            SetupImageTask t = new SetupImageTask();
+            t.execute();
+        }
+
+        if(intent.hasExtra(Intent.EXTRA_SUBJECT)) {
             m_title.setText(intent.getStringExtra(Intent.EXTRA_SUBJECT));
         }
 
-        if(m_content == null) {
-            // Pass
-        } else if(intent.hasExtra(EXTRA_HTML_TEXT)) {
+        if(intent.hasExtra(EXTRA_HTML_TEXT)) {
             PumpHtml.setFromHtml(this, m_content, intent.getStringExtra(EXTRA_HTML_TEXT));
         } else if(intent.hasExtra(Intent.EXTRA_TEXT)) {
             m_content.setText(intent.getCharSequenceExtra(Intent.EXTRA_TEXT));
         }
 
         if(ACTION_REPLY.equals(intent.getAction())) {
-            this.setTitle(R.string.title_activity_post_reply);
+            setTitle(R.string.title_activity_post_reply);
+            m_title.setVisibility(View.GONE);
+            m_title.setText("");
             try {
                 m_inReplyTo = new JSONObject(intent.getStringExtra("inReplyTo"));
             } catch (JSONException e) {
@@ -335,7 +330,7 @@ public class PostActivity extends ActivityWithAccount {
 				obj.put("inReplyTo", m_inReplyTo);
 			}
 
-            if(m_type == TYPE_IMAGE) {
+            if(m_title.getText().length() > 0) {
                 obj.put("displayName", m_title.getText().toString());
             }
 
