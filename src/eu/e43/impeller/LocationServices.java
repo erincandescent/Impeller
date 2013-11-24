@@ -1,6 +1,7 @@
 package eu.e43.impeller;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -11,7 +12,9 @@ import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -94,7 +97,15 @@ public class LocationServices implements LocationListener {
         }
 
         if(m_listeners.size() == 0) {
-            m_locationManager.requestSingleUpdate(m_criteria, this, m_looper);
+            try {
+                m_locationManager.requestSingleUpdate(m_criteria, this, m_looper);
+            } catch(RuntimeException e) {
+                Toast.makeText(m_context, "Your device firmware is non-conforming. Location services disabled.", 15);
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(m_context);
+                prefs.edit().putString(Constants.PREF_MY_LOCATION, "0").apply();
+                m_mainHandler.post(m_dispatchLocationUpdates);
+                return;
+            }
         }
 
         m_listeners.add(l);
