@@ -353,6 +353,16 @@ public class PostActivity extends ActivityWithAccount {
                 JSONArray to = new JSONArray();
                 to.put(thePublic);
                 act.put("to", to);
+            } else if(m_inReplyTo == null) {
+                // To work around Pump.io bug 885, explicitly send to followers if not a reply
+                JSONObject followers = new JSONObject();
+                String followersUri = Utils.getUserUri(this, m_account, "followers").toString();
+                followers.put("id", followersUri);
+                followers.put("url", followersUri);
+                followers.put("objectType", "collection");
+                JSONArray to = new JSONArray();
+                to.put(followers);
+                act.put("to", to);
             }
 
             String generator = Utils.readAll(getResources().openRawResource(R.raw.generator));
