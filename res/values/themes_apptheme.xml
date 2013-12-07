@@ -20,6 +20,8 @@
     <item name="android:listChoiceBackgroundIndicator">@drawable/list_selector_holo_light</item>
     <item name="android:activatedBackgroundIndicator">@drawable/activated_background_holo_light</item>
     <item name="android:fastScrollThumbDrawable">@drawable/fastscroll_thumb_holo</item>
+    <item name="android:actionBarTabStyle">@style/TabAppTheme</item>
+    <item name="android:actionBarTabTextStyle">@style/TabTextAppTheme</item>
   </style>
 
   <style name="AppDialogTheme" parent="android:Theme.Holo.Light.Dialog"/>

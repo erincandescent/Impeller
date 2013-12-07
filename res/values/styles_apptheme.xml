@@ -2,9 +2,13 @@
 
 <!-- Generated with http://android-holo-colors.com -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <color name="im_primary">#7F00FF</color>   <!-- 100% saturation (dark) -->
+    <color name="im_secondary">#9532FF</color> <!--  80% saturation (dark) -->
+    <color name="im_accent">#D7B2FF</color>    <!--  30% saturation (light) -->
 
     <style name="AppActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
-        <item name="android:background">#7F00FF</item>
+        <item name="android:background">@color/im_primary</item>
+        <item name="android:backgroundStacked">@color/im_secondary</item>
         <item name="android:icon">@drawable/ic_impeller_wb</item>
         <item name="android:titleTextStyle">@style/AppActionBar.TextStyle</item>
     </style>
@@ -57,7 +61,7 @@
     </style>
 
     <style name="TabTextAppTheme">
-        <item name="android:textColor">#000000</item>
+        <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">true</item>
