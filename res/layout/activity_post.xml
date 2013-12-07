@@ -2,7 +2,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp">
+    android:padding="8dp"
+    android:clipToPadding="false">
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -11,8 +12,7 @@
         android:background="@drawable/card_bg"
         android:showDividers="middle"
         android:divider="?android:dividerVertical"
-        android:clickable="false"
-        android:padding="0dp">
+        android:clickable="false">
 
         <EditText
             android:layout_width="fill_parent"
@@ -39,14 +39,15 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:inputType="textMultiLine"
             android:background="@android:color/white"
             android:hint="@string/hint_message"
             android:editable="true"
             android:padding="4dp"
             android:minLines="3"
             android:gravity="top"
-            android:layout_margin="4dp" />
+            android:layout_margin="4dp"
+            android:autoLink="all"
+            android:inputType="textMultiLine|textCapSentences|textLongMessage" />
 
         <include
             android:layout_width="wrap_content"
