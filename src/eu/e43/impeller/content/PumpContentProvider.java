@@ -71,7 +71,7 @@ public class PumpContentProvider extends ContentProvider {
         ms_objectProjection.put("updated", "updated");
         ms_objectProjection.put("inReplyTo", "inReplyTo");
         ms_objectProjection.put("_json", "_json");
-        addStateProjections(ms_objectProjection, "id");
+        addStateProjections(ms_objectProjection, "objects.id");
 
         ms_activityProjection.put("id",             "activity.id");
         ms_activityProjection.put("verb",           "activity.verb");
