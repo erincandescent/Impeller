@@ -19,7 +19,8 @@
         android:layout_toLeftOf="@+id/replyButton"
         android:layout_alignParentLeft="true"
         android:minLines="2"
-        android:textAlignment="textStart" />
+        android:textAlignment="textStart"
+        android:autoLink="all" />
 
     <Button
             android:layout_width="wrap_content"
