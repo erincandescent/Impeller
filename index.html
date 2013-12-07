@@ -3,14 +3,14 @@
 <head>
     <title>Impeller - an Android social client for Pump.io</title>
     <style>
-    @import url(http://fonts.googleapis.com/css?family=Rouge+Script);
+    @import url(http://fonts.googleapis.com/css?family=Roboto);
 
     html {
         margin: 0;
         padding: 0;
         background-color: #fff;
         color: #000;
-        font-family: Helvetica, Arial, Sans;
+        font-family: Roboto, Helvetica, Arial, Sans;
         font-size: 1.4em;
     }
 
@@ -22,8 +22,10 @@
     }
 
     #pic {
-        width: 100%;
-        height: auto;
+        display: block;
+        max-width: 900px;
+        max-height: 500px;
+        margin: 0 auto;
     }
 
     h1 {
@@ -35,13 +37,6 @@
         width: auto;
     }
 
-    #or {
-        font-family: 'Rogue Script', 'Segoe Script', cursive;
-        font-size: 1.4em;
-    }
-
-    #or:before, #or:after { content: "  ~  ";}
-
     #main ul {
         margin: none;
         padding: 0;
@@ -50,20 +45,26 @@
     #main ul > li {
         display: inline;
     }
+
+    iframe { border: 0; }
     </style>
 </head>
 <body>
     <h1><img src="Impeller.bw.png" alt=""> Impeller</h1>
     <p>A rich client for <a href="http://pump.io/">pump.io</a></p>
-    <p><img id="pic" src="ImpellerShot.png" alt=""></p>
+    <img id="pic" src="ImpellerShot.png" alt="">
     <div id="main">
         <p><a href="https://play.google.com/store/apps/details?id=eu.e43.impeller"><img alt="Get it on Google Play" src="https://developer.android.com/images/brand/en_generic_rgb_wo_60.png" /></a></p>
-        <p id="or">or</p>
+        <p>or</p>
         <ul>
             <li><a href="https://f-droid.org/repository/browse/?fdfilter=impeller&fdid=eu.e43.impeller">Get it on F-Droid</a></li>
             <li><a href="https://dl.dropboxusercontent.com/u/64151759/Impeller.apk">Download directly</a></li>
             <li><a href="https://github.com/oshepherd/Impeller/">Get the source</a></li>
         </ul>
+        <hr>
+        <p>If you have any issues or feedback, please submit them to <a href="https://e43oss.atlassian.net/browse/IMP">the tracker</a>. Alternatively, you can do this in-application through the buttons on the About screen</p>
+        <p>If you love Impeller, both code contributions and donations are always appreciated</p>
+        <iframe src='http://api.flattr.com/button/view/?uid=oshepherd&amp;url=http%3A%2F%2Fimpeller.e43.eu%2F'; title='Flattr' height='62' width='55'></iframe>
     </div>
 </body>
 </html>
