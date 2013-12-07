@@ -1,7 +1,43 @@
-<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    <eu.e43.impeller.uikit.AvatarView
+        android:id="@+id/authorAvatar"
+        android:layout_width="48dp"
+        android:layout_height="48dp" />
 
-</LinearLayout>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/authorAvatar"
+        android:id="@+id/linearLayout"
+        android:layout_alignRight="@+id/replyIcon">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/textView"
+            android:text="@string/in_reply_to_post_by" />
+
+        <TextView
+            android:id="@+id/authorName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="By Person"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:minWidth="48dp"
+        android:id="@+id/replyIcon"
+        android:src="@drawable/ic_action_reply"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true" />
+
+</merge>

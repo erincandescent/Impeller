@@ -52,6 +52,7 @@ import eu.e43.impeller.activity.MainActivity;
 import eu.e43.impeller.content.ContentUpdateReceiver;
 import eu.e43.impeller.content.PumpContentProvider;
 import eu.e43.impeller.activity.ActivityWithAccount;
+import eu.e43.impeller.uikit.InReplyToView;
 import eu.e43.impeller.uikit.LocationView;
 
 public class ObjectFragment extends ListFragment implements View.OnClickListener {
@@ -114,7 +115,6 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         ViewGroup header = (ViewGroup) inflater.inflate(R.layout.view_object_header, null);
         ViewGroup footer = (ViewGroup) inflater.inflate(R.layout.view_object_reply, null);
 
-        lv.addHeaderView(header);
         lv.addFooterView(footer);
 
         Uri uri = this.getArguments().getParcelable("id");
@@ -150,6 +150,15 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         replyButton.setOnClickListener(this);
 
         //setTitle(m_object.optString("displayName", "Object"));
+
+        JSONObject inReplyTo = m_object.optJSONObject("inReplyTo");
+        if(inReplyTo != null) {
+            InReplyToView inReplyToView = new InReplyToView(getMainActivity(), inReplyTo);
+            lv.addHeaderView(inReplyToView);
+            header.setBackgroundResource(R.drawable.card_middle_bg);
+        }
+
+        lv.addHeaderView(header);
 
         JSONObject author = m_object.optJSONObject("author");
         if(author != null) {
@@ -379,6 +388,8 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 
     public void showItemByPosition(int position) {
         JSONObject obj = (JSONObject) getListView().getItemAtPosition(position);
+        if(obj == null) return;
+
         String url = obj.optString("id");
 
         if(url != null) {

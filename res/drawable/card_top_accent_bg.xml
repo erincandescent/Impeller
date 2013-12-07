@@ -1,5 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle"
+            android:dither="true">
 
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
+            <corners
+                android:topLeftRadius="2dp"
+                android:topRightRadius="2dp" />
 
-</selector>
+            <solid android:color="#ccc" />
+
+        </shape>
+    </item>
+
+    <item android:right="1dp">
+        <shape android:shape="rectangle"
+            android:dither="true">
+
+            <corners
+                android:topLeftRadius="2dp"
+                android:topRightRadius="2dp"/>
+
+            <solid android:color="@color/im_accent" />
+
+            <padding android:bottom="8dp"
+                android:left="8dp"
+                android:right="8dp"
+                android:top="8dp" />
+        </shape>
+    </item>
+</layer-list>
