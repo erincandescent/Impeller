@@ -207,9 +207,13 @@ public class ActivityAdapter extends BaseAdapter {
 			description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
 		    try {
 		    	JSONObject obj = json.getJSONObject("object");
-		    	String content = obj.getString("content");
-		    	
-		    	PumpHtml.setFromHtml(m_ctx, caption, content);
+		    	String content = obj.optString("content");
+                if(content == null) {
+                    caption.setVisibility(View.GONE);
+                } else {
+                    caption.setVisibility(View.VISIBLE);
+                    PumpHtml.setFromHtml(m_ctx, caption, content);
+                }
 				
 				m_ctx.getImageLoader().setImage(actorAvatar, getImage(json.getJSONObject("actor")));
 
@@ -223,6 +227,7 @@ public class ActivityAdapter extends BaseAdapter {
                             getImage(json.getJSONObject("object").getJSONObject("author")));
                 }
 			} catch (JSONException e) {
+                caption.setVisibility(View.VISIBLE);
 				caption.setText(Html.fromHtml(e.getLocalizedMessage()));
 				//caption.loadData(e.getLocalizedMessage(), "text/plain", "utf-8");
 			}

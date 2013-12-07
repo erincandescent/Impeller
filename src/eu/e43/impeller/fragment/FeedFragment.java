@@ -40,11 +40,12 @@ public class FeedFragment
         SyncStatusObserver
 {
     Account             m_account;
-    ActivityAdapter m_adapter;
-    Menu                m_menu = null;
+    ActivityAdapter     m_adapter;
+    Menu                m_menu              = null;
     boolean             m_jumpToSelection   = false;
     int                 m_selection         = -1;
     Object              m_statusHandle      = null;
+    FeedID              m_feedId            = null;
 
     // Activity IDs
     private static final int ACTIVITY_SELECT_PHOTO = 1;
@@ -58,6 +59,8 @@ public class FeedFragment
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
+
+        m_feedId = (FeedID) getArguments().getSerializable("feed");
     }
 
 
@@ -148,10 +151,25 @@ public class FeedFragment
                         .appendPath(m_account.name)
                         .build();
 
-        return new CursorLoader(getActivity(), uri,
-                new String[] { "_json", "replies", "likes", "shares" },
-                "verb='share' OR (verb='post' AND object.objectType<>'comment')", null,
-                "feed_entries.published DESC");
+        switch(m_feedId) {
+            case MAJOR_FEED:
+                return new CursorLoader(getActivity(), uri,
+                        new String[] { "_json", "replies", "likes", "shares" },
+                        "verb='share' OR (verb='post' AND object.objectType<>'comment')", null,
+                        "feed_entries.published DESC");
+
+            case MINOR_FEED:
+                return new CursorLoader(getActivity(), uri,
+                        new String[] { "_json", "replies", "likes", "shares" },
+                        "NOT (verb='share' OR (verb='post' AND object.objectType<>'comment'))", null,
+                        "feed_entries.published DESC");
+
+            case DIRECT_FEED:
+                throw new RuntimeException("Not yet implemented");
+
+            default:
+                throw new RuntimeException("Bad ID");
+        }
     }
 
     @Override
@@ -259,5 +277,12 @@ public class FeedFragment
                 }
             }
         });
+    }
+
+    /** Tabs */
+    public enum FeedID {
+        MAJOR_FEED,
+        MINOR_FEED,
+        DIRECT_FEED
     }
 }

@@ -17,8 +17,10 @@ package eu.e43.impeller.activity;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 
 import android.accounts.Account;
+import android.app.ActionBar;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
@@ -36,7 +38,7 @@ import eu.e43.impeller.R;
 import eu.e43.impeller.fragment.SplashFragment;
 import eu.e43.impeller.content.PumpContentProvider;
 
-public class MainActivity extends ActivityWithAccount {
+public class MainActivity extends ActivityWithAccount implements ActionBar.TabListener {
 	static final String TAG = "MainActivity";
 
     /** Time to do next feed fetch */
@@ -103,12 +105,23 @@ public class MainActivity extends ActivityWithAccount {
 
 	protected void gotAccount(Account acct, Bundle icicle) {
         if(icicle == null) {
-            FragmentManager fm = getFragmentManager();
-            FragmentTransaction txn = fm.beginTransaction();
-            txn.replace(R.id.feed_fragment, new FeedFragment());
-            txn.setTransition(FragmentTransaction.TRANSIT_NONE);
-            txn.commit();
-            getActionBar().show();
+            ActionBar ab = getActionBar();
+            ab.addTab(ab.newTab()
+                .setTabListener(this)
+                .setText(R.string.tab_main_feed)
+                .setTag(FeedFragment.FeedID.MAJOR_FEED),
+                true);
+            ab.addTab(ab.newTab()
+                .setTabListener(this)
+                .setText(R.string.tab_minor_feed)
+                .setTag(FeedFragment.FeedID.MINOR_FEED));
+            //ab.addTab(ab.newTab()
+            //    .setTabListener(this)
+            //    .setText(R.string.tab_direct_feed)
+            //    .setTag(FeedFragment.FeedID.DIRECT_FEED));
+
+            ab.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+            ab.show();
         }
 	}
 
@@ -143,6 +156,11 @@ public class MainActivity extends ActivityWithAccount {
 
         View fdFrag = findViewById(R.id.feed_fragment);
         View ctFrag = m_isTablet ? findViewById(R.id.content_container) : findViewById(R.id.content_fragment);
+
+        boolean shouldShowTabs = m_isTablet ? (m != Mode.OBJECT) : (m == Mode.FEED);
+        int newNavMode = shouldShowTabs ? ActionBar.NAVIGATION_MODE_TABS : ActionBar.NAVIGATION_MODE_STANDARD;
+        if(newNavMode != getActionBar().getNavigationMode())
+            getActionBar().setNavigationMode(newNavMode);
 
         switch(m) {
             case FEED:
@@ -220,5 +238,41 @@ public class MainActivity extends ActivityWithAccount {
 
         if(m_feedFragment != null)
             m_feedFragment.setSelection(-1);
+    }
+
+    /* Tab listener */
+    private HashMap<FeedFragment.FeedID, FeedFragment> tabs = new HashMap<FeedFragment.FeedID, FeedFragment>();
+    @Override
+    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
+        FeedFragment.FeedID id = (FeedFragment.FeedID) tab.getTag();
+
+        Log.i(TAG, "Select feed " + id);
+
+        FeedFragment frag;
+        if(tabs.containsKey(id)) {
+            frag = tabs.get(id);
+        } else {
+            frag = new FeedFragment();
+            Bundle args = new Bundle();
+            args.putSerializable("feed", id);
+            frag.setArguments(args);
+            tabs.put(id, frag);
+        }
+
+        setDisplayMode(Mode.FEED);
+
+        if(m_objectFragment != null)
+            ft.remove(m_objectFragment);
+        ft.replace(R.id.feed_fragment, frag);
+    }
+
+    @Override
+    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
+        Log.i(TAG, "Deselect feed " + tab.getTag());
+    }
+
+    @Override
+    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
+        Log.i(TAG, "Reselect feed " + tab.getTag());
     }
 }

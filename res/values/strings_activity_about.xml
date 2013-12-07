@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_activity_about">About Impeller</string><string name="btn_submit_feedback">Submit Feedback</string>
+    <string name="about_crafted_with_love">Crafted with love,</string>
+    <string name="about_for_every_user">for every user of Pump.io</string>
+    <string name="about_by">By Owen Shepherd, 2013</string>
+    <string name="btn_view_feedback">View Feedback Inbox</string>
 </resources>
