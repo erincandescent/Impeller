@@ -4,6 +4,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.accounts.Account;
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.content.ContentResolver;
@@ -23,8 +26,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
+import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.EditText;
@@ -56,8 +62,9 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
     private Context             m_appContext;
     private Account             m_account;
 	private JSONObject			m_object;
-	private CommentAdapter m_commentAdapter;
+	private CommentAdapter      m_commentAdapter;
 	private Menu				m_menu;
+    private MainActivity.Mode   m_mode;
 
     public MainActivity getMainActivity() {
         return (MainActivity) getActivity();
@@ -67,10 +74,15 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         return getMainActivity().getImageLoader();
     }
 
+    public MainActivity.Mode getMode() {
+        return m_mode;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        m_mode = MainActivity.Mode.valueOf(getArguments().getString("mode"));
     }
 
 	@Override
@@ -201,12 +213,26 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         updateMenu();
         Log.i(TAG, "Finished showing object");
     }
-
     @Override
+    public Animator onCreateAnimator(int transit, boolean enter, int nextAnim)
+    {
+        Animator anim = AnimatorInflater.loadAnimator(getActivity(),
+                enter ? android.R.animator.fade_in : android.R.animator.fade_out);
+
+        if(!enter) anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation)
+            {
+                getMainActivity().onHideObjectFragment(ObjectFragment.this);
+            }
+        });
+
+        return anim;
+    }
+        @Override
     public void onDestroyView() {
         super.onDestroyView();
         getActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
-        getMainActivity().onHideObjectFragment(this);
     }
 
     @Override
@@ -343,6 +369,20 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
                 }
 
                 new PostReply(comment);
+        }
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        showItemByPosition(position);
+    }
+
+    public void showItemByPosition(int position) {
+        JSONObject obj = (JSONObject) getListView().getItemAtPosition(position);
+        String url = obj.optString("id");
+
+        if(url != null) {
+            getMainActivity().showObjectInMode(MainActivity.Mode.OBJECT, Uri.parse(url));
         }
     }
 

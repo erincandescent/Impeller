@@ -131,6 +131,14 @@
             android:launchMode="singleInstance"
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true" />
+
+        <activity android:name="eu.e43.impeller.activity.AboutActivity"
+            android:label="@string/title_activity_about"
+            android:parentActivityName="MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="eu.e43.impeller.activity.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

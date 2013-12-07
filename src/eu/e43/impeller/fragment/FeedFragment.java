@@ -137,7 +137,7 @@ public class FeedFragment
         }
 
         if(url != null) {
-            getMainActivity().showObject(Uri.parse(url));
+            getMainActivity().showObjectInMode(MainActivity.Mode.FEED_OBJECT, Uri.parse(url));
         }
     }
 
@@ -198,10 +198,6 @@ public class FeedFragment
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                 photoPickerIntent.setType("image/*");
                 startActivityForResult(photoPickerIntent, ACTIVITY_SELECT_PHOTO);
-                return true;
-
-            case R.id.action_settings:
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
                 return true;
 
             default:

@@ -25,6 +25,6 @@
     <string name="hint_message">Message...</string>
     <string name="hint_title">Title... (optional)</string>
     <string name="pref_title_limit_database_size">Limit maximum database size</string>
-    <string name="pref_database_max_item_count">Maximum item count</string>
+    <string name="pref_database_max_item_count">Maximum item count</string><string name="btn_view_feedback">View Feedback Inbox</string><string name="about_crafted_with_love">Crafted with love,</string><string name="about_for_every_user">for every user of Pump.io</string><string name="about_by">By Owen Shepherd, 2013</string>
 
 </resources>
