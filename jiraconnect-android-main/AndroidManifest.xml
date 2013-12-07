@@ -10,7 +10,7 @@
     <supports-screens android:smallScreens="true"
                   android:normalScreens="true"
                   android:largeScreens="true" />
-    <application android:label="@string/jconnect.droid.app_name" android:debuggable="true">
+    <application android:label="@string/jconnect.droid.app_name">
         <activity android:name="com.atlassian.jconnect.droid.activity.FeedbackActivity"
                   android:label="@string/jconnect.droid.create_feedback">
         </activity>
