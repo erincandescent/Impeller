@@ -61,7 +61,7 @@ public abstract class ActivityWithAccount extends Activity {
 			Account a = (Account) startIntent.getParcelableExtra("account");
 			if(a.type.equals(Authenticator.ACCOUNT_TYPE)) {
 				m_account = a;
-				gotAccount(a, savedInstanceState);
+				_gotAccount(a, savedInstanceState);
 				return;
 			}
 		}
@@ -98,7 +98,7 @@ public abstract class ActivityWithAccount extends Activity {
 				Log.i(TAG, "Logged in " + accountName);
 			
 				m_account = new Account(accountName, accountType);
-				gotAccount(m_account, null);
+				_gotAccount(m_account, null);
 			} else {
 				finish();
 			}
@@ -106,6 +106,13 @@ public abstract class ActivityWithAccount extends Activity {
 			super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
+
+    private void _gotAccount(Account a, Bundle savedInstanceState) {
+        Intent i = getIntent();
+        i.putExtra("account", a);
+        setIntent(i);
+        gotAccount(a, savedInstanceState);
+    }
 
     protected void gotAccount(Account a, Bundle savedInstanceState) { gotAccount(a); }
 	protected void gotAccount(Account a) {}
