@@ -151,7 +151,7 @@ public class FeedFragment
         return new CursorLoader(getActivity(), uri,
                 new String[] { "_json", "replies", "likes", "shares" },
                 "verb='share' OR (verb='post' AND object.objectType<>'comment')", null,
-                "object.updated DESC");
+                "feed_entries.published DESC");
     }
 
     @Override
