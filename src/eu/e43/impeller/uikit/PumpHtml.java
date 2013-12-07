@@ -18,6 +18,7 @@ public class PumpHtml implements ImageLoader.Listener, ImageGetter {
 	private String   			m_html;
 	private TextView 			m_view;
 	private int      			m_outstanding = 0;
+    private boolean             m_done = false;
 	
 	public static void setFromHtml(ActivityWithAccount ctx, TextView view, String html) {
 		new PumpHtml(ctx, view, html).parse();
@@ -42,7 +43,7 @@ public class PumpHtml implements ImageLoader.Listener, ImageGetter {
 		} else {
 			Log.v(TAG, "getDrawable(" + url + ") pending");
 			m_outstanding++;
-			m_loader.load(this, url);
+            if(!m_done) m_loader.load(this, url);
 			return null;
 		}
 	}
@@ -51,12 +52,20 @@ public class PumpHtml implements ImageLoader.Listener, ImageGetter {
 	public void loaded(BitmapDrawable dr, URI uri) {
 		m_outstanding--;	
 		Log.v(TAG, "loaded(" + uri + ") -> " + m_outstanding + " outstanding");
-		if(m_outstanding == 0) parse();
+		if(m_outstanding == 0) {
+            m_done = true;
+            parse();
+        }
 	}
 
 	@Override
 	public void error(URI uri) {
 		Log.w(TAG, "error(" + uri + ")");
+        m_outstanding--;
+        if(m_outstanding == 0) {
+            m_done = true;
+            parse();
+        }
 	}
 
 }
