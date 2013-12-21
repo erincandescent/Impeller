@@ -13,7 +13,8 @@
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/authorAvatar"
         android:id="@+id/linearLayout"
-        android:layout_alignRight="@+id/replyIcon">
+        android:layout_alignRight="@+id/replyIcon"
+        android:paddingLeft="8dp">
 
         <TextView
             android:layout_width="wrap_content"
