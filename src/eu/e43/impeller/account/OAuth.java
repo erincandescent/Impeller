@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 
+import eu.e43.impeller.ImpellerApplication;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.basic.DefaultOAuthConsumer;
 
@@ -92,6 +93,7 @@ public class OAuth {
 		Log.i(TAG, "Authenticated fetch of " + url);
 		for(int i = 0; i < 5; i++) {
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("User-Agent", "E43 Impeller/" + ImpellerApplication.ms_versionCode);
 			conn.setInstanceFollowRedirects(false);
             conn.setConnectTimeout(15000);
             conn.setReadTimeout(15000);

@@ -26,6 +26,7 @@ import eu.e43.impeller.content.PumpContentProvider;
         resDialogText = R.string.crash_notification_dialog_text)
 public class ImpellerApplication extends Application {
     public static Typeface fontAwesome;
+    public static int ms_versionCode;
 
     @Override
     public void onCreate() {
@@ -35,12 +36,11 @@ public class ImpellerApplication extends Application {
 
         super.onCreate();
 
-        int versionCode;
         try {
             PackageInfo packageInfo = null;
             packageInfo = getPackageManager()
                     .getPackageInfo(getPackageName(), 0);
-            versionCode = packageInfo.versionCode;
+            ms_versionCode = packageInfo.versionCode;
         } catch (PackageManager.NameNotFoundException e) {
             // That'll be the day...
             throw new RuntimeException(e);
@@ -57,7 +57,7 @@ public class ImpellerApplication extends Application {
             }
         }
 
-        prefs.edit().putInt("version", versionCode).apply();
+        prefs.edit().putInt("version", ms_versionCode).apply();
 
         fontAwesome = Typeface.createFromAsset(getAssets(), "FontAwesome.otf");
     }
