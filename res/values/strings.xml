@@ -33,6 +33,13 @@
     <string name="hint_message">Message...</string>
     <string name="hint_title">Title... (optional)</string>
 
+    <string name="posting_title">Posting...</string>
+    <string name="status_submitting_post">Submitting post</string>
+    <string name="status_uploading_image">Uploading image</string>
+
+    <string name="just_a_moment">Just a moment</string>
+    <string name="getting_information">Getting information...</string>
+
     <!-- Preferences -->
     <string name="pref_title_limit_database_size">Limit maximum database size</string>
     <string name="pref_database_max_item_count">Maximum item count</string><string name="in_reply_to_post_by">In reply to a post by</string>

@@ -60,4 +60,11 @@ dependencies {
 	compile 'com.android.support:support-v4:18.0.0'
 	compile 'oauth.signpost:signpost-core:1.2'
 	compile 'com.google.guava:guava:14.0.1'
+
+    // HTML parsing and generation
+    compile 'net.sourceforge.htmlcleaner:htmlcleaner:2.7'
+}
+
+configurations {
+    all*.exclude group: 'xml-apis'
 }

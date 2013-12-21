@@ -14,23 +14,35 @@
         android:divider="?android:dividerVertical"
         android:clickable="false">
 
-        <EditText
+        <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/title"
-            android:autoText="false"
-            android:background="@android:color/transparent"
-            android:textAppearance="?android:textAppearanceLarge"
-            android:capitalize="words"
-            android:hint="@string/hint_title"
-            android:padding="4dp"
-            android:layout_margin="4dp" />
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/postType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_note_dark"
+                android:layout_margin="4dp" />
+
+            <EditText
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/title"
+                android:autoText="false"
+                android:background="@android:color/transparent"
+                android:textAppearance="?android:textAppearanceLarge"
+                android:capitalize="words"
+                android:hint="@string/hint_title"
+                android:padding="4dp"
+                android:layout_margin="4dp" />
+        </LinearLayout>
 
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/image"
-            android:layout_gravity="center_horizontal"
             android:src="@drawable/ic_image_loading"
             android:visibility="gone" />
 
