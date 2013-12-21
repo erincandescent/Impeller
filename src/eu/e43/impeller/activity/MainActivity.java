@@ -78,6 +78,21 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
         PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
         setContentView(R.layout.activity_main);
 
+        ActionBar ab = getActionBar();
+        ab.addTab(ab.newTab()
+                .setTabListener(this)
+                .setText(R.string.tab_main_feed)
+                .setTag(FeedFragment.FeedID.MAJOR_FEED),
+                true);
+        ab.addTab(ab.newTab()
+                .setTabListener(this)
+                .setText(R.string.tab_minor_feed)
+                .setTag(FeedFragment.FeedID.MINOR_FEED));
+        //ab.addTab(ab.newTab()
+        //    .setTabListener(this)
+        //    .setText(R.string.tab_direct_feed)
+        //    .setTag(FeedFragment.FeedID.DIRECT_FEED));
+
         m_isTablet = "two_pane".equals(findViewById(R.id.main_activity).getTag());
 
         if(savedInstanceState == null) {
@@ -86,10 +101,28 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
                 .add(R.id.feed_fragment, new SplashFragment())
                 .setTransition(FragmentTransaction.TRANSIT_NONE)
                 .commit();
+        } else {
+            m_displayMode       = (Mode) savedInstanceState.getSerializable("displayMode");
+            m_feedFragment      = (FeedFragment)   getFragmentManager().getFragment(savedInstanceState, "feedFragment");
+            m_objectFragment    = (ObjectFragment) getFragmentManager().getFragment(savedInstanceState, "objectFragment");
+            setDisplayMode(m_displayMode);
         }
 	}
 
-	@Override
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putSerializable("displayMode", m_displayMode);
+        outState.putInt("selectedTab", getActionBar().getSelectedNavigationIndex());
+
+        if(m_feedFragment != null)
+            outState.putParcelable("feedFragment",   getFragmentManager().saveFragmentInstanceState(m_feedFragment));
+        if(m_objectFragment != null)
+            outState.putParcelable("objectFragment", getFragmentManager().saveFragmentInstanceState(m_objectFragment));
+    }
+
+    @Override
     protected void onStart() {
 		super.onStart();
 
@@ -108,26 +141,9 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
     	super.onDestroy();
     }
 
-	protected void gotAccount(Account acct, Bundle icicle) {
-        if(icicle == null) {
-            ActionBar ab = getActionBar();
-            ab.addTab(ab.newTab()
-                .setTabListener(this)
-                .setText(R.string.tab_main_feed)
-                .setTag(FeedFragment.FeedID.MAJOR_FEED),
-                true);
-            ab.addTab(ab.newTab()
-                .setTabListener(this)
-                .setText(R.string.tab_minor_feed)
-                .setTag(FeedFragment.FeedID.MINOR_FEED));
-            //ab.addTab(ab.newTab()
-            //    .setTabListener(this)
-            //    .setText(R.string.tab_direct_feed)
-            //    .setTag(FeedFragment.FeedID.DIRECT_FEED));
-
-            ab.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-            ab.show();
-        }
+    protected void gotAccount(Account acct, Bundle icicle) {
+        setDisplayMode(m_displayMode);
+        getActionBar().show();
 	}
 
     @Override
@@ -187,6 +203,8 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
                 fdFrag.setVisibility(View.GONE);
                 ctFrag.setVisibility(View.VISIBLE);
         }
+
+        m_displayMode = m;
     }
 
     public boolean isTwoPane() {
