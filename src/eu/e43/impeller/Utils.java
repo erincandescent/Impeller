@@ -243,4 +243,24 @@ public class Utils {
         return (int) (density * dip + 0.5f);
     }
 
+    public static String formatHtmlFragment(String fragment, Integer width) {
+        final String base =
+            "<html>" +
+            "<head>" +
+                "<meta name=\"viewport\" content=\"width=%s, user-scalable=no\">" +
+                "<style>" +
+                    "body { margin: 0; }" +
+                    "img, video, object, iframe { max-width: 100%%; } " +
+                "</style>" +
+            "</head>" +
+            "<body>%s</body>" +
+            "</html>";
+
+        String strWidth = "device-width";
+        if(width != null)
+            strWidth = width.toString();
+
+        return String.format(base, strWidth, fragment);
+    }
+
 }

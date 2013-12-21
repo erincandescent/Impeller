@@ -20,23 +20,28 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 import android.accounts.Account;
+import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Browser;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ViewFlipper;
 
 import eu.e43.impeller.fragment.FeedFragment;
 import eu.e43.impeller.fragment.ObjectFragment;
 import eu.e43.impeller.R;
 import eu.e43.impeller.fragment.SplashFragment;
 import eu.e43.impeller.content.PumpContentProvider;
+import eu.e43.impeller.uikit.BrowserChrome;
 
 public class MainActivity extends ActivityWithAccount implements ActionBar.TabListener {
 	static final String TAG = "MainActivity";
@@ -154,8 +159,13 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
 
     private void setDisplayMode(Mode m) {
 
+
         View fdFrag = findViewById(R.id.feed_fragment);
         View ctFrag = m_isTablet ? findViewById(R.id.content_container) : findViewById(R.id.content_fragment);
+
+        Log.d(TAG, "Mode " + m_displayMode.toString() + " -> " + m.toString());
+        if(m != m_displayMode)
+            evictOverlay();
 
         boolean shouldShowTabs = m_isTablet ? (m != Mode.OBJECT) : (m == Mode.FEED);
         int newNavMode = shouldShowTabs ? ActionBar.NAVIGATION_MODE_TABS : ActionBar.NAVIGATION_MODE_STANDARD;
@@ -274,5 +284,63 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
     @Override
     public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
         Log.i(TAG, "Reselect feed " + tab.getTag());
+    }
+
+    BrowserChrome m_chrome;
+    // WebView overlays
+    public void showOverlay(BrowserChrome chrome, View overlay) {
+        if(m_chrome != null) evictOverlay();
+        ViewFlipper flipper = (ViewFlipper) findViewById(R.id.overlay_flipper);
+        flipper.addView(overlay);
+        flipper.setDisplayedChild(1);
+        m_chrome = chrome;
+        setUiFlags();
+    }
+
+    private void evictOverlay() {
+        BrowserChrome chrome = m_chrome;
+        if(chrome != null) {
+            hideOverlay(chrome);
+            chrome.onHideCustomView();
+        }
+    }
+
+    public void hideOverlay(BrowserChrome chrome) {
+        if(m_chrome == chrome) {
+            ViewFlipper flipper = (ViewFlipper) findViewById(R.id.overlay_flipper);
+            flipper.setDisplayedChild(0);
+            flipper.removeViewAt(1);
+            m_chrome = null;
+            setUiFlags();
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    void setUiFlags() {
+        ViewFlipper flipper = (ViewFlipper) findViewById(R.id.overlay_flipper);
+        if(m_chrome != null) {
+            // Fullscreen
+            int flags =
+                      View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                flags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            }
+
+            flipper.setSystemUiVisibility(flags);
+        } else {
+            // Standard
+            flipper.setSystemUiVisibility(0);
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if(hasFocus) setUiFlags();
     }
 }

@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.Html;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -28,6 +29,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.webkit.WebSettings;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
 import android.widget.AdapterView;
@@ -40,9 +42,13 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
+
+import java.util.ArrayList;
 
 import eu.e43.impeller.activity.PostActivity;
 import eu.e43.impeller.uikit.AvatarView;
+import eu.e43.impeller.uikit.BrowserChrome;
 import eu.e43.impeller.uikit.CommentAdapter;
 import eu.e43.impeller.uikit.ImageLoader;
 import eu.e43.impeller.PostTask;
@@ -66,6 +72,9 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
 	private CommentAdapter      m_commentAdapter;
 	private Menu				m_menu;
     private MainActivity.Mode   m_mode;
+
+    // Contains all WebViews, so they may be appropriately paused/resumed
+    private ArrayList<WebView>  m_webViews    = new ArrayList<WebView>();
 
     public MainActivity getMainActivity() {
         return (MainActivity) getActivity();
@@ -98,17 +107,34 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         } else {
             m_account = getMainActivity().getAccount();
         }
-
-        getMainActivity().onShowObjectFragment(this);
 	}
 
     @Override
+    public void onPause() {
+        super.onPause();
+        for(WebView wv : m_webViews)
+            wv.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        for(WebView wv : m_webViews)
+            wv.onResume();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        getMainActivity().onShowObjectFragment(this);
         return inflater.inflate(R.layout.fragment_object, null);
     }
 
     @Override
     public void onViewCreated (View view, Bundle savedInstanceState) {
+        for(WebView wv : m_webViews) {
+            wv.onPause();
+        }
+
         ListView lv = getListView();
         LayoutInflater inflater = LayoutInflater.from(getActivity());
 
@@ -157,7 +183,6 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
             lv.addHeaderView(inReplyToView);
             header.setBackgroundResource(R.drawable.card_middle_bg);
         }
-
         lv.addHeaderView(header);
 
         JSONObject author = m_object.optJSONObject("author");
@@ -182,7 +207,38 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
             image = m_object.optJSONObject("image");
         }
 
-        if(image != null) {
+        String url  = m_object.optString("url", "about:blank");
+
+        if(m_object.optString("objectType", "post").equals("video")) {
+            JSONObject stream = m_object.optJSONObject("stream");
+
+            // Only try VideoView where we have a video/ mediatype
+            if(stream != null && stream.optString("type").startsWith("video/")) {
+                VideoView vv = new VideoView(getActivity());
+                vv.setVideoURI(Uri.parse(stream.optString("url")));
+                lv.addHeaderView(vv);
+            } else if(m_object.has("embedCode")) {
+                WebView wv = new WebView(getActivity());
+                wv.setHorizontalScrollBarEnabled(false);
+                wv.setWebChromeClient(new BrowserChrome(getMainActivity()));
+                wv.getSettings().setLoadWithOverviewMode(true);
+                wv.getSettings().setUseWideViewPort(true);
+                wv.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
+                wv.getSettings().setJavaScriptEnabled(true);
+
+
+
+                Integer width = null;
+                if(stream != null && stream.has("width"))
+                    width = stream.optInt("width");
+
+                String html = Utils.formatHtmlFragment(m_object.optString("embedCode", ""), width);
+                Log.d(TAG, "HTML is " + html);
+                wv.loadDataWithBaseURL(url, html, "text/html", "utf-8", null);
+                lv.addHeaderView(wv);
+                m_webViews.add(wv);
+            }
+        } else if(image != null) {
             ImageView iv = new ImageView(getActivity());
             iv.setBackgroundResource(R.drawable.card_middle_bg);
             iv.setAdjustViewBounds(true);
@@ -195,11 +251,11 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
             ViewGroup contentViews = (ViewGroup) inflater.inflate(R.layout.view_object_content, null);
             WebView wv = (WebView) contentViews.findViewById(R.id.webView);
 
-            String url  = m_object.optString("url", "about:blank");
-            String data = m_object.optString("content", "No content");
+            String data = Utils.formatHtmlFragment(m_object.optString("content", "No content"), null);
             wv.loadDataWithBaseURL(url, data, "text/html", "utf-8", null);
             wv.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
             lv.addHeaderView(contentViews);
+            m_webViews.add(wv);
         }
 
         if(m_object.has("location")) {
@@ -210,16 +266,17 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
             }
         }
 
-        m_commentAdapter = new CommentAdapter(this, 0, uri.toString());
-        setListAdapter(m_commentAdapter);
-
-        registerForContextMenu(lv);
-
         getActivity().sendOrderedBroadcast(new Intent(
                 ContentUpdateReceiver.UPDATE_REPLIES, Uri.parse(m_object.optString("id")),
                 getActivity(), ContentUpdateReceiver.class
         ).putExtra("account", getMainActivity().getAccount()), null);
         updateMenu();
+
+        m_commentAdapter = new CommentAdapter(this, 0, getArguments().getParcelable("id").toString());
+        setListAdapter(m_commentAdapter);
+
+        registerForContextMenu(lv);
+
         Log.i(TAG, "Finished showing object");
     }
     @Override
@@ -395,6 +452,10 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         if(url != null) {
             getMainActivity().showObjectInMode(MainActivity.Mode.OBJECT, Uri.parse(url));
         }
+    }
+
+    public Uri getUri() {
+        return (Uri) getArguments().getParcelable("id");
     }
 
     private class DoLike implements PostTask.Callback {
