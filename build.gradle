@@ -40,6 +40,13 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
+            runProguard true
+            proguardFile "proguard.cfg"
+        }
+
+        debug {
+            runProguard true
+            proguardFile "proguard.cfg"
         }
     }
 }
