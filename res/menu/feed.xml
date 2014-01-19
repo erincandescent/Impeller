@@ -13,6 +13,12 @@
             android:enabled="true"
             android:visible="true"
             android:showAsAction="always"/>
+    <item   android:id="@+id/action_checkin"
+            android:menuCategory="container"
+            android:title="Check in"
+            android:enabled="true"
+            android:showAsAction="never"
+            android:visible="false"/>
     <item   android:id="@+id/action_post_image"
             android:menuCategory="container"
             android:title="@string/action_post_image"

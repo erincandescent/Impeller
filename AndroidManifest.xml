@@ -120,6 +120,14 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="eu.e43.impeller.activity.CheckinActivity"
+            android:label="@string/title_activity_checkin"
+            android:parentActivityName="MainActivity"
+            android:theme="@style/AppTheme">
+            <meta-data android:name="android.support.PARENT_ACTIVITY"
+                android:value="MainActivity" />
+        </activity>
+
         <activity android:name="eu.e43.impeller.activity.SettingsActivity"
                   android:theme="@style/AppTheme"
                   android:parentActivityName="eu.e43.impeller.activity.MainActivity"

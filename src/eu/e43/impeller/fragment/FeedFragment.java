@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 
 import org.json.JSONObject;
 
+import eu.e43.impeller.activity.CheckinActivity;
 import eu.e43.impeller.activity.SettingsActivity;
 import eu.e43.impeller.uikit.ActivityAdapter;
 import eu.e43.impeller.R;
@@ -210,6 +211,12 @@ public class FeedFragment
                 Intent postIntent = new Intent(getActivity(), PostActivity.class);
                 postIntent.putExtra("account", m_account);
                 startActivity(postIntent);
+                return true;
+
+            case R.id.action_checkin:
+                Intent checkinIntent = new Intent(getActivity(), CheckinActivity.class);
+                checkinIntent.putExtra("account", m_account);
+                startActivity(checkinIntent);
                 return true;
 
             case R.id.action_post_image:
