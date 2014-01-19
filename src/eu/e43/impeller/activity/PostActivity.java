@@ -696,7 +696,7 @@ public class PostActivity extends ActivityWithAccount {
 
                 ContentValues cv = new ContentValues();
                 cv.put("_json", obj.toString());
-                getContentResolver().insert(Uri.parse(PumpContentProvider.OBJECT_URL), cv);
+                getContentResolver().insert(Uri.parse(PumpContentProvider.ACTIVITY_URL), cv);
                 getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
 
 				setResult(RESULT_OK);
