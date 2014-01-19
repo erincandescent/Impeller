@@ -9,6 +9,7 @@ import android.animation.AnimatorInflater;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.ListFragment;
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -36,6 +37,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -213,10 +215,14 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
             JSONObject stream = m_object.optJSONObject("stream");
 
             // Only try VideoView where we have a video/ mediatype
-            if(stream != null && stream.optString("type").startsWith("video/")) {
-                VideoView vv = new VideoView(getActivity());
-                vv.setVideoURI(Uri.parse(stream.optString("url")));
-                lv.addHeaderView(vv);
+            if(stream != null && (stream.optString("type").startsWith("video/") || !m_object.has("embedCode"))) {
+                FrameLayout ly = (FrameLayout) inflater.inflate(R.layout.view_object_video_preview, null);
+                ImageView thumb = (ImageView) ly.findViewById(R.id.video_thumb);
+                if(image != null) {
+                    getImageLoader().setImage(thumb, Utils.getImageUrl(image));
+                }
+                ly.setOnClickListener(this);
+                lv.addHeaderView(ly);
             } else if(m_object.has("embedCode")) {
                 WebView wv = new WebView(getActivity());
                 wv.setHorizontalScrollBarEnabled(false);
@@ -435,6 +441,19 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
                 }
 
                 new PostReply(comment);
+            case R.id.video_preview:
+                JSONObject stream = m_object.optJSONObject("stream");
+                if(stream == null) return;
+                String url = stream.optString("url");
+                if(url == null) return;
+
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setDataAndType(Uri.parse(url), stream.optString("type", "video/*"));
+                try {
+                    startActivity(i);
+                } catch(ActivityNotFoundException ex) {
+                    Toast.makeText(getActivity(), "Unable to launch video player", Toast.LENGTH_SHORT).show();
+                }
         }
     }
 
