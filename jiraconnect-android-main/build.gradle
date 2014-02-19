@@ -1,8 +1,8 @@
 apply plugin: 'android-library'
 
 android {
-    compileSdkVersion 17
-    buildToolsVersion "17.0.0"
+    compileSdkVersion 19
+    buildToolsVersion "19.0.1"
 
     sourceSets {
         main {
@@ -26,12 +26,13 @@ repositories {
 
 dependencies {
         // Support library/libraries
-        compile 'com.android.support:support-v4:13.0.0'
+        compile 'com.android.support:support-v4:19.0.1'
 
         compile 'ch.acra:acra:4.5.0'
         compile 'org.apache.james:apache-mime4j:0.7.2'
         compile 'commons-io:commons-io:2.4'
-        compile 'com.google.guava:guava:14.0.1'
-        compile 'org.apache.httpcomponents:httpclient:4.2.5'
-        compile 'org.apache.httpcomponents:httpmime:4.2.5'
+        compile 'com.google.guava:guava:16.0.1'
+        compile 'org.apache.httpcomponents:httpcore:4.3.2'
+        compile 'org.apache.httpcomponents:httpclient:4.3.2'
+        compile 'org.apache.httpcomponents:httpmime:4.3.2'
 }
