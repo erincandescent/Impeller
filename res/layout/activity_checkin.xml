@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/checkin_location"
-        android:layout_alignBottom="@+id/spinner"
+        android:layout_alignBottom="@+id/location"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
