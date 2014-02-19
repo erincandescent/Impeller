@@ -38,12 +38,7 @@ android {
     }
 
     signingConfigs {
-        release {
-            storeFile file(System.getenv("KEYSTORE") != null ? System.getenv("KEYSTORE") : "keystore")
-            storePassword System.getenv("KEYSTORE_PASSWORD")
-            keyAlias System.getenv("KEY_ALIAS")
-            keyPassword System.getenv("KEY_PASSWORD")
-        }
+        release
     }
     buildTypes {
         release {
@@ -68,4 +63,27 @@ dependencies {
 
 configurations {
     all*.exclude group: 'xml-apis'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.10'
+}
+
+def Properties signingConfig = new Properties()
+def keyPropFile = new File('keys.properties')
+if(keyPropFile.canRead()) {
+    signingConfig.load(new FileInputStream(keyPropFile))
+}
+
+if (signingConfig.containsKey('STORE_FILE')
+  && signingConfig.containsKey('STORE_PASSWORD')
+  && signingConfig.containsKey('KEY_ALIAS')
+  && signingConfig.containsKey('KEY_PASSWORD')) {
+    android.signingConfigs.release.storeFile     = file(signingConfig['STORE_FILE'])
+    android.signingConfigs.release.storePassword = signingConfig['STORE_PASSWORD']
+    android.signingConfigs.release.keyAlias      = signingConfig['KEY_ALIAS']
+    android.signingConfigs.release.keyPassword   = signingConfig['KEY_PASSWORD']
+} else {
+    android.buildTypes.release.signingConfig = null
+    println 'No signing configuration or is incomplete'
 }
