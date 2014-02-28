@@ -61,10 +61,12 @@ public class FeedFragment
         setRetainInstance(true);
         setHasOptionsMenu(true);
 
-        m_feedId = (FeedID) getArguments().getSerializable("feed");
+        if(getArguments() != null && getArguments().containsKey("feed")) {
+            m_feedId = (FeedID) getArguments().getSerializable("feed");
+        } else {
+            m_feedId = FeedID.MAJOR_FEED;
+        }
     }
-
-
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -99,6 +101,10 @@ public class FeedFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_feed, null);
+    }
+
+    public FeedID getFeedId() {
+        return m_feedId;
     }
 
     @Override
@@ -157,13 +163,13 @@ public class FeedFragment
                 return new CursorLoader(getActivity(), uri,
                         new String[] { "_json", "replies", "likes", "shares" },
                         "verb='share' OR (verb='post' AND object.objectType<>'comment')", null,
-                        "feed_entries.published DESC");
+                        "feed_entries._ID DESC");
 
             case MINOR_FEED:
                 return new CursorLoader(getActivity(), uri,
                         new String[] { "_json", "replies", "likes", "shares" },
                         "NOT (verb='share' OR (verb='post' AND object.objectType<>'comment'))", null,
-                        "feed_entries.published DESC");
+                        "feed_entries._ID DESC");
 
             case DIRECT_FEED:
                 throw new RuntimeException("Not yet implemented");
@@ -288,8 +294,18 @@ public class FeedFragment
 
     /** Tabs */
     public enum FeedID {
-        MAJOR_FEED,
-        MINOR_FEED,
-        DIRECT_FEED
+        MAJOR_FEED(R.string.feed_major),
+        MINOR_FEED(R.string.feed_minor),
+        DIRECT_FEED(R.string.feed_direct);
+
+        private int nameString = 0;
+
+        private FeedID(int ns) {
+            nameString = ns;
+        }
+
+        public int getNameString() {
+            return nameString;
+        }
     }
 }

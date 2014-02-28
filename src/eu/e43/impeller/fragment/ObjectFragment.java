@@ -102,8 +102,6 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         super.onActivityCreated(savedInstanceState);
         m_appContext = getActivity().getApplicationContext();
 
-        getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
-
         if(savedInstanceState != null) {
             m_account = savedInstanceState.getParcelable("account");
         } else {
@@ -304,7 +302,6 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         @Override
     public void onDestroyView() {
         super.onDestroyView();
-        getActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
     @Override

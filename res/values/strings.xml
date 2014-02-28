@@ -3,10 +3,15 @@
     <string name="app_name">Impeller</string>
     <string name="cancel_button">Cancel</string>
 
+    <!-- Navigation -->
+    <string name="account_category">Accounts</string>
+    <string name="drawer_open">Open Navigation Drawer</string>
+    <string name="drawer_close">Close Navigation Drawer</string>
+
     <!-- Tabs -->
-    <string name="tab_main_feed">Main</string>
-    <string name="tab_minor_feed">Meanwhile</string>
-    <string name="tab_direct_feed">Messages</string>
+    <string name="feed_major">Main</string>
+    <string name="feed_minor">Meanwhile</string>
+    <string name="feed_direct">Messages</string>
 
     <!-- Menu items -->
     <string name="action_sign_out">Sign out</string>

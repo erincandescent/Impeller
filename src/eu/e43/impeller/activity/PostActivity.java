@@ -98,7 +98,7 @@ public class PostActivity extends ActivityWithAccount {
     }
 
 	@Override
-	protected void gotAccount(Account a_, Bundle _) {
+	protected void gotAccount(Account a_) {
         Intent intent = getIntent();
         String type = intent.getType();
 
@@ -243,11 +243,6 @@ public class PostActivity extends ActivityWithAccount {
                 return super.onOptionsItemSelected(item);
         }
     }
-
-	@Override
-	protected void gotAccount(Account a) {
-		m_account = a;
-	}
 
     private void dismissProgress() {
         if(m_progress != null) {

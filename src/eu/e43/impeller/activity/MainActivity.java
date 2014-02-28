@@ -25,15 +25,20 @@ import android.app.ActionBar;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Browser;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.ViewFlipper;
 
 import eu.e43.impeller.fragment.FeedFragment;
@@ -42,8 +47,9 @@ import eu.e43.impeller.R;
 import eu.e43.impeller.fragment.SplashFragment;
 import eu.e43.impeller.content.PumpContentProvider;
 import eu.e43.impeller.uikit.BrowserChrome;
+import eu.e43.impeller.uikit.NavigationDrawerAdapter;
 
-public class MainActivity extends ActivityWithAccount implements ActionBar.TabListener {
+public class MainActivity extends ActivityWithAccount implements AdapterView.OnItemClickListener {
 	static final String TAG = "MainActivity";
 
     /** Time to do next feed fetch */
@@ -51,6 +57,15 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
 
     /** Tablet UI mode? */
     private boolean         m_isTablet      = false;
+
+    /** Drawer toggle controller */
+    private ActionBarDrawerToggle m_drawerToggle = null;
+
+    /** Drawer layout */
+    private DrawerLayout m_drawerLayout = null;
+
+    /** Navigation drawer */
+    private ListView m_navigationDrawer = null;
 
     /** Pointer to the active feed fragment (if any) */
     private FeedFragment m_feedFragment     = null;
@@ -78,20 +93,18 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
         PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
         setContentView(R.layout.activity_main);
 
-        ActionBar ab = getActionBar();
-        ab.addTab(ab.newTab()
-                .setTabListener(this)
-                .setText(R.string.tab_main_feed)
-                .setTag(FeedFragment.FeedID.MAJOR_FEED),
-                true);
-        ab.addTab(ab.newTab()
-                .setTabListener(this)
-                .setText(R.string.tab_minor_feed)
-                .setTag(FeedFragment.FeedID.MINOR_FEED));
-        //ab.addTab(ab.newTab()
-        //    .setTabListener(this)
-        //    .setText(R.string.tab_direct_feed)
-        //    .setTag(FeedFragment.FeedID.DIRECT_FEED));
+        m_drawerLayout     = (DrawerLayout) findViewById(R.id.drawer_layout);
+        m_navigationDrawer = (ListView) findViewById(R.id.navigation_drawer);
+        m_navigationDrawer.setAdapter(new NavigationDrawerAdapter(this));
+        m_drawerToggle = new ActionBarDrawerToggle(
+                this,
+                m_drawerLayout,
+                R.drawable.ic_navigation_drawer,
+                R.string.drawer_open,
+                R.string.drawer_close
+        );
+        m_drawerLayout.setDrawerListener(m_drawerToggle);
+        m_navigationDrawer.setOnItemClickListener(this);
 
         m_isTablet = "two_pane".equals(findViewById(R.id.main_activity).getTag());
 
@@ -108,6 +121,18 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
             setDisplayMode(m_displayMode);
         }
 	}
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        m_drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        m_drawerToggle.onConfigurationChanged(newConfig);
+    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -141,9 +166,21 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
     	super.onDestroy();
     }
 
-    protected void gotAccount(Account acct, Bundle icicle) {
-        setDisplayMode(m_displayMode);
+    protected void gotAccount(Account acct) {
         getActionBar().show();
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
+
+        FragmentTransaction tx = getFragmentManager().beginTransaction();
+        if(m_objectFragment != null) {
+            tx.remove(m_objectFragment);
+        }
+        tx.replace(R.id.feed_fragment, new FeedFragment());
+        tx.commit();
+
+        setDisplayMode(m_displayMode);
+
+        ((NavigationDrawerAdapter)m_navigationDrawer.getAdapter()).notifyDataSetChanged();
 	}
 
     @Override
@@ -154,6 +191,10 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (m_drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
         switch (item.getItemId()) {
             case android.R.id.home:
                 FragmentManager fm = getFragmentManager();
@@ -174,8 +215,6 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
     }
 
     private void setDisplayMode(Mode m) {
-
-
         View fdFrag = findViewById(R.id.feed_fragment);
         View ctFrag = m_isTablet ? findViewById(R.id.content_container) : findViewById(R.id.content_fragment);
 
@@ -183,25 +222,23 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
         if(m != m_displayMode)
             evictOverlay();
 
-        boolean shouldShowTabs = m_isTablet ? (m != Mode.OBJECT) : (m == Mode.FEED);
-        int newNavMode = shouldShowTabs ? ActionBar.NAVIGATION_MODE_TABS : ActionBar.NAVIGATION_MODE_STANDARD;
-        if(newNavMode != getActionBar().getNavigationMode())
-            getActionBar().setNavigationMode(newNavMode);
-
         switch(m) {
             case FEED:
                 fdFrag.setVisibility(View.VISIBLE);
                 ctFrag.setVisibility(View.GONE);
+                m_drawerToggle.setDrawerIndicatorEnabled(true);
                 break;
 
             case FEED_OBJECT:
                 fdFrag.setVisibility(m_isTablet ? View.VISIBLE : View.GONE);
                 ctFrag.setVisibility(View.VISIBLE);
+                m_drawerToggle.setDrawerIndicatorEnabled(false);
                 break;
 
             case OBJECT:
                 fdFrag.setVisibility(View.GONE);
                 ctFrag.setVisibility(View.VISIBLE);
+                m_drawerToggle.setDrawerIndicatorEnabled(false);
         }
 
         m_displayMode = m;
@@ -268,40 +305,38 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
             m_feedFragment.setSelection(-1);
     }
 
-    /* Tab listener */
-    private HashMap<FeedFragment.FeedID, FeedFragment> tabs = new HashMap<FeedFragment.FeedID, FeedFragment>();
-    @Override
-    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
-        FeedFragment.FeedID id = (FeedFragment.FeedID) tab.getTag();
-
-        Log.i(TAG, "Select feed " + id);
-
-        FeedFragment frag;
-        if(tabs.containsKey(id)) {
-            frag = tabs.get(id);
-        } else {
-            frag = new FeedFragment();
-            Bundle args = new Bundle();
-            args.putSerializable("feed", id);
-            frag.setArguments(args);
-            tabs.put(id, frag);
-        }
-
-        setDisplayMode(Mode.FEED);
-
-        if(m_objectFragment != null)
-            ft.remove(m_objectFragment);
-        ft.replace(R.id.feed_fragment, frag);
-    }
+    /* Navigation listener */
 
     @Override
-    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
-        Log.i(TAG, "Deselect feed " + tab.getTag());
-    }
+    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        assert(adapterView == m_navigationDrawer);
 
-    @Override
-    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
-        Log.i(TAG, "Reselect feed " + tab.getTag());
+        if(l < 0) {
+            // Account
+            Account acct = (Account) m_navigationDrawer.getItemAtPosition(i);
+            haveGotAccount(acct);
+            m_drawerLayout.closeDrawer(m_navigationDrawer);
+        } else if(l > 0) {
+            // Feed
+            FeedFragment.FeedID id = (FeedFragment.FeedID) m_navigationDrawer.getItemAtPosition(i);
+            FragmentTransaction trans = getFragmentManager().beginTransaction();
+
+            if(m_feedFragment.getFeedId() != id) {
+                FeedFragment ff = new FeedFragment();
+                Bundle args = new Bundle();
+                args.putSerializable("feed", id);
+                ff.setArguments(args);
+                trans.replace(R.id.feed_fragment, ff);
+            }
+
+            if(m_objectFragment != null) {
+                trans.remove(m_objectFragment);
+            }
+
+            setDisplayMode(Mode.FEED);
+            trans.commit();
+            m_drawerLayout.closeDrawer(m_navigationDrawer);
+        } // else separator
     }
 
     BrowserChrome m_chrome;

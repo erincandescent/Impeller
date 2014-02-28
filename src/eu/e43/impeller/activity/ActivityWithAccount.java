@@ -52,7 +52,7 @@ public abstract class ActivityWithAccount extends Activity {
 		onCreateEx(savedInstanceState);
 
         if(m_account != null) {
-            gotAccount(m_account, savedInstanceState);
+            haveGotAccount(m_account);
             return;
         }
 				
@@ -61,11 +61,18 @@ public abstract class ActivityWithAccount extends Activity {
 			Account a = (Account) startIntent.getParcelableExtra("account");
 			if(a.type.equals(Authenticator.ACCOUNT_TYPE)) {
 				m_account = a;
-				_gotAccount(a, savedInstanceState);
+				haveGotAccount(a);
 				return;
 			}
 		}
-	    
+
+        queryForAccount();
+    }
+
+    /** Query the user for an account (asynchronously). Default implementation uses a chooser. Call
+     *  haveGotAccount when you are successful (else finish)
+     */
+    protected void queryForAccount() {
 	    // No account passed or account is invalid
 	    String[] accountTypes = new String[] { Authenticator.ACCOUNT_TYPE };
 	    String[] features = new String[0];
@@ -74,6 +81,7 @@ public abstract class ActivityWithAccount extends Activity {
 	    this.startActivityForResult(chooseIntent, LOGIN_REQUEST_CODE);
 	}
 
+    /** Save the account */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -89,6 +97,7 @@ public abstract class ActivityWithAccount extends Activity {
 		}
 	}
 
+    /** Looks at the response of the account chooser intent */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if(requestCode == LOGIN_REQUEST_CODE) {
@@ -98,7 +107,7 @@ public abstract class ActivityWithAccount extends Activity {
 				Log.i(TAG, "Logged in " + accountName);
 			
 				m_account = new Account(accountName, accountType);
-				_gotAccount(m_account, null);
+				haveGotAccount(m_account);
 			} else {
 				finish();
 			}
@@ -107,14 +116,15 @@ public abstract class ActivityWithAccount extends Activity {
 		}
 	}
 
-    private void _gotAccount(Account a, Bundle savedInstanceState) {
+    /** If overriding queryAccount, call this when you have found an account */
+    protected void haveGotAccount(Account a) {
+        m_account = a;
         Intent i = getIntent();
         i.putExtra("account", a);
         setIntent(i);
-        gotAccount(a, savedInstanceState);
+        gotAccount(a);
     }
 
-    protected void gotAccount(Account a, Bundle savedInstanceState) { gotAccount(a); }
 	protected void gotAccount(Account a) {}
 	
 	public ImageLoader getImageLoader() {
