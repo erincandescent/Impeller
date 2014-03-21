@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="crash_notification.title">V Impelleru došlo k chybě</string>
+    <string name="crash_notification.text">Klikněte pro odeslání chybového hlášení.</string>
+    <string name="crash_notification.dialog_text">V Impelleru došlo k chybě. Klikněte prosím na tlačítko OK pro odeslání dat vývojářům.</string>
+    <string name="crash_notification.dialog_request_user_email">Vaše emailová adresa:</string>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_activity_about">O aplikaci Impeller</string>
+    <string name="btn_submit_feedback">Poslat zpětnou vazbu</string>
+    <string name="about_crafted_with_love">Vytvořeno s láskou,</string>
+    <string name="about_for_every_user">pro všechny uživatele Pump.io</string>
+    <string name="about_by">Autor: Owen Shepherd, 2013</string>
+    <string name="btn_view_feedback">Zobrazit schránku pro zpětnou vazbu</string>
+</resources>
