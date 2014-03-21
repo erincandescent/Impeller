@@ -31,6 +31,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Arrays;
 
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
@@ -43,6 +45,8 @@ public class ActivityAdapter extends BaseAdapter {
 	ActivityWithAccount m_ctx;
 
     HashMap<String, Integer>    m_objectPositions;
+    HashSet knownVerbs;
+    HashSet knownObjectTypes;
     int m_lastScannedObjectPosition;
 
     LruCache<Integer, JSONObject> m_objects = new LruCache<Integer, JSONObject>(20);
@@ -50,7 +54,11 @@ public class ActivityAdapter extends BaseAdapter {
 	public ActivityAdapter(ActivityWithAccount ctx) {
 		m_cursor = null;
 		m_ctx  = ctx;
-        m_objectPositions = new HashMap<String, Integer>();
+		m_objectPositions = new HashMap<String, Integer>();
+		knownVerbs = new HashSet(Arrays.asList("post","follow","stop-following","favorite","unfavorite","share","unshare",
+		"like","unlike","create","add","delete","join","remove","leave","play","listen","checkin"));
+		knownObjectTypes = new HashSet(Arrays.asList("note","image","comment","person","group","activity","place","collection",
+		"review","article","video","audio","service","application","game","event","file"));
 	}
 
     public int findItemById(String id) {
@@ -186,6 +194,140 @@ public class ActivityAdapter extends BaseAdapter {
 		}
 	}
 	
+	public String getLocalizedDescription(JSONObject json)
+	{
+	    try {
+		String verb = json.optString("verb").toLowerCase();
+		String objectType = json.getJSONObject("object").optString("objectType").toLowerCase();
+		if(knownVerbs.contains(verb)&&knownObjectTypes.contains(objectType))
+		{
+		    StringBuilder sbDescription = new StringBuilder("");			
+		    
+		    String actorUrl = json.getJSONObject("actor").optString("url");
+		    
+		    if(actorUrl!="")
+		    {
+			sbDescription.append("<a href='");
+			sbDescription.append(actorUrl);
+			sbDescription.append("'>");
+		    }
+		      
+		    sbDescription.append(json.getJSONObject("actor").optString("displayName",m_ctx.getResources().getString(R.string.actor_unknown)));
+		    
+		    if(actorUrl!="")
+		    {
+			sbDescription.append("</a>");
+		    }
+		    
+		    sbDescription.append(" ");
+				    
+		    if(verb.equals("post"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_posted));
+		    else if(verb.equals("follow"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_followed));
+		    else if(verb.equals("stop-following"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_stopped_following));
+		    else if(verb.equals("favorite"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_favorited));
+		    else if(verb.equals("unfavorite"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_unfavorited));
+		    else if(verb.equals("share"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_shared));
+		    else if(verb.equals("unshare"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_unshared));
+		    else if(verb.equals("like"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_liked));
+		    else if(verb.equals("unlike"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_unliked));
+		    else if(verb.equals("create"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_created));
+		    else if(verb.equals("add"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_added));
+		    else if(verb.equals("delete"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_deleted));
+		    else if(verb.equals("join"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_joined));
+		    else if(verb.equals("remove"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_removed));
+		    else if(verb.equals("leave"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_left));
+		    else if(verb.equals("play"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_played));
+		    else if(verb.equals("listen"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_listened_to));
+		    else if(verb.equals("checkin"))sbDescription.append(m_ctx.getResources().getString(R.string.verb_checked_in_at));
+		    	    
+		    sbDescription.append(" ");
+		    
+		    String objectUrl = json.getJSONObject("object").optString("url");
+		    
+		    if(objectUrl!="")
+		    {
+			sbDescription.append("<a href='");
+			sbDescription.append(objectUrl);
+			sbDescription.append("'>");
+		    }
+		    
+		    if(objectType.equals("note"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_note));
+		    else if(objectType.equals("image"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_image));
+		    else if(objectType.equals("comment"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_comment));
+		    else if(objectType.equals("person"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_person));
+		    else if(objectType.equals("group"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_group));
+		    else if(objectType.equals("activity"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_activity));
+		    else if(objectType.equals("place"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_place));
+		    else if(objectType.equals("collection"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_collection));
+		    else if(objectType.equals("review"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_review));
+		    else if(objectType.equals("article"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_article));
+		    else if(objectType.equals("video"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_video));
+		    else if(objectType.equals("audio"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_audio));
+		    else if(objectType.equals("service"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_service));
+		    else if(objectType.equals("application"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_application));
+		    else if(objectType.equals("game"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_game));
+		    else if(objectType.equals("event"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_event));
+		    else if(objectType.equals("file"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_file));
+		    
+		    if(objectUrl!="")
+		    {
+			sbDescription.append("</a>");
+		    }
+		    
+		    if(json.getJSONObject("object").has("inReplyTo"))
+		    {
+			sbDescription.append(" ");
+			sbDescription.append(m_ctx.getResources().getString(R.string.description_in_reply_to));
+			sbDescription.append(" ");
+			
+			String replyToObjectType = json.getJSONObject("object").getJSONObject("inReplyTo").optString("objectType").toLowerCase();
+			String replyToObjectUrl = json.getJSONObject("object").getJSONObject("inReplyTo").optString("url");
+			
+			if(replyToObjectUrl!="")
+			{
+			    sbDescription.append("<a href='");
+			    sbDescription.append(replyToObjectUrl);
+			    sbDescription.append("'>");
+			}
+			
+			if(replyToObjectType.equals("note"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_note));
+			else if(replyToObjectType.equals("image"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_image));
+			else if(replyToObjectType.equals("comment"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_comment));
+			else if(replyToObjectType.equals("person"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_person));
+			else if(replyToObjectType.equals("group"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_group));
+			else if(replyToObjectType.equals("activity"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_activity));
+			else if(replyToObjectType.equals("place"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_place));
+			else if(replyToObjectType.equals("collection"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_collection));
+			else if(replyToObjectType.equals("review"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_review));
+			else if(replyToObjectType.equals("article"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_article));
+			else if(replyToObjectType.equals("video"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_video));
+			else if(replyToObjectType.equals("audio"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_audio));
+			else if(replyToObjectType.equals("service"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_service));
+			else if(replyToObjectType.equals("application"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_application));
+			else if(replyToObjectType.equals("game"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_game));
+			else if(replyToObjectType.equals("event"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_event));
+			else if(replyToObjectType.equals("file"))sbDescription.append(m_ctx.getResources().getString(R.string.object_type_a_file));
+			else sbDescription.append(m_ctx.getResources().getString(R.string.object_type_an_object));
+			
+			if(replyToObjectUrl!="")
+			{
+			    sbDescription.append("</a>");
+			}
+			
+		    }
+		    
+		    return sbDescription.toString();
+		}
+		
+		return json.optString("content", "(Action string missing)");
+	    }
+	    catch(JSONException e)
+	    {
+	    	return e.getLocalizedMessage();
+	    }
+		      
+	}
+	
 	@Override
 	public View getView(int position, View v, ViewGroup parent) {
 	    JSONObject json = (JSONObject) getItem(position);
@@ -203,9 +345,17 @@ public class ActivityAdapter extends BaseAdapter {
 		    TextView   description  = (TextView)   v.findViewById(R.id.description);
 		    AvatarView actorAvatar  = (AvatarView) v.findViewById(R.id.actorAvatar);
             AvatarView authorAvatar = (AvatarView) v.findViewById(R.id.authorAvatar);
-
+            
+            try {
+            
+		    if(m_ctx.getResources().getString(R.string.is_this_a_localization).equals("Y"))
+		    {
+			description.setText(Html.fromHtml(getLocalizedDescription(json)));
+		    }
+		    else
+		    {
 			description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
-		    try {
+		    }
 		    	JSONObject obj = json.getJSONObject("object");
 		    	String content = obj.optString("content");
                 if(content == null) {
@@ -244,10 +394,17 @@ public class ActivityAdapter extends BaseAdapter {
 	    	ImageView imgImg        = (ImageView) v.findViewById(R.id.imageImage);
 	    	
 	    	try {
-	    		imgDescription.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
+	    		if(m_ctx.getResources().getString(R.string.is_this_a_localization).equals("Y"))
+			{
+			    imgDescription.setText(Html.fromHtml(getLocalizedDescription(json)));
+			}
+			else
+			{
+			    imgDescription.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
+			}
 	    		m_ctx.getImageLoader().setImage(imgImg, getImage(json.getJSONObject("object")));
 	    	} catch(JSONException e) {
-	    		imgDescription.setText(e.getMessage());
+	    		imgDescription.setText(e.getLocalizedMessage());
 	    	}
 	    	break;
 	    }
