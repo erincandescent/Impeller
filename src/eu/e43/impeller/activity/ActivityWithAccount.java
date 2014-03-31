@@ -122,6 +122,7 @@ public abstract class ActivityWithAccount extends Activity {
         Intent i = getIntent();
         i.putExtra("account", a);
         setIntent(i);
+        getActionBar().setSubtitle(a.name);
         gotAccount(a);
     }
 

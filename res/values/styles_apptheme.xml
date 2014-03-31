@@ -11,9 +11,14 @@
         <item name="android:backgroundStacked">@color/im_secondary</item>
         <item name="android:icon">@drawable/ic_impeller_wb</item>
         <item name="android:titleTextStyle">@style/AppActionBar.TextStyle</item>
+        <item name="android:subtitleTextStyle">@style/AppActionBar.SubtitleTextStyle</item>
     </style>
 
     <style name="AppActionBar.TextStyle" parent="android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
+    <style name="AppActionBar.SubtitleTextStyle" parent="android:style/TextAppearance.Holo.Widget.ActionBar.Subtitle">
         <item name="android:textColor">#FFFFFF</item>
     </style>
 

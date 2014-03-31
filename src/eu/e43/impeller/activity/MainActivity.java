@@ -239,6 +239,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
                 fdFrag.setVisibility(View.GONE);
                 ctFrag.setVisibility(View.VISIBLE);
                 m_drawerToggle.setDrawerIndicatorEnabled(false);
+                break;
         }
 
         m_displayMode = m;
@@ -273,6 +274,10 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     public void onAddFeedFragment(FeedFragment fFrag) {
         m_feedFragment = fFrag;
 
+        if(m_displayMode == Mode.FEED) {
+            setTitle(m_feedFragment.getFeedId().getNameString());
+        }
+
         if(m_objectFragment != null) {
             m_feedFragment.setSelectedItem((Uri) m_objectFragment.getArguments().getParcelable("id"));
         }
@@ -290,6 +295,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
             m_feedFragment.setSelectedItem((Uri) oFrag.getArguments().getParcelable("id"));
 
         setDisplayMode(oFrag.getMode());
+        setTitle(m_objectFragment.getDisplayName());
     }
 
     public void onHideObjectFragment(ObjectFragment oFrag) {

@@ -474,6 +474,12 @@ public class ObjectFragment extends ListFragment implements View.OnClickListener
         return (Uri) getArguments().getParcelable("id");
     }
 
+    public String getDisplayName() {
+        if(m_object != null) {
+            return m_object.optString("displayName", "Object");
+        } else return "Object";
+    }
+
     private class DoLike implements PostTask.Callback {
 		private JSONObject m_object;
 		
