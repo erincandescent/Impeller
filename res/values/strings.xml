@@ -85,7 +85,11 @@
     <string name="object_type_a_file">a file</string>
     <string name="object_type_an_object">an object</string>
     
-    <string name="description_in_reply_to">in reply to</string>
+    <!-- Use this to change word order if the language requires it -->
+    <!-- 1 = actor, 2 = verb, 3 = object, 4 = target of a reply -->
+    <string name="format_string_activity">%1$s %2$s %3$s</string>
+    <string name="format_string_reply">%1$s %2$s %3$s in reply to %4$s</string>
+    
     <string name="actor_unknown">Unknown</string>
     <string name="comment_meta_by">By</string>
     <string name="comment_meta_at">\u0020at</string>
