@@ -93,8 +93,10 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
 			if(imageObj != null)
 				activity.getImageLoader().setImage(authorAvatar, Utils.getImageUrl(imageObj));
 
-            commentMeta.setText("By " + author.optString("displayName") + " at " +
-                    Utils.humanDate(comment.optString("published")));
+            commentMeta.setText(m_ctx.getResources().getString(R.string.comment_meta_by) + " "
+				+ author.optString("displayName")
+				+ m_ctx.getResources().getString(R.string.comment_meta_at) + " "
+				+ Utils.humanDate(comment.optString("published")));
 		}
 
         JSONObject imageObj = comment.optJSONObject("image");
