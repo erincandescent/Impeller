@@ -73,6 +73,7 @@ public class ActivityAdapter extends BaseAdapter {
 		.put("play", m_ctx.getResources().getString(R.string.verb_played))
 		.put("listen", m_ctx.getResources().getString(R.string.verb_listened_to))
 		.put("checkin", m_ctx.getResources().getString(R.string.verb_checked_in_at))
+		.put("update", m_ctx.getResources().getString(R.string.verb_updated))
 		.build();
 		mapObjectTypes = ImmutableMap.<String, String> builder()
 		.put("note", m_ctx.getResources().getString(R.string.object_type_a_note))
@@ -248,8 +249,16 @@ public class ActivityAdapter extends BaseAdapter {
 		    strVerb = mapVerbs.get(verb);
 		    
 		    String objectUrl = json.getJSONObject("object").optString("url");
+		    String objectDisplayName = json.getJSONObject("object").optString("displayName");
 		    
-		    if(objectUrl!="")
+		    if(objectDisplayName!="")
+		    {
+			if(objectUrl!="")
+			    strObject = String.format("<a href='%s'>%s</a>",objectUrl,objectDisplayName);
+			else
+			    strObject = objectDisplayName;
+		    }
+		    else if(objectUrl!="")
 			strObject = String.format("<a href='%s'>%s</a>",objectUrl,mapObjectTypes.get(objectType));
 		    else
 			strObject = mapObjectTypes.get(objectType);
@@ -258,8 +267,16 @@ public class ActivityAdapter extends BaseAdapter {
 		    {
 			String replyToObjectType = json.getJSONObject("object").getJSONObject("inReplyTo").optString("objectType").toLowerCase();
 			String replyToObjectUrl = json.getJSONObject("object").getJSONObject("inReplyTo").optString("url");
+			String replyToObjectDisplayName = json.getJSONObject("object").getJSONObject("inReplyTo").optString("displayName");
 			
-			if(mapObjectTypes.containsKey(objectType))
+			if(replyToObjectDisplayName!="")
+			{
+			    if(replyToObjectUrl!="")
+				strReply = String.format("<a href='%s'>%s</a>",replyToObjectUrl,replyToObjectDisplayName);
+			    else
+				strReply = replyToObjectDisplayName;
+			}
+			else if(mapObjectTypes.containsKey(replyToObjectType))
 			{
 			    if(replyToObjectUrl!="")
 				strReply = String.format("<a href='%s'>%s</a>",replyToObjectUrl,mapObjectTypes.get(replyToObjectType));
