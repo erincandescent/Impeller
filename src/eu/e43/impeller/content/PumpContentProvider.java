@@ -356,7 +356,7 @@ public class PumpContentProvider extends ContentProvider {
 
             JSONObject obj = act.optJSONObject("object");
             if(obj != null) {
-                if(!obj.has("author"))
+                if(!obj.has("author") && "post".equals(act.optString("verb", "post")))
                     obj.put("author", act.optJSONObject("actor"));
             }
 
