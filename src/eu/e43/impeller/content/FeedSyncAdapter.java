@@ -88,7 +88,7 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
                 String lastId = getLastId(res, feedContentUri);
                 if(lastId != null)
                     b.appendQueryParameter("since", lastId);
-                b.appendQueryParameter("count", "50");
+                b.appendQueryParameter("count", "200");
                 Uri uri = b.build();
 
                 Log.i(TAG, "Beginning sync from " + uri);
