@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Utils {
@@ -261,6 +262,17 @@ public class Utils {
             strWidth = width.toString();
 
         return String.format(base, strWidth, fragment);
+    }
+
+    /** Builds a stub object, in the form
+     *
+     * { "objectType": (type), "id": (id) }
+     */
+    public static JSONObject buildStubObject(JSONObject obj) throws JSONException {
+        JSONObject stub = new JSONObject();
+        stub.put("id", obj.getString("id"));
+        stub.putOpt("objectType", obj.optString("objectType", null));
+        return stub;
     }
 
 }
