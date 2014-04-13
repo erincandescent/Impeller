@@ -17,20 +17,18 @@ package eu.e43.impeller.activity;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 
 import android.accounts.Account;
 import android.annotation.TargetApi;
-import android.app.ActionBar;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.Browser;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
@@ -41,13 +39,15 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ViewFlipper;
 
+import eu.e43.impeller.account.Authenticator;
 import eu.e43.impeller.fragment.FeedFragment;
-import eu.e43.impeller.fragment.ObjectFragment;
+import eu.e43.impeller.fragment.ObjectContainerFragment;
+import eu.e43.impeller.fragment.StandardObjectFragment;
 import eu.e43.impeller.R;
 import eu.e43.impeller.fragment.SplashFragment;
 import eu.e43.impeller.content.PumpContentProvider;
-import eu.e43.impeller.uikit.BrowserChrome;
 import eu.e43.impeller.uikit.NavigationDrawerAdapter;
+import eu.e43.impeller.uikit.OverlayController;
 
 public class MainActivity extends ActivityWithAccount implements AdapterView.OnItemClickListener {
 	static final String TAG = "MainActivity";
@@ -71,7 +71,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     private FeedFragment m_feedFragment     = null;
 
     /** Pointer to the active object fragment (if any) */
-    private ObjectFragment m_objectFragment = null;
+    private ObjectContainerFragment m_objectFragment = null;
 
     /** Display mode */
     public enum Mode {
@@ -115,12 +115,41 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
                 .setTransition(FragmentTransaction.TRANSIT_NONE)
                 .commit();
         } else {
-            m_displayMode       = (Mode) savedInstanceState.getSerializable("displayMode");
-            m_feedFragment      = (FeedFragment)   getFragmentManager().getFragment(savedInstanceState, "feedFragment");
-            m_objectFragment    = (ObjectFragment) getFragmentManager().getFragment(savedInstanceState, "objectFragment");
-            setDisplayMode(m_displayMode);
+            m_feedFragment      = (FeedFragment)            getFragmentManager().getFragment(savedInstanceState, "feedFragment");
+            m_objectFragment    = (ObjectContainerFragment) getFragmentManager().getFragment(savedInstanceState, "objectFragment");
+
+            setDisplayMode((Mode) savedInstanceState.getSerializable("displayMode"));
+            Log.i(TAG, "Restoring in display mode " + m_displayMode.toString());
         }
 	}
+
+    @Override
+    protected void queryForAccount() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Account[] accts = m_accountManager.getAccountsByType(Authenticator.ACCOUNT_TYPE);
+
+        Account theAccount = null;
+        String lastAccount = prefs.getString("lastAccount", null);
+        if(lastAccount != null) {
+            for(Account act : accts) {
+                if(lastAccount.equals(act.name)) {
+                    theAccount = act;
+                    break;
+                }
+            }
+        }
+
+        if(theAccount == null) {
+            if(accts.length > 0) {
+                theAccount = accts[0];
+            } else {
+                super.queryForAccount();
+                return;
+            }
+        }
+
+        haveGotAccount(theAccount);
+    }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -142,9 +171,9 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
         outState.putInt("selectedTab", getActionBar().getSelectedNavigationIndex());
 
         if(m_feedFragment != null)
-            outState.putParcelable("feedFragment",   getFragmentManager().saveFragmentInstanceState(m_feedFragment));
+            getFragmentManager().putFragment(outState, "feedFragment", m_feedFragment);
         if(m_objectFragment != null)
-            outState.putParcelable("objectFragment", getFragmentManager().saveFragmentInstanceState(m_objectFragment));
+            getFragmentManager().putFragment(outState, "objectFragment", m_objectFragment);
     }
 
     @Override
@@ -167,16 +196,23 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     }
 
     protected void gotAccount(Account acct) {
+        PreferenceManager.getDefaultSharedPreferences(this)
+            .edit()
+            .putString("lastAccount", acct.name)
+            .apply();
+
         getActionBar().show();
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
 
+        if(m_feedFragment == null) {
         FragmentTransaction tx = getFragmentManager().beginTransaction();
-        if(m_objectFragment != null) {
-            tx.remove(m_objectFragment);
-        }
+        //if(m_objectFragment != null) {
+        //    tx.remove(m_objectFragment);
+        //}
         tx.replace(R.id.feed_fragment, new FeedFragment());
         tx.commit();
+        }
 
         setDisplayMode(m_displayMode);
 
@@ -250,13 +286,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     }
 
     public void showObjectInMode(Mode mode, Uri id) {
-        Bundle args = new Bundle();
-        args.putParcelable("id", id);
-        args.putString("mode", mode.toString());
-
-        ObjectFragment objFrag = new ObjectFragment();
-        objFrag.setArguments(args);
-
+        ObjectContainerFragment objFrag = ObjectContainerFragment.newInstance(id.toString(), mode);
         FragmentManager fm = getFragmentManager();
         if(m_objectFragment != null && mode == Mode.FEED_OBJECT) {
             fm.popBackStack();
@@ -272,6 +302,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     }
 
     public void onAddFeedFragment(FeedFragment fFrag) {
+        Log.i(TAG, "Add feed fragment");
         m_feedFragment = fFrag;
 
         if(m_displayMode == Mode.FEED) {
@@ -284,21 +315,23 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     }
 
     public void onRemoveFeedFragment(FeedFragment fFrag) {
+        Log.i(TAG, "Remove feed fragment");
         if(m_feedFragment == fFrag)
             m_feedFragment = null;
     }
 
-    public void onShowObjectFragment(ObjectFragment oFrag) {
+    public void onShowObjectFragment(ObjectContainerFragment oFrag) {
+        Log.i(TAG, "Show object fragment in mode "+ oFrag.getMode() + " " + oFrag);
         m_objectFragment = oFrag;
 
         if(m_feedFragment != null && m_displayMode == Mode.FEED_OBJECT)
-            m_feedFragment.setSelectedItem((Uri) oFrag.getArguments().getParcelable("id"));
+            m_feedFragment.setSelectedItem(Uri.parse(oFrag.getArguments().getString(ObjectContainerFragment.PARAM_ID)));
 
         setDisplayMode(oFrag.getMode());
-        setTitle(m_objectFragment.getDisplayName());
     }
 
-    public void onHideObjectFragment(ObjectFragment oFrag) {
+    public void onHideObjectFragment(ObjectContainerFragment oFrag) {
+        Log.i(TAG, "Hide object fragment " + oFrag);
         if(m_objectFragment == oFrag) {
             m_objectFragment = null;
         } else {
@@ -345,31 +378,41 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
         } // else separator
     }
 
-    BrowserChrome m_chrome;
-    // WebView overlays
-    public void showOverlay(BrowserChrome chrome, View overlay) {
-        if(m_chrome != null) evictOverlay();
+    // Overlays
+    OverlayController m_overlayController;
+
+    public void showOverlay(OverlayController controller, View overlay) {
+        if(m_overlayController != null) {
+            evictOverlay();
+        }
         ViewFlipper flipper = (ViewFlipper) findViewById(R.id.overlay_flipper);
         flipper.addView(overlay);
         flipper.setDisplayedChild(1);
-        m_chrome = chrome;
+        m_overlayController = controller;
         setUiFlags();
     }
 
     private void evictOverlay() {
-        BrowserChrome chrome = m_chrome;
-        if(chrome != null) {
-            hideOverlay(chrome);
-            chrome.onHideCustomView();
+        OverlayController controller = m_overlayController;
+        if(controller != null) {
+            hideOverlay(controller);
+            controller.onHidden();
         }
     }
 
-    public void hideOverlay(BrowserChrome chrome) {
-        if(m_chrome == chrome) {
+    @Override
+    public void onBackPressed() {
+        if(m_overlayController != null) {
+            evictOverlay();
+        } else super.onBackPressed();
+    }
+
+    public void hideOverlay(OverlayController controller) {
+        if(m_overlayController == controller) {
             ViewFlipper flipper = (ViewFlipper) findViewById(R.id.overlay_flipper);
             flipper.setDisplayedChild(0);
             flipper.removeViewAt(1);
-            m_chrome = null;
+            m_overlayController = null;
             setUiFlags();
         }
     }
@@ -377,17 +420,21 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     @TargetApi(Build.VERSION_CODES.KITKAT)
     void setUiFlags() {
         ViewFlipper flipper = (ViewFlipper) findViewById(R.id.overlay_flipper);
-        if(m_chrome != null) {
+        if(m_overlayController != null) {
             // Fullscreen
             int flags =
                       View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_FULLSCREEN;
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                flags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            if(m_overlayController.isImmersive()) {
+                flags |=
+                      View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    flags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+                }
             }
 
             flipper.setSystemUiVisibility(flags);

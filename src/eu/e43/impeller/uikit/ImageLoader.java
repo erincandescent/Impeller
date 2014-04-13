@@ -248,8 +248,8 @@ public class ImageLoader {
                 BitmapFactory.decodeStream(in, null, opts);
 
                 // Compute appropriate scale factor
-                int largestEdge = opts.outWidth > opts.outHeight ? opts.outWidth : opts.outHeight;
-                opts.inSampleSize = largestEdge / m_largestEdge;
+                //int largestEdge = opts.outWidth > opts.outHeight ? opts.outWidth : opts.outHeight;
+                //opts.inSampleSize = largestEdge / m_largestEdge;
                 opts.inJustDecodeBounds = false;
 
                 // Decode image. If we get OOM, try doubling the scale factor (blurry images are

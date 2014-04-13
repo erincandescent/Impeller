@@ -116,6 +116,8 @@ public class FeedFragment
     }
 
     public void setSelectedItem(Uri id) {
+        if(id == null) return;
+
         int sel = m_adapter.findItemById(id.toString());
         if(sel != m_selection) {
             getListView().setItemChecked(sel, true);

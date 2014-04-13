@@ -47,5 +47,6 @@
 
     <!-- Preferences -->
     <string name="pref_title_limit_database_size">Limit maximum database size</string>
-    <string name="pref_database_max_item_count">Maximum item count</string><string name="in_reply_to_post_by">In reply to a post by</string>
+    <string name="pref_database_max_item_count">Maximum item count</string><string name="in_reply_to_post_by">In reply to a post by</string><string name="action_follow">Follow</string><string name="action_following">Following</string>
+    <string name="action_replyNote">Reply with note</string>
 </resources>

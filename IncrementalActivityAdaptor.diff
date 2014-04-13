@@ -1,0 +1,548 @@
+diff --git a/src/eu/e43/impeller/content/PumpContentProvider.java b/src/eu/e43/impeller/content/PumpContentProvider.java
+index a4df53d..0486b48 100644
+--- a/src/eu/e43/impeller/content/PumpContentProvider.java
++++ b/src/eu/e43/impeller/content/PumpContentProvider.java
+@@ -84,6 +84,7 @@ public class PumpContentProvider extends ContentProvider {
+         ms_activityProjection.put("_json",          "activity_object._json");
+         addStateProjections(ms_activityProjection,  "activity.object");
+ 
++        ms_feedProjection.put("_ID",                "feed_entries._ID");
+         ms_feedProjection.put("id",                 "feed_entries.id");
+         ms_feedProjection.put("published",          "feed_entries.published");
+         ms_feedProjection.put("verb",               "activity.verb");
+diff --git a/src/eu/e43/impeller/fragment/FeedFragment.java b/src/eu/e43/impeller/fragment/FeedFragment.java
+index 3c6fdfd..c9c406b 100644
+--- a/src/eu/e43/impeller/fragment/FeedFragment.java
++++ b/src/eu/e43/impeller/fragment/FeedFragment.java
+@@ -37,8 +37,7 @@ import eu.e43.impeller.content.PumpContentProvider;
+  */
+ public class FeedFragment
+         extends ListFragment
+-        implements LoaderManager.LoaderCallbacks<Cursor>,
+-        SyncStatusObserver
++        implements SyncStatusObserver
+ {
+     Account             m_account;
+     ActivityAdapter     m_adapter;
+@@ -77,9 +76,9 @@ public class FeedFragment
+             m_account = getMainActivity().getAccount();
+         }
+ 
+-        m_adapter = new ActivityAdapter(getMainActivity());
+-        getLoaderManager().initLoader(0, null, this);
++        m_adapter = new ActivityAdapter(getMainActivity(), m_feedId);
+         setListAdapter(m_adapter);
++        getListView().setOnScrollListener(m_adapter);
+ 
+         getMainActivity().onAddFeedFragment(this);
+ 
+@@ -152,54 +151,6 @@ public class FeedFragment
+     }
+ 
+     @Override
+-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+-        Uri uri =
+-                Uri.parse(PumpContentProvider.FEED_URL).buildUpon()
+-                        .appendPath(m_account.name)
+-                        .build();
+-
+-        switch(m_feedId) {
+-            case MAJOR_FEED:
+-                return new CursorLoader(getActivity(), uri,
+-                        new String[] { "_json", "replies", "likes", "shares" },
+-                        "verb='share' OR (verb='post' AND object.objectType<>'comment')", null,
+-                        "feed_entries._ID DESC");
+-
+-            case MINOR_FEED:
+-                return new CursorLoader(getActivity(), uri,
+-                        new String[] { "_json", "replies", "likes", "shares" },
+-                        "NOT (verb='share' OR (verb='post' AND object.objectType<>'comment'))", null,
+-                        "feed_entries._ID DESC");
+-
+-            case DIRECT_FEED:
+-                throw new RuntimeException("Not yet implemented");
+-
+-            default:
+-                throw new RuntimeException("Bad ID");
+-        }
+-    }
+-
+-    @Override
+-    public void onLoadFinished(Loader<Cursor> objectLoader, Cursor o) {
+-        if(objectLoader != null && o != null) {
+-            o.setNotificationUri(
+-                    getActivity().getContentResolver(),
+-                    ((CursorLoader) objectLoader).getUri());
+-        }
+-        m_adapter.updateCursor(o);
+-
+-        if(m_jumpToSelection) {
+-            int pos = getSelectedItemPosition();
+-            if(pos >= 0) showItemByPosition(pos);
+-        }
+-    }
+-
+-    @Override
+-    public void onLoaderReset(Loader<Cursor> objectLoader) {
+-        m_adapter.updateCursor(null);
+-    }
+-
+-    @Override
+     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+         inflater.inflate(R.menu.feed, menu);
+         m_menu = menu;
+diff --git a/src/eu/e43/impeller/uikit/ActivityAdapter.java b/src/eu/e43/impeller/uikit/ActivityAdapter.java
+index bd7b36b..8d9804e 100644
+--- a/src/eu/e43/impeller/uikit/ActivityAdapter.java
++++ b/src/eu/e43/impeller/uikit/ActivityAdapter.java
+@@ -18,12 +18,21 @@ package eu.e43.impeller.uikit;
+ import org.json.JSONException;
+ import org.json.JSONObject;
+ 
++import android.content.ContentResolver;
++import android.content.CursorLoader;
++import android.database.ContentObserver;
+ import android.database.Cursor;
++import android.database.DataSetObserver;
++import android.net.Uri;
++import android.os.AsyncTask;
++import android.os.Handler;
+ import android.text.Html;
++import android.util.Log;
+ import android.util.LruCache;
+ import android.view.LayoutInflater;
+ import android.view.View;
+ import android.view.ViewGroup;
++import android.widget.AbsListView;
+ import android.widget.BaseAdapter;
+ import android.widget.Checkable;
+ import android.widget.FrameLayout;
+@@ -31,47 +40,274 @@ import android.widget.ImageView;
+ import android.widget.TextView;
+ 
+ import java.util.HashMap;
++import java.util.Vector;
+ 
+ import eu.e43.impeller.R;
+ import eu.e43.impeller.Utils;
+ import eu.e43.impeller.activity.ActivityWithAccount;
++import eu.e43.impeller.content.PumpContentProvider;
++import eu.e43.impeller.fragment.FeedFragment;
+ 
+-public class ActivityAdapter extends BaseAdapter {
++public class ActivityAdapter
++        extends BaseAdapter
++        implements AbsListView.OnScrollListener
++{
+ 	static final String TAG = "ActivityAdapter";
+-	
+-    Cursor                      m_cursor;
++
++    FeedFragment.FeedID m_feedId;
+ 	ActivityWithAccount m_ctx;
++    Uri m_uri;
++
++    HashMap<String, Integer>    m_objectPositions = new HashMap<String, Integer>();;
++    boolean m_objectPositionsUpToDate = false;
+ 
+-    HashMap<String, Integer>    m_objectPositions;
+-    int m_lastScannedObjectPosition;
++    // Shown range
++    int m_rangeStart = 0;
++    Vector<JSONObject> m_objects = new Vector<JSONObject>();
+ 
+-    LruCache<Integer, JSONObject> m_objects = new LruCache<Integer, JSONObject>(20);
++    // Observer registration
++    Observer m_observer;
++    int m_registrationCount = 0;
++    DataLoader m_dataLoader;
++    boolean m_isForwardUpdate;
++    private boolean m_isReplaceUpdate = false;
++    private boolean m_dataUpdatePending = false;
+ 
+-	public ActivityAdapter(ActivityWithAccount ctx) {
+-		m_cursor = null;
+-		m_ctx  = ctx;
+-        m_objectPositions = new HashMap<String, Integer>();
++    public ActivityAdapter(ActivityWithAccount ctx, FeedFragment.FeedID feedId) {
++		m_ctx      = ctx;
++        m_feedId   = feedId;
++
++        m_uri = Uri.parse(PumpContentProvider.FEED_URL).buildUpon()
++                .appendPath(m_ctx.getAccount().name)
++                .build();
++
++        m_observer = new Observer(null);
++        onScroll(null, 0, 0, 0);
+ 	}
+ 
++    @Override
++    public void registerDataSetObserver(DataSetObserver observer) {
++        super.registerDataSetObserver(observer);
++        m_registrationCount++;
++        if(m_registrationCount == 1) {
++            m_ctx.getContentResolver().registerContentObserver(m_uri, true, m_observer);
++            doDataUpdate();
++        }
++    }
++
++    @Override
++    public void unregisterDataSetObserver(DataSetObserver observer) {
++        super.unregisterDataSetObserver(observer);
++        m_registrationCount--;
++        if(m_registrationCount == 0) {
++            m_ctx.getContentResolver().unregisterContentObserver(m_observer);
++        }
++    }
++
+     public int findItemById(String id) {
++        if(!m_objectPositionsUpToDate) {
++            for(int i = 0; i < m_objects.size(); i++) {
++                JSONObject act = m_objects.get(i);
++                JSONObject obj = act.optJSONObject("object");
++                if(obj != null) {
++                    String objId = obj.optString("id");
++                    if(objId != null)
++                        m_objectPositions.put(objId, i + m_rangeStart);
++                }
++            }
++            m_objectPositionsUpToDate = true;
++        }
++
+         Integer pos = m_objectPositions.get(id);
+-        if(pos == null) {
+-            if(m_cursor == null) return -1;
+-
+-            if(!m_cursor.moveToPosition(m_lastScannedObjectPosition)) return -1;
+-            do {
+-                String objId = m_cursor.getString(1);
+-                pos = m_cursor.getPosition();
+-                m_objectPositions.put(id, pos);
+-                if(id.equals(objId)) {
+-                    m_lastScannedObjectPosition = pos;
+-                    return pos;
++        if(pos == null) pos = -1;
++        return pos;
++    }
++
++    @Override
++    public void onScrollStateChanged(AbsListView absListView, int i) {}
++
++    // We want to hold ~20 items on either side of the current visible area "in memory"
++    // Validate that this is so
++
++    private int m_lastFirstVisible = 0;
++    private int m_lastVisibleCount = 0;
++
++    @Override
++    public void onScroll(AbsListView listView, int firstVisible, int visibleCount, int totalCount) {
++        m_lastFirstVisible = firstVisible;
++        m_lastVisibleCount = visibleCount;
++        int rangeEnd = m_rangeStart + m_objects.size();
++        int limit = 0;
++        int lastID = -666;
++
++        if(m_dataLoader != null) {
++            return;
++        } if(Math.max(firstVisible - 20, 0) < m_rangeStart) {
++            // Need update backwards
++            limit  = m_rangeStart - (firstVisible - 30);
++            lastID = m_objects.get(0).optInt("_ID");
++            m_isForwardUpdate = false;
++        } else if((firstVisible + visibleCount + 20) > rangeEnd) {
++            // Need update forwards
++            limit = (firstVisible + visibleCount + 30) - rangeEnd;
++            if(m_objects.isEmpty()) {
++                lastID = Integer.MAX_VALUE;
++            } else {
++                lastID = m_objects.lastElement().optInt("_ID");
++            }
++            m_isForwardUpdate = true;
++        } else return;
++
++        m_dataLoader = new DataLoader();
++        m_dataLoader.execute(lastID, 30);
++    }
++
++    private class DataLoader extends AsyncTask<Integer, Void, Vector<JSONObject>> {
++
++        @Override
++        protected Vector<JSONObject> doInBackground(Integer... integers) {
++            int lastID = integers[0];
++            int limit  = integers[1];
++
++            Log.d(TAG, "Want " + limit + " items from " + lastID + " forward? " + m_isForwardUpdate);
++
++            String searchClause, sortClause;
++            if(m_isForwardUpdate) {
++                searchClause = "feed_entries._ID < ?";
++                sortClause = "feed_entries._ID DESC ";
++            } else {
++                searchClause = "feed_entries._ID > ?";
++                sortClause = "feed_entries._ID ASC ";
++            }
++            sortClause += "LIMIT " + Integer.toString(limit);
++
++            ContentResolver cr = m_ctx.getContentResolver();
++            Cursor c;
++            switch(m_feedId) {
++                case MAJOR_FEED:
++                    c = cr.query(m_uri,
++                            new String[] { "_ID", "_json", "replies", "likes", "shares" },
++                            "(verb='share' OR (verb='post' AND object.objectType<>'comment')) AND " + searchClause,
++                            new String[] { Integer.toString(lastID) },
++                            sortClause);
++                    break;
++
++                case MINOR_FEED:
++                    c = cr.query(m_uri,
++                            new String[] { "_ID", "_json", "replies", "likes", "shares" },
++                            "NOT (verb='share' OR (verb='post' AND object.objectType<>'comment')) AND " + searchClause,
++                            new String[] { Integer.toString(lastID) },
++                            sortClause);
++                    break;
++
++                case DIRECT_FEED:
++                    throw new RuntimeException("Not yet implemented");
++
++                default:
++                    throw new RuntimeException("Bad ID");
++            }
++
++            try {
++                Vector<JSONObject> foundObjs = new Vector<JSONObject>();
++                while(c.moveToNext()) {
++                    int      id = c.getInt(0);
++                    String json = c.getString(1);
++                    int replies = c.getInt(2);
++                    int likes   = c.getInt(3);
++                    int shares  = c.getInt(4);
++
++                    JSONObject act = new JSONObject(json);
++                    act.put("_replies", replies);
++                    act.put("_likes",   likes);
++                    act.put("_shares",  shares);
++                    act.put("_ID",      id);
++
++                    if(m_isForwardUpdate) {
++                        foundObjs.add(act);
++                    } else {
++                        foundObjs.add(0, act);
++                    }
++                }
++
++                return foundObjs;
++            } catch(JSONException ex) {
++                throw new RuntimeException(ex);
++            } finally {
++                c.close();
++            }
++        }
++
++        @Override
++        protected void onPostExecute(Vector<JSONObject> jsonObjects) {
++            if(m_isReplaceUpdate) {
++                m_rangeStart -=
++                m_objects = jsonObjects;
++            } else if(m_isForwardUpdate) {
++                m_objects.addAll(jsonObjects);
++
++                if(m_objects.size() > 100) {
++                    int numToRemove = m_objects.size() - 100;
++                    m_objects = new Vector<JSONObject>(m_objects.subList(0, numToRemove));
++                    m_rangeStart += numToRemove;
++                }
++            } else {
++                m_objects.addAll(0, jsonObjects);
++                m_rangeStart -= jsonObjects.size();
++
++                if(m_objects.size() > 100) {
++                    m_objects = new Vector<JSONObject>(m_objects.subList(100, m_objects.size()));
+                 }
+-            } while(m_cursor.moveToNext());
+-            return -1;
+-        } else return pos;
++            }
++
++            Log.v(TAG, "Completed fetch, have " + m_objects.size() + " objects starting at " + m_rangeStart);
++
++            m_objectPositions.clear();
++            m_objectPositionsUpToDate = false;
++            m_dataLoader = null;
++            m_isReplaceUpdate = false;
++
++            if(m_dataUpdatePending) {
++                doDataUpdate();
++            } else {
++                onScroll(null, m_lastFirstVisible, m_lastVisibleCount, 0);
++            }
++            notifyDataSetChanged();
++        }
++    }
++
++    class Observer extends ContentObserver {
++        public Observer(Handler handler) {
++            super(handler);
++        }
++
++        @Override
++        public void onChange(boolean selfChange, Uri uri) {
++            if(m_dataLoader != null) {
++                m_dataUpdatePending = true;
++            } else {
++                doDataUpdate();
++            }
++        }
++    };
++
++    private void doDataUpdate() {
++        if(m_objects.size() == 0) {
++            onScroll(null, m_lastFirstVisible, m_lastVisibleCount, 0);
++            return;
++        }
++        m_dataUpdatePending = false;
++
++        m_dataLoader = new DataLoader();
++        m_isForwardUpdate = false;
++        m_isReplaceUpdate = true;
++
++        int startID = m_objects.lastElement().optInt("_ID");
++        int limit = Math.min(m_objects.size() + 20, 100);
++
++        m_dataLoader.execute(startID, limit);
+     }
+ 
++
+     private static class Wrapper extends FrameLayout implements Checkable {
+         private boolean m_checked = false;
+ 
+@@ -101,57 +337,40 @@ public class ActivityAdapter extends BaseAdapter {
+             setChecked(!m_checked);
+         }
+     }
+-
+-    public void updateCursor(Cursor c) {
+-        if(m_cursor != null && m_cursor != c) m_cursor.close();
+-        m_cursor = c;
+-        m_objects.evictAll();
+-        m_lastScannedObjectPosition = 0;
+-        m_objectPositions.clear();
+-        notifyDataSetChanged();
+-    }
+ 	
+ 	public void close() {
+-        if(m_cursor != null)
+-            m_cursor.close();
+-		m_cursor = null;
++        if(m_dataLoader != null)
++            m_dataLoader.cancel(false);
+ 	}
+ 
+ 	@Override
+ 	public int getCount() {
+-        if(m_cursor != null)
+-		    return m_cursor.getCount();
+-        else
+-            return 0;
++        return m_rangeStart + m_objects.size();
+ 	}
+ 
+-	@Override
+-	public Object getItem(int position) {
+-        JSONObject act = m_objects.get(position);
+-        if(act != null) {
+-            return act;
+-        } else {
+-            try {
+-                m_cursor.moveToPosition(position);
+-                act = new JSONObject(m_cursor.getString(0));
+-                JSONObject obj = act.optJSONObject("object");
+-                if(obj != null) {
+-                    String id = obj.optString("id");
+-                    if(id != null) {
+-                        m_objectPositions.put(id, position);
+-                    }
+-                }
++    @Override
++    public boolean hasStableIds() {
++        return true;
++    }
+ 
+-                act.put("_replies", m_cursor.getInt(1));
+-                act.put("_likes",   m_cursor.getInt(2));
+-                act.put("_shares",  m_cursor.getInt(3));
++    @Override
++    public long getItemId(int id) {
++        JSONObject obj = getItem(id);
++        if(obj != null) {
++            return obj.optInt("_ID");
++        } else {
++            return -id;
++        }
++    }
+ 
+-                m_objects.put(position, act);
+-                m_objectPositions.put(m_cursor.getString(1), position);
+-                return act;
+-            } catch(JSONException e) {
+-                throw new RuntimeException(e);
+-            }
++	@Override
++	public JSONObject getItem(int position) {
++        if(position < m_rangeStart) {
++            return null;
++        } else if(position >= m_rangeStart + m_objects.size()) {
++            return null;
++        } else {
++            return m_objects.get(position - m_rangeStart);
+         }
+ 	}
+ 
+@@ -165,7 +384,7 @@ public class ActivityAdapter extends BaseAdapter {
+ 	@Override
+ 	public int getViewTypeCount()
+ 	{
+-		return 2;
++		return 3;
+ 	}
+ 	
+ 	@Override
+@@ -176,6 +395,9 @@ public class ActivityAdapter extends BaseAdapter {
+ 	}
+ 	
+ 	public int getItemViewType(JSONObject act) {
++        if(act == null) {
++            return 2;
++        }
+ 		JSONObject obj = act.optJSONObject("object");
+ 		if(obj == null) {
+ 			return 1;
+@@ -250,18 +472,22 @@ public class ActivityAdapter extends BaseAdapter {
+ 	    		imgDescription.setText(e.getMessage());
+ 	    	}
+ 	    	break;
++        case 2:
++            // null (not loaded)
++            if(v == null) {
++                LayoutInflater vi = LayoutInflater.from(m_ctx);
++                v = vi.inflate(android.R.layout.simple_list_item_1, null);
++                ((TextView)v).setText("Loading...");
++                v = new Wrapper(v);
++            }
+ 	    }
+ 
+         int replies = json.optInt("_replies");
+         int likes   = json.optInt("_likes");
+         int shares  = json.optInt("_shares");
+-        Utils.updateStatebar(v, replies, likes, shares);
++        if(type != 2)
++            Utils.updateStatebar(v, replies, likes, shares);
+ 		
+ 		return v;
+ 	}
+-
+-	@Override
+-	public long getItemId(int id) {
+-		return id;
+-	}
+ }

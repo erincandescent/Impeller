@@ -20,6 +20,7 @@ import org.json.JSONObject;
 
 import android.database.Cursor;
 import android.text.Html;
+import android.text.Layout;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -165,7 +166,7 @@ public class ActivityAdapter extends BaseAdapter {
 	@Override
 	public int getViewTypeCount()
 	{
-		return 2;
+		return 3;
 	}
 	
 	@Override
@@ -174,16 +175,25 @@ public class ActivityAdapter extends BaseAdapter {
 		JSONObject json = (JSONObject) getItem(pos);
 		return getItemViewType(json);
 	}
-	
+
+    private static final int VT_BASIC = 0;
+    private static final int VT_POST  = 1;
+    private static final int VT_IMAGE = 2;
+
 	public int getItemViewType(JSONObject act) {
-		JSONObject obj = act.optJSONObject("object");
-		if(obj == null) {
-			return 1;
-		} else if("image".equals(obj.optString("objectType"))) {
-			return 1;
-		} else { //if("note".equals(obj.optString("objectType"))) {
-			return 0;
-		}
+        if(act.optString("verb", "post").equals("post") || act.optString("verb").equals("share")) {
+            JSONObject obj = act.optJSONObject("object");
+
+            if(obj == null) {
+                return VT_BASIC;
+            } else if("image".equals(obj.optString("objectType"))) {
+                return VT_IMAGE;
+            } else {
+                return VT_POST;
+            }
+        } else {
+            return VT_BASIC;
+        }
 	}
 	
 	@Override
@@ -192,70 +202,102 @@ public class ActivityAdapter extends BaseAdapter {
 	    int type = getItemViewType(json);
 
 	    switch(type) {
-	    case 0:
-	    	// General case
-		    if (v == null) {
-		        LayoutInflater vi = LayoutInflater.from(m_ctx);
-		        v = new Wrapper(vi.inflate(R.layout.post_view, null));
-		    }
+            case VT_BASIC: {
+                if (v == null) {
+                    LayoutInflater vi = LayoutInflater.from(m_ctx);
+                    v = new Wrapper(vi.inflate(R.layout.view_activity, null));
+                }
 
-		    TextView   caption      = (TextView)   v.findViewById(R.id.caption);
-		    TextView   description  = (TextView)   v.findViewById(R.id.description);
-		    AvatarView actorAvatar  = (AvatarView) v.findViewById(R.id.actorAvatar);
-            AvatarView authorAvatar = (AvatarView) v.findViewById(R.id.authorAvatar);
+                TextView   description      = (TextView)   v.findViewById(R.id.description);
+                AvatarView actorAvatar      = (AvatarView) v.findViewById(R.id.actorAvatar);
+                AvatarView targetUserAvatar = (AvatarView) v.findViewById(R.id.targetUserAvatar);
+                targetUserAvatar.setVisibility(View.GONE);
 
-			description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
-		    try {
-		    	JSONObject obj = json.getJSONObject("object");
-		    	String content = obj.optString("content");
-                if(content == null) {
-                    caption.setVisibility(View.GONE);
-                } else {
+                description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
+                ImageLoader ldr = m_ctx.getImageLoader();
+                try {
+                    ldr.setImage(actorAvatar, getImage(json.getJSONObject("actor")));
+
+                    JSONObject obj = json.optJSONObject("object");
+                    if(obj != null) {
+                        if(obj.optString("objectType", "note").equals("person")) {
+                            ldr.setImage(targetUserAvatar, getImage(obj));
+                            targetUserAvatar.setVisibility(View.VISIBLE);
+                        }
+                    }
+                } catch(JSONException ex) {
+                    description.setText(ex.getMessage());
+                }
+
+                break;
+            }
+
+            case VT_POST: {
+                if (v == null) {
+                    LayoutInflater vi = LayoutInflater.from(m_ctx);
+                    v = new Wrapper(vi.inflate(R.layout.post_view, null));
+                }
+
+                TextView   caption      = (TextView)   v.findViewById(R.id.caption);
+                TextView   description  = (TextView)   v.findViewById(R.id.description);
+                AvatarView actorAvatar  = (AvatarView) v.findViewById(R.id.actorAvatar);
+                AvatarView authorAvatar = (AvatarView) v.findViewById(R.id.authorAvatar);
+
+                description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
+                try {
+                    JSONObject obj = json.getJSONObject("object");
+                    String content = obj.optString("content");
+                    if(content == null) {
+                        caption.setVisibility(View.GONE);
+                    } else {
+                        caption.setVisibility(View.VISIBLE);
+                        PumpHtml.setFromHtml(m_ctx, caption, content);
+                    }
+
+                    m_ctx.getImageLoader().setImage(actorAvatar, getImage(json.getJSONObject("actor")));
+
+                    String actorId  = json.getJSONObject("actor").getString("id");
+                    String authorId = json.getJSONObject("object").getJSONObject("author").getString("id");
+                    if(actorId.equals(authorId)) {
+                        authorAvatar.setVisibility(View.GONE);
+                    } else {
+                        authorAvatar.setVisibility(View.VISIBLE);
+                        m_ctx.getImageLoader().setImage(authorAvatar,
+                                getImage(json.getJSONObject("object").getJSONObject("author")));
+                    }
+                } catch (JSONException e) {
                     caption.setVisibility(View.VISIBLE);
-                    PumpHtml.setFromHtml(m_ctx, caption, content);
+                    caption.setText(Html.fromHtml(e.getLocalizedMessage()));
+                    //caption.loadData(e.getLocalizedMessage(), "text/plain", "utf-8");
                 }
-				
-				m_ctx.getImageLoader().setImage(actorAvatar, getImage(json.getJSONObject("actor")));
-
-                String actorId  = json.getJSONObject("actor").getString("id");
-                String authorId = json.getJSONObject("object").getJSONObject("author").getString("id");
-                if(actorId.equals(authorId)) {
-                    authorAvatar.setVisibility(View.GONE);
-                } else {
-                    authorAvatar.setVisibility(View.VISIBLE);
-                    m_ctx.getImageLoader().setImage(authorAvatar,
-                            getImage(json.getJSONObject("object").getJSONObject("author")));
-                }
-			} catch (JSONException e) {
-                caption.setVisibility(View.VISIBLE);
-				caption.setText(Html.fromHtml(e.getLocalizedMessage()));
-				//caption.loadData(e.getLocalizedMessage(), "text/plain", "utf-8");
-			}
-		    break;
+                break;
+            }
 		    
-	    case 1:
-	    	// Image
-	    	if(v == null) {
-	    		LayoutInflater vi = LayoutInflater.from(m_ctx);
-	    		v = new Wrapper(vi.inflate(R.layout.view_image, null));
-	    	}
-	    	
-	    	TextView imgDescription = (TextView)  v.findViewById(R.id.description);
-	    	ImageView imgImg        = (ImageView) v.findViewById(R.id.imageImage);
-	    	
-	    	try {
-	    		imgDescription.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
-	    		m_ctx.getImageLoader().setImage(imgImg, getImage(json.getJSONObject("object")));
-	    	} catch(JSONException e) {
-	    		imgDescription.setText(e.getMessage());
-	    	}
-	    	break;
+            case VT_IMAGE: {
+                if(v == null) {
+                    LayoutInflater vi = LayoutInflater.from(m_ctx);
+                    v = new Wrapper(vi.inflate(R.layout.view_image, null));
+                }
+
+                TextView imgDescription = (TextView)  v.findViewById(R.id.description);
+                ImageView imgImg        = (ImageView) v.findViewById(R.id.imageImage);
+
+                try {
+                    imgDescription.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
+                    m_ctx.getImageLoader().setImage(imgImg, getImage(json.getJSONObject("object")));
+                } catch(JSONException e) {
+                    imgDescription.setText(e.getMessage());
+                }
+                break;
+            }
 	    }
 
-        int replies = json.optInt("_replies");
-        int likes   = json.optInt("_likes");
-        int shares  = json.optInt("_shares");
-        Utils.updateStatebar(v, replies, likes, shares);
+        if(type != VT_BASIC) {
+            int replies = json.optInt("_replies");
+            int likes   = json.optInt("_likes");
+            int shares  = json.optInt("_shares");
+            Utils.updateStatebar(v, replies, likes, shares);
+        }
 		
 		return v;
 	}
