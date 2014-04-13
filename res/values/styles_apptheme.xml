@@ -2,9 +2,10 @@
 
 <!-- Generated with http://android-holo-colors.com -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-    <color name="im_primary">#7F00FF</color>   <!-- 100% saturation (dark) -->
-    <color name="im_secondary">#9532FF</color> <!--  80% saturation (dark) -->
+    <color name="im_primary">#7F00FF</color>   <!-- 100% saturation (dark)  -->
+    <color name="im_secondary">#9532FF</color> <!--  80% saturation (dark)  -->
     <color name="im_accent">#D7B2FF</color>    <!--  30% saturation (light) -->
+    <color name="im_pink">#FF00FF</color>      <!--  Pink                   -->
 
     <style name="AppActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
         <item name="android:background">@color/im_primary</item>

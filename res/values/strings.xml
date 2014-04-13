@@ -15,7 +15,6 @@
 
     <!-- Menu items -->
     <string name="action_sign_out">Sign out</string>
-    <string name="action_refresh">Refresh</string>
     <string name="action_post">New Post</string>
     <string name="action_post_image">Post Image</string>
     <string name="action_like">Like</string>

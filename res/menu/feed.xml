@@ -1,10 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item   android:id="@+id/action_refresh"
-            android:menuCategory="container"
-            android:title="@string/action_refresh"
-            android:visible="true"
-            android:icon="@drawable/ic_menu_refresh"
-            android:showAsAction="always"/>
     <item   android:id="@+id/action_post"
             android:menuCategory="container"
             android:title="@string/action_post"

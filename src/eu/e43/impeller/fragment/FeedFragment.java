@@ -13,6 +13,7 @@ import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,8 +39,7 @@ import eu.e43.impeller.content.PumpContentProvider;
 public class FeedFragment
         extends ListFragment
         implements LoaderManager.LoaderCallbacks<Cursor>,
-        SyncStatusObserver
-{
+        SyncStatusObserver, SwipeRefreshLayout.OnRefreshListener {
     Account             m_account;
     ActivityAdapter     m_adapter;
     Menu                m_menu              = null;
@@ -47,6 +47,7 @@ public class FeedFragment
     int                 m_selection         = -1;
     Object              m_statusHandle      = null;
     FeedID              m_feedId            = null;
+    SwipeRefreshLayout  m_swipeRefreshView  = null;
 
     // Activity IDs
     private static final int ACTIVITY_SELECT_PHOTO = 1;
@@ -100,7 +101,11 @@ public class FeedFragment
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_feed, null);
+        View root = inflater.inflate(R.layout.fragment_feed, null);
+        m_swipeRefreshView = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefresh);
+        m_swipeRefreshView.setOnRefreshListener(this);
+        m_swipeRefreshView.setColorScheme(R.color.im_primary, R.color.im_pink, R.color.im_primary, R.color.im_pink);
+        return root;
     }
 
     public FeedID getFeedId() {
@@ -211,10 +216,6 @@ public class FeedFragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_refresh:
-                refresh(item);
-                return true;
-
             case R.id.action_post:
                 Intent postIntent = new Intent(getActivity(), PostActivity.class);
                 postIntent.putExtra("account", m_account);
@@ -237,11 +238,6 @@ public class FeedFragment
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    public void refresh(MenuItem itm) {
-        getActivity().getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
-    }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -269,29 +265,21 @@ public class FeedFragment
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(m_menu == null) return;
-
-                MenuItem itm = m_menu.findItem(R.id.action_refresh);
-                if(itm == null) return;
+                if(m_swipeRefreshView == null)
+                    return;
 
                 if(getActivity() == null) return;
                 boolean syncing = getActivity().getContentResolver().isSyncActive(
                         m_account, PumpContentProvider.AUTHORITY);
 
-                if(syncing) {
-                    if(itm.getActionView() != null) return;
-                    Context themedContext = getActivity().getActionBar().getThemedContext();
-                    ProgressBar pbar = new ProgressBar(themedContext);
-
-                    // Set an ID to prevent data being restored for view with different ID
-                    pbar.setId(R.id.syncProgress);
-                    pbar.setIndeterminate(true);
-                    itm.setActionView(pbar);
-                } else {
-                    itm.setActionView(null);
-                }
+                m_swipeRefreshView.setRefreshing(syncing);
             }
         });
+    }
+
+    @Override
+    public void onRefresh() {
+        getActivity().getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
     }
 
     /** Tabs */
