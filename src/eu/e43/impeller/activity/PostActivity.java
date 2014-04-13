@@ -104,11 +104,11 @@ public class PostActivity extends ActivityWithAccount {
 
         Log.v(TAG, "MIME Type is " + type);
         if(type == null || type.startsWith("text/")) {
-            if(ACTION_REPLY.equals(intent.getAction())) {
-                m_type = TYPE_COMMENT;
-            } else {
+            //if(ACTION_REPLY.equals(intent.getAction())) {
+                //m_type = TYPE_COMMENT;
+            //} else {
                 m_type = TYPE_NOTE;
-            }
+            //}
         } else if(type.startsWith("image/")) {
             m_type = TYPE_IMAGE;
             m_imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
@@ -200,8 +200,8 @@ public class PostActivity extends ActivityWithAccount {
 
         if(ACTION_REPLY.equals(getIntent().getAction())) {
             setTitle(R.string.title_activity_post_reply);
-            m_title.setVisibility(View.GONE);
-            m_title.setText("");
+            //m_title.setVisibility(View.GONE);
+            //m_title.setText("");
 
             try {
                 m_inReplyTo = new JSONObject(getIntent().getStringExtra("inReplyTo"));
@@ -209,6 +209,11 @@ public class PostActivity extends ActivityWithAccount {
                 Log.e(TAG, "Error parsing inReplyTo", e);
                 setResult(RESULT_CANCELED);
                 finish();
+            }
+
+            if(m_proposedTitle == null) {
+                m_proposedTitle = m_inReplyTo.optString("displayName", null);
+                if(m_proposedTitle != null) m_title.setText("Re: " + m_proposedTitle);
             }
         }
 
