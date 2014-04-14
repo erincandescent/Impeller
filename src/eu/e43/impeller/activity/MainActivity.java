@@ -20,8 +20,8 @@ import java.util.GregorianCalendar;
 
 import android.accounts.Account;
 import android.annotation.TargetApi;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -109,14 +109,14 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
         m_isTablet = "two_pane".equals(findViewById(R.id.main_activity).getTag());
 
         if(savedInstanceState == null) {
-            getActionBar().hide();
-            getFragmentManager().beginTransaction()
+            getSupportActionBar().hide();
+            getSupportFragmentManager().beginTransaction()
                 .add(R.id.feed_fragment, new SplashFragment())
                 .setTransition(FragmentTransaction.TRANSIT_NONE)
                 .commit();
         } else {
-            m_feedFragment      = (FeedFragment)            getFragmentManager().getFragment(savedInstanceState, "feedFragment");
-            m_objectFragment    = (ObjectContainerFragment) getFragmentManager().getFragment(savedInstanceState, "objectFragment");
+            m_feedFragment      = (FeedFragment)            getSupportFragmentManager().getFragment(savedInstanceState, "feedFragment");
+            m_objectFragment    = (ObjectContainerFragment) getSupportFragmentManager().getFragment(savedInstanceState, "objectFragment");
 
             setDisplayMode((Mode) savedInstanceState.getSerializable("displayMode"));
             Log.i(TAG, "Restoring in display mode " + m_displayMode.toString());
@@ -168,12 +168,11 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
         super.onSaveInstanceState(outState);
 
         outState.putSerializable("displayMode", m_displayMode);
-        outState.putInt("selectedTab", getActionBar().getSelectedNavigationIndex());
 
         if(m_feedFragment != null)
-            getFragmentManager().putFragment(outState, "feedFragment", m_feedFragment);
+            getSupportFragmentManager().putFragment(outState, "feedFragment", m_feedFragment);
         if(m_objectFragment != null)
-            getFragmentManager().putFragment(outState, "objectFragment", m_objectFragment);
+            getSupportFragmentManager().putFragment(outState, "objectFragment", m_objectFragment);
     }
 
     @Override
@@ -199,14 +198,14 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
         PreferenceManager.getDefaultSharedPreferences(this)
             .edit()
             .putString("lastAccount", acct.name)
-            .apply();
+            .commit();
 
-        getActionBar().show();
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().show();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         if(m_feedFragment == null) {
-        FragmentTransaction tx = getFragmentManager().beginTransaction();
+        FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
         //if(m_objectFragment != null) {
         //    tx.remove(m_objectFragment);
         //}
@@ -233,7 +232,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                FragmentManager fm = getFragmentManager();
+                FragmentManager fm = getSupportFragmentManager();
                 fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 return true;
 
@@ -287,7 +286,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
 
     public void showObjectInMode(Mode mode, Uri id) {
         ObjectContainerFragment objFrag = ObjectContainerFragment.newInstance(id.toString(), mode);
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         if(m_objectFragment != null && mode == Mode.FEED_OBJECT) {
             fm.popBackStack();
         }
@@ -358,7 +357,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
         } else if(l > 0) {
             // Feed
             FeedFragment.FeedID id = (FeedFragment.FeedID) m_navigationDrawer.getItemAtPosition(i);
-            FragmentTransaction trans = getFragmentManager().beginTransaction();
+            FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
 
             if(m_feedFragment.getFeedId() != id) {
                 FeedFragment ff = new FeedFragment();
@@ -419,6 +418,9 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     void setUiFlags() {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+            return;
+
         ViewFlipper flipper = (ViewFlipper) findViewById(R.id.overlay_flipper);
         if(m_overlayController != null) {
             // Fullscreen

@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -159,7 +160,10 @@ public class PumpContentProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        qb.setStrict(true);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+            qb.setStrict(true);
+
         switch(ms_uriMatcher.match(uri)) {
             case ACTIVITY:
                 qb.appendWhere("activity.id=");

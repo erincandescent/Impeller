@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Generated with http://android-holo-colors.com -->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <style name="AutoCompleteTextViewImpellerTheme" parent="android:Widget.Holo.Light.AutoCompleteTextView">
+      <item name="android:dropDownSelector">@drawable/impellertheme_list_selector_holo_light</item>
+	    <item name="android:background">@drawable/impellertheme_edit_text_holo_light</item>
+  </style>
+
+  <style name="ButtonImpellerTheme" parent="android:Widget.Holo.Light.Button">
+	  <item name="android:background">@drawable/impellertheme_btn_default_holo_light</item>
+  </style>
+
+  <style name="ImageButtonImpellerTheme" parent="android:Widget.Holo.Light.ImageButton">
+	  <item name="android:background">@drawable/impellertheme_btn_default_holo_light</item>
+  </style>
+
+  <style name="SpinnerImpellerTheme" parent="android:Widget.Holo.Light.Spinner">
+      <item name="android:background">@drawable/impellertheme_spinner_background_holo_light</item>
+      <item name="android:dropDownSelector">@drawable/impellertheme_list_selector_holo_light</item>
+  </style>
+
+  <style name="ProgressBarImpellerTheme" parent="android:Widget.Holo.Light.ProgressBar.Horizontal">
+      <item name="android:progressDrawable">@drawable/impellertheme_progress_horizontal_holo_light</item>
+      <item name="android:indeterminateDrawable">@drawable/impellertheme_progress_indeterminate_horizontal_holo_light</item>
+  </style>
+
+  <style name="SeekBarImpellerTheme" parent="android:Widget.Holo.Light.SeekBar">
+      <item name="android:progressDrawable">@drawable/impellertheme_scrubber_progress_horizontal_holo_light</item>
+      <item name="android:indeterminateDrawable">@drawable/impellertheme_scrubber_progress_horizontal_holo_light</item>
+      <item name="android:thumb">@drawable/impellertheme_scrubber_control_selector_holo_light</item>
+  </style>
+
+  <style name="RatingBarImpellerTheme" parent="android:Widget.Holo.Light.RatingBar">
+      <item name="android:progressDrawable">@drawable/impellertheme_ratingbar_full_holo_light</item>
+      <item name="android:indeterminateDrawable">@drawable/impellertheme_ratingbar_full_holo_light</item>
+  </style>
+
+  <style name="RatingBarBigImpellerTheme" parent="android:Widget.Holo.Light.RatingBar.Indicator">
+      <item name="android:progressDrawable">@drawable/impellertheme_ratingbar_holo_light</item>
+      <item name="android:indeterminateDrawable">@drawable/impellertheme_ratingbar_holo_light</item>
+  </style>
+
+  <style name="RatingBarSmallImpellerTheme" parent="android:Widget.Holo.Light.RatingBar.Small">
+      <item name="android:progressDrawable">@drawable/impellertheme_ratingbar_small_holo_light</item>
+      <item name="android:indeterminateDrawable">@drawable/impellertheme_ratingbar_small_holo_light</item>
+  </style>
+
+  <style name="ToggleImpellerTheme" parent="android:Widget.Holo.Light.Button.Toggle">
+      <item name="android:background">@drawable/impellertheme_btn_toggle_holo_light</item>
+  </style>
+
+</resources>

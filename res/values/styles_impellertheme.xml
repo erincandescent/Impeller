@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Generated with http://android-holo-colors.com -->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <style name="EditTextImpellerTheme" parent="android:Widget.EditText">
+	  <item name="android:background">@drawable/impellertheme_edit_text_holo_light</item>
+	  <item name="android:textColor">#000000</item>
+  </style>
+
+  <style name="AutoCompleteTextViewImpellerTheme" parent="android:Widget.AutoCompleteTextView">
+      <item name="android:dropDownSelector">@drawable/impellertheme_list_selector_holo_light</item>
+	  <item name="android:background">@drawable/impellertheme_edit_text_holo_light</item>
+	  <item name="android:textColor">#000000</item>
+  </style>
+
+  <style name="CheckBoxImpellerTheme" parent="android:Widget.CompoundButton.CheckBox">
+      <item name="android:button">@drawable/impellertheme_btn_check_holo_light</item>
+  </style>
+
+  <style name="RadioButtonImpellerTheme" parent="android:Widget.CompoundButton.RadioButton">
+      <item name="android:button">@drawable/impellertheme_btn_radio_holo_light</item>
+  </style>
+
+  <style name="ButtonImpellerTheme" parent="android:Widget.Button">
+	  <item name="android:background">@drawable/impellertheme_btn_default_holo_light</item>
+	  <item name="android:minHeight">48dip</item>
+	  <item name="android:minWidth">64dip</item>
+	  <item name="android:textColor">#000000</item>
+  </style>
+
+  <style name="ImageButtonImpellerTheme" parent="android:Widget.ImageButton">
+	  <item name="android:background">@drawable/impellertheme_btn_default_holo_light</item>
+  </style>
+
+  <style name="SpinnerImpellerTheme" parent="android:Widget.Spinner">
+      <item name="android:background">@drawable/impellertheme_spinner_background_holo_light</item>
+      <item name="android:dropDownSelector">@drawable/impellertheme_list_selector_holo_light</item>
+  </style>
+
+  <style name="SpinnerDropDownItemImpellerTheme" parent="android:Widget.DropDownItem.Spinner">
+      <item name="android:checkMark">@drawable/impellertheme_btn_radio_holo_light</item>
+  </style>
+  <style name="TabImpellerTheme">
+      <item name="android:gravity">center_horizontal</item>
+      <item name="android:paddingLeft">16dip</item>
+      <item name="android:paddingRight">16dip</item>
+      <item name="android:background">@drawable/impellertheme_tab_indicator_holo</item>
+      <item name="android:layout_width">0dip</item>
+      <item name="android:layout_weight">1</item>
+      <item name="android:minWidth">80dip</item>
+  </style>
+
+  <style name="TabTextImpellerTheme">
+	  <item name="android:textColor">#000000</item>
+      <item name="android:textSize">12sp</item>
+      <item name="android:textStyle">bold</item>
+      <!-- v14 <item name="android:textAllCaps">true</item> -->
+      <item name="android:ellipsize">marquee</item>
+      <item name="android:maxLines">2</item>
+      <item name="android:maxWidth">180dip</item>
+  </style>
+
+  <style name="ProgressBarImpellerTheme" parent="android:Widget.ProgressBar.Horizontal">
+      <item name="android:progressDrawable">@drawable/impellertheme_progress_horizontal_holo_light</item>
+      <item name="android:indeterminateDrawable">@drawable/impellertheme_progress_indeterminate_horizontal_holo_light</item>
+      <item name="android:minHeight">16dip</item>
+      <item name="android:maxHeight">16dip</item>
+  </style>
+
+  <style name="SeekBarImpellerTheme" parent="android:Widget.SeekBar">
+      <item name="android:progressDrawable">@drawable/impellertheme_scrubber_progress_horizontal_holo_light</item>
+      <item name="android:indeterminateDrawable">@drawable/impellertheme_scrubber_progress_horizontal_holo_light</item>
+      <item name="android:minHeight">13dip</item>
+      <item name="android:maxHeight">13dip</item>
+      <item name="android:thumb">@drawable/impellertheme_scrubber_control_selector_holo_light</item>
+      <item name="android:thumbOffset">16dip</item>
+      <item name="android:paddingLeft">16dip</item>
+      <item name="android:paddingRight">16dip</item>
+  </style>
+
+  <style name="RatingBarImpellerTheme" parent="android:Widget.RatingBar">
+      <item name="android:progressDrawable">@drawable/impellertheme_ratingbar_full_holo_light</item>
+      <item name="android:indeterminateDrawable">@drawable/impellertheme_ratingbar_full_holo_light</item>
+  </style>
+
+  <style name="RatingBarBigImpellerTheme">
+      <item name="android:progressDrawable">@drawable/impellertheme_ratingbar_holo_light</item>
+      <item name="android:indeterminateDrawable">@drawable/impellertheme_ratingbar_holo_light</item>
+      <item name="android:minHeight">35dip</item>
+      <item name="android:maxHeight">35dip</item>
+  </style>
+
+  <style name="RatingBarSmallImpellerTheme">
+      <item name="android:progressDrawable">@drawable/impellertheme_ratingbar_small_holo_light</item>
+      <item name="android:indeterminateDrawable">@drawable/impellertheme_ratingbar_small_holo_light</item>
+      <item name="android:minHeight">16dip</item>
+      <item name="android:maxHeight">16dip</item>
+  </style>
+
+  <style name="ToggleImpellerTheme" parent="android:Widget.Button.Toggle">
+      <item name="android:background">@drawable/impellertheme_btn_toggle_holo_light</item>
+      <item name="android:minHeight">48dip</item>
+	  <item name="android:textColor">#000000</item>
+  </style>
+
+  <style name="ListViewImpellerTheme" parent="android:Widget.ListView">
+      <item name="android:listSelector">@drawable/impellertheme_list_selector_holo_light</item>
+  </style>
+
+  <style name="ListViewImpellerTheme.White" parent="android:Widget.ListView.White">
+      <item name="android:listSelector">@drawable/impellertheme_list_selector_holo_light</item>
+  </style>
+
+  <style name="SpinnerItemImpellerTheme" parent="android:TextAppearance.Widget.TextView.SpinnerItem">
+      <item name="android:textColor">#000000</item>
+  </style>
+
+
+    <!-- Action bar -->
+    <style name="ActionBar.Solid.Impellertheme" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+        <item name="background">@drawable/ab_solid_impellertheme</item>
+        <item name="backgroundStacked">@drawable/ab_stacked_solid_impellertheme</item>
+        <item name="backgroundSplit">@drawable/ab_bottom_solid_impellertheme</item>
+        <item name="progressBarStyle">@style/ProgressBar.Impellertheme</item>
+    </style>
+
+    <style name="ActionBar.Transparent.Impellertheme" parent="@style/Widget.AppCompat.ActionBar">
+        <item name="background">@drawable/ab_transparent_impellertheme</item>
+        <item name="progressBarStyle">@style/ProgressBar.Impellertheme</item>
+    </style>
+
+    <style name="PopupMenu.Impellertheme" parent="@style/Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@drawable/menu_dropdown_panel_impellertheme</item>
+    </style>
+
+    <style name="DropDownListView.Impellertheme" parent="@style/Widget.AppCompat.ListView.DropDown">
+        <item name="android:listSelector">@drawable/selectable_background_impellertheme</item>
+    </style>
+
+    <style name="ActionBarTabStyle.Impellertheme" parent="@style/Widget.AppCompat.ActionBar.TabView">
+        <item name="android:background">@drawable/tab_indicator_ab_impellertheme</item>
+    </style>
+
+    <style name="DropDownNav.Impellertheme" parent="@style/Widget.AppCompat.Spinner.DropDown.ActionBar">
+        <item name="android:background">@drawable/spinner_background_ab_impellertheme</item>
+        <item name="android:popupBackground">@drawable/menu_dropdown_panel_impellertheme</item>
+        <item name="android:dropDownSelector">@drawable/selectable_background_impellertheme</item>
+    </style>
+
+    <style name="ProgressBar.Impellertheme" parent="@style/Widget.AppCompat.ProgressBar.Horizontal">
+        <item name="android:progressDrawable">@drawable/progress_horizontal_impellertheme</item>
+    </style>
+
+    <style name="ActionButton.CloseMode.Impellertheme" parent="@style/Widget.AppCompat.ActionButton.CloseMode">
+        <item name="android:background">@drawable/btn_cab_done_impellertheme</item>
+    </style>
+
+    <!-- this style is only referenced in a Light.DarkActionBar based theme -->
+    <style name="Theme.Impellertheme.Widget" parent="@style/Theme.AppCompat">
+        <item name="popupMenuStyle">@style/PopupMenu.Impellertheme</item>
+        <item name="dropDownListViewStyle">@style/DropDownListView.Impellertheme</item>
+    </style>
+</resources>

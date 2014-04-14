@@ -45,7 +45,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text=" - "
-                android:id="@+id/textView" />
+                android:id="@+id/name_text" />
 
             <TextView
                     android:id="@+id/objectDate"

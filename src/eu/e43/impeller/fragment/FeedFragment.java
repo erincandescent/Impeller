@@ -2,18 +2,13 @@ package eu.e43.impeller.fragment;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.app.ListFragment;
-import android.app.LoaderManager;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.CursorLoader;
+import android.content.ContentResolver;
 import android.content.Intent;
-import android.content.Loader;
 import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,12 +16,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.ProgressBar;
+import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 
 import org.json.JSONObject;
 
 import eu.e43.impeller.activity.CheckinActivity;
-import eu.e43.impeller.activity.SettingsActivity;
 import eu.e43.impeller.uikit.ActivityAdapter;
 import eu.e43.impeller.R;
 import eu.e43.impeller.activity.MainActivity;

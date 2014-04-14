@@ -34,7 +34,7 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
     SharedPreferences   m_syncState;
 
     FeedSyncAdapter(Context context) {
-        super(context, true, true);
+        super(context, true);
         Log.i(TAG, "Created");
         m_context = context;
 

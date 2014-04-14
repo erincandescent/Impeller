@@ -1,6 +1,6 @@
 package eu.e43.impeller.fragment;
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
 
 import org.json.JSONObject;
@@ -13,16 +13,7 @@ public abstract class ObjectFragment extends Fragment {
 
     protected String m_id;
 
-    public static ObjectFragment create(Class<? extends ObjectFragment> cls, String id) {
-        ObjectFragment frag = null;
-        try {
-            frag = cls.newInstance();
-        } catch (java.lang.InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-
+    public static ObjectFragment prepare(ObjectFragment frag, String id) {
         Bundle args = new Bundle();
         args.putString(PARAM_ID, id);
         frag.setArguments(args);

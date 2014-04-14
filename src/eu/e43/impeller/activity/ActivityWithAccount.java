@@ -8,14 +8,18 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.http.HttpResponseCache;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
 import eu.e43.impeller.uikit.ImageLoader;
 import eu.e43.impeller.account.Authenticator;
 
-public abstract class ActivityWithAccount extends Activity {
-	public static final int LOGIN_REQUEST_CODE = 65536;
+import static android.os.Build.*;
+
+public abstract class ActivityWithAccount extends ActionBarActivity {
+	public static final int LOGIN_REQUEST_CODE = 65535;
 	private static final String TAG = "ActivityWithAccount";
 	public    AccountManager 	m_accountManager 	= null;
 	public    Account           m_account           = null;
@@ -35,15 +39,13 @@ public abstract class ActivityWithAccount extends Activity {
 	protected final void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		m_accountManager = AccountManager.get(this);
-		
-		if(HttpResponseCache.getInstalled() == null) {
-			File cacheDir = new File(getCacheDir(), "http");
-			try {
-				HttpResponseCache.install(cacheDir, 10 * 1024 * 1024);
-			} catch (IOException e) {
-				Log.w(TAG, "Creating response cache", e);
-			}
-		}
+
+        try {
+            Class.forName("android.net.http.HttpResponseCache");
+            tryInstallResponseCache();
+        } catch(ClassNotFoundException ex) {
+            Log.v(TAG, "Device doesn't support HttpResponseCache. Disabled.");
+        }
 
         if(savedInstanceState != null && savedInstanceState.containsKey("account")) {
             m_account = savedInstanceState.getParcelable("account");
@@ -74,11 +76,8 @@ public abstract class ActivityWithAccount extends Activity {
      */
     protected void queryForAccount() {
 	    // No account passed or account is invalid
-	    String[] accountTypes = new String[] { Authenticator.ACCOUNT_TYPE };
-	    String[] features = new String[0];
-	    Bundle extras = new Bundle();
-	    Intent chooseIntent = AccountManager.newChooseAccountIntent(null, null, accountTypes, false, null, "", features, extras);
-	    this.startActivityForResult(chooseIntent, LOGIN_REQUEST_CODE);
+        Intent chooseIntent = new Intent(this, AccountPickerActivity.class);
+        this.startActivityForResult(chooseIntent, LOGIN_REQUEST_CODE);
 	}
 
     /** Save the account */
@@ -90,11 +89,14 @@ public abstract class ActivityWithAccount extends Activity {
 
     protected void onStop() {
 		super.onStop();
-		
-		HttpResponseCache cache = HttpResponseCache.getInstalled();
-		if (cache != null) {
-			cache.flush();
-		}
+
+        try {
+            Class.forName("android.net.http.HttpResponseCache");
+
+            uninstallResponseCache();
+        } catch(ClassNotFoundException ex) {
+            Log.v(TAG, "Device doesn't support HttpResponseCache. Disabled.");
+        }
 	}
 
     /** Looks at the response of the account chooser intent */
@@ -122,7 +124,7 @@ public abstract class ActivityWithAccount extends Activity {
         Intent i = getIntent();
         i.putExtra("account", a);
         setIntent(i);
-        getActionBar().setSubtitle(a.name);
+        getSupportActionBar().setSubtitle(a.name);
         gotAccount(a);
     }
 
@@ -134,5 +136,23 @@ public abstract class ActivityWithAccount extends Activity {
 		}
 		return m_imageLoader;
 	}
+
+    private void tryInstallResponseCache() {
+        if(HttpResponseCache.getInstalled() == null) {
+            File cacheDir = new File(getCacheDir(), "http");
+            try {
+                HttpResponseCache.install(cacheDir, 10 * 1024 * 1024);
+            } catch (IOException e) {
+                Log.w(TAG, "Creating response cache", e);
+            }
+        }
+    }
+
+    private void uninstallResponseCache() {
+        HttpResponseCache cache = HttpResponseCache.getInstalled();
+        if (cache != null) {
+            cache.flush();
+        }
+    }
 
 }

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <color name="im_primary">#7F00FF</color>   <!-- 100% saturation (dark)  -->
+    <color name="im_secondary">#9532FF</color> <!--  80% saturation (dark)  -->
+    <color name="im_accent">#D7B2FF</color>    <!--  30% saturation (light) -->
+    <color name="im_pink">#FF00FF</color>      <!--  Pink                   -->
+
     <style name="LoginFormContainer">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>

@@ -20,8 +20,9 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
-import android.util.LruCache;
+import android.support.v4.util.LruCache;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
@@ -39,7 +40,7 @@ public class ImageLoader {
 	private Activity m_ctx;
 	private Account m_account;
     // Largest edge of display (i.e. bigger of width/height)
-    private int m_largestEdge;
+    //private int m_largestEdge;
 
     private static ExecutorService ms_threadpool;
     private static HashMap<URI, FetchTask> ms_tasks = new HashMap<URI, FetchTask>();
@@ -56,10 +57,11 @@ public class ImageLoader {
 		m_ctx       = ctx;
 		m_account	= acct;
 
-        Display disp = ctx.getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        disp.getSize(size);
-        m_largestEdge = size.x > size.y ? size.x : size.y;
+        //Display disp = ctx.getWindowManager().getDefaultDisplay();
+        //Point size = new Point();
+
+        //disp.getSize(size);
+        //m_largestEdge = size.x > size.y ? size.x : size.y;
 
         if(ms_threadpool == null) {
             ms_threadpool = Executors.newCachedThreadPool();
@@ -207,7 +209,10 @@ public class ImageLoader {
             task = new FetchTask();
             ms_tasks.put(uri,  task);
             task.m_listeners.add(l);
-            task.executeOnExecutor(ms_threadpool, uri);
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+                task.executeOnExecutor(ms_threadpool, uri);
+            else
+                task.execute(uri);
         } else {
             task.m_listeners.add(l);
         }
@@ -313,8 +318,14 @@ public class ImageLoader {
         @Override
         protected int sizeOf(URI key, BitmapDrawable value) {
             Bitmap bmp = value.getBitmap();
-            if(bmp != null) return bmp.getByteCount() / 1024;
-            return 0;
+            if(bmp == null)
+                return 0;
+
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                return bmp.getByteCount() / 1024;
+            } else {
+                return bmp.getRowBytes() * bmp.getHeight();
+            }
         }
 
         @Override

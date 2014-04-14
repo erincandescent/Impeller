@@ -5,30 +5,22 @@ import eu.e43.impeller.activity.MainActivity;
 import eu.e43.impeller.content.ContentUpdateReceiver;
 import eu.e43.impeller.content.PumpContentProvider;
 
-import android.animation.Animator;
-import android.animation.AnimatorInflater;
-import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.LoaderManager;
-import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-import android.widget.ViewFlipper;
 import android.widget.ViewSwitcher;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -101,8 +93,14 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
         super.onActivityCreated(savedInstanceState);
 
         if(savedInstanceState != null) {
-            Class<ObjectFragment> cls = (Class<ObjectFragment>) savedInstanceState.getSerializable("childClass");
-            m_child = ObjectFragment.create(cls, m_id);
+            String type = m_object.optString("objectType");
+
+            if(type.equals("person")) {
+                m_child = new PersonObjectFragment();
+            } else {
+                m_child = new StandardObjectFragment();
+            }
+            m_child = ObjectFragment.prepare(m_child, m_id);
             m_child.setInitialSavedState((SavedState) savedInstanceState.getParcelable("child"));
             getChildFragmentManager().beginTransaction()
                     .add(R.id.objectDisplayFragment, m_child)
@@ -123,7 +121,6 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
         outState.putString("object", m_object.toString());
 
         if(m_child != null) {
-            outState.putSerializable("childClass", m_child.getClass());
             outState.putParcelable("child", getChildFragmentManager().saveFragmentInstanceState(m_child));
         }
     }
@@ -145,13 +142,15 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
             }
 
             // Construct the child fragment
-            Class<? extends ObjectFragment> type = StandardObjectFragment.class;
+            ObjectFragment frag = null;
             if("person".equals(m_object.optString("objectType"))) {
-                type = PersonObjectFragment.class;
+                frag = new PersonObjectFragment();
+            } else {
+                frag = new StandardObjectFragment();
             }
 
             FragmentManager mgr = getChildFragmentManager();
-            m_child = ObjectFragment.create(type, m_id);
+            m_child = ObjectFragment.prepare(frag, m_id);
 
             mgr.beginTransaction()
                     .add(R.id.objectDisplayFragment, m_child)
@@ -226,7 +225,7 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
                     ((CursorLoader) loader).getUri());
         }
 
-        if(data.getCount() == 0) {
+        if(data == null || data.getCount() == 0) {
             if(m_object == null) {
                 Toast.makeText(getActivity(), "Unable to fetch object", Toast.LENGTH_SHORT);
                 getFragmentManager().popBackStack();

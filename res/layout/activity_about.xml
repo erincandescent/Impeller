@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Impeller"
-        android:id="@+id/textView"
+        android:id="@+id/name_text"
         android:layout_below="@+id/imageView"
         android:layout_centerHorizontal="true" />
 
@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:id="@+id/textView2"
-        android:layout_below="@+id/textView"
+        android:layout_below="@+id/name_text"
         android:layout_centerHorizontal="true"
         android:text="@string/about_crafted_with_love" />
 

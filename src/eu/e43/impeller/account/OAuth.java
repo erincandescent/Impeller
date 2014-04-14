@@ -33,7 +33,7 @@ public class OAuth {
 			return new DefaultOAuthConsumer(clientId, clientSecret);
 		}
 		
-		URL endpoint = new URL("https", host, "api/client/register");
+		URL endpoint = new URL("https", host, "/api/client/register");
 		HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
 				
 		HashMap<String, String> params = new HashMap<String, String>();

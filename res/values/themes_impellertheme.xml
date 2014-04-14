@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Generated with http://android-holo-colors.com -->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <style name="ImpellerTheme" parent="@style/_ImpellerTheme"/>
+
+  <style name="_ImpellerTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+
+    <item name="android:editTextStyle">@style/EditTextImpellerTheme</item>
+
+    <item name="android:textColorHighlight">#997f00ff</item>
+
+    <item name="android:autoCompleteTextViewStyle">@style/AutoCompleteTextViewImpellerTheme</item>
+
+    <item name="android:checkboxStyle">@style/CheckBoxImpellerTheme</item>
+
+    <item name="android:radioButtonStyle">@style/RadioButtonImpellerTheme</item>
+
+    <item name="android:buttonStyle">@style/ButtonImpellerTheme</item>
+
+    <item name="android:imageButtonStyle">@style/ImageButtonImpellerTheme</item>
+
+    <item name="android:spinnerStyle">@style/SpinnerImpellerTheme</item>
+
+    <item name="android:spinnerDropDownItemStyle">@style/SpinnerDropDownItemImpellerTheme</item>
+
+    <item name="android:progressBarStyleHorizontal">@style/ProgressBarImpellerTheme</item>
+
+    <item name="android:seekBarStyle">@style/SeekBarImpellerTheme</item>
+
+    <item name="android:ratingBarStyle">@style/RatingBarImpellerTheme</item>
+
+    <item name="android:ratingBarStyleIndicator">@style/RatingBarBigImpellerTheme</item>
+
+    <item name="android:ratingBarStyleSmall">@style/RatingBarSmallImpellerTheme</item>
+
+    <item name="android:buttonStyleToggle">@style/ToggleImpellerTheme</item>
+
+    <item name="android:listViewStyle">@style/ListViewImpellerTheme</item>
+
+    <item name="android:listViewWhiteStyle">@style/ListViewImpellerTheme.White</item>
+
+    <item name="android:spinnerItemStyle">@style/SpinnerItemImpellerTheme</item>
+
+    <!-- ActionBar -->
+    <item name="actionBarItemBackground">@drawable/selectable_background_impellertheme</item>
+    <item name="popupMenuStyle">@style/PopupMenu.Impellertheme</item>
+    <item name="dropDownListViewStyle">@style/DropDownListView.Impellertheme</item>
+    <item name="actionBarTabStyle">@style/ActionBarTabStyle.Impellertheme</item>
+    <item name="actionDropDownStyle">@style/DropDownNav.Impellertheme</item>
+    <item name="actionBarStyle">@style/ActionBar.Solid.Impellertheme</item>
+    <item name="actionModeBackground">@drawable/cab_background_top_impellertheme</item>
+    <item name="actionModeSplitBackground">@drawable/cab_background_bottom_impellertheme</item>
+    <item name="actionModeCloseButtonStyle">@style/ActionButton.CloseMode.Impellertheme</item>
+
+    <!-- Light.DarkActionBar specific -->
+    <item name="actionBarWidgetTheme">@style/Theme.Impellertheme.Widget</item>
+
+  </style>
+
+</resources>

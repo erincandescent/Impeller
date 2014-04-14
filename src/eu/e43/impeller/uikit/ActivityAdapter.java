@@ -20,8 +20,7 @@ import org.json.JSONObject;
 
 import android.database.Cursor;
 import android.text.Html;
-import android.text.Layout;
-import android.util.LruCache;
+import android.support.v4.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

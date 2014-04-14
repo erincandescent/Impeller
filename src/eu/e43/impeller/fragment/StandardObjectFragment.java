@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
@@ -31,7 +32,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.PopupMenu;
+import android.support.v7.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -95,6 +96,9 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
     @Override
     public void onPause() {
         super.onPause();
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+            return;
+
         for(WebView wv : m_webViews)
             wv.onPause();
     }
@@ -102,6 +106,9 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
     @Override
     public void onResume() {
         super.onResume();
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+            return;
+
         for(WebView wv : m_webViews)
             wv.onResume();
     }

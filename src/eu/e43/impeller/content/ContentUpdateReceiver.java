@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -31,26 +32,52 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
     public  final static String UPDATE_OBJECT   = "eu.e43.impeller.UpdateObject";
     public  final static String FETCH_USER_FEED = "eu.e43.impeller.FetchUserFeed";
 
-    @Override
-    public void onReceive(final Context context, final Intent intent) {
-        final PendingResult res = goAsync();
-        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                if(UPDATE_OBJECT.equals(intent.getAction())) {
-                    updateObject(res, context, (Account) intent.getParcelableExtra("account"), intent.getData());
-                } else if(UPDATE_REPLIES.equals(intent.getAction())) {
-                    updateReplies(res, context, (Account) intent.getParcelableExtra("account"), intent.getData());
-                } else if(FETCH_USER_FEED.equals(intent.getAction())) {
-                    fetchUserFeed(res, context, (Account) intent.getParcelableExtra("account"), intent.getData());
-                }
+    private class ResultData {
+        public ResultData(int code_) {
+            code = code_;
+        }
 
-                return null;
-            }
-        }.execute();
+        public int      code;
+        public String   data;
+        public Bundle   extras;
     }
 
-    private void updateObject(PendingResult result, Context context, Account acct, Uri uri) {
+    @Override
+    public void onReceive(final Context context, final Intent intent) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            final PendingResult res = goAsync();
+            AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    try {
+                        ResultData data = handleIntent(context, intent);
+
+                        res.setResult(data.code, data.data, data.extras);
+                    } catch(RuntimeException ex) {
+                        Log.e(TAG, "Error", ex);
+                        res.setResultCode(Activity.RESULT_CANCELED);
+                        res.finish();
+                    }
+                    return null;
+                }
+            }.execute();
+        } else {
+            ResultData data = handleIntent(context, intent);
+            setResult(data.code, data.data, data.extras);
+        }
+    }
+
+    private ResultData handleIntent(Context context, final Intent intent) {
+        if(UPDATE_OBJECT.equals(intent.getAction())) {
+            return updateObject(context, (Account) intent.getParcelableExtra("account"), intent.getData());
+        } else if(UPDATE_REPLIES.equals(intent.getAction())) {
+            return updateReplies(context, (Account) intent.getParcelableExtra("account"), intent.getData());
+        } else if(FETCH_USER_FEED.equals(intent.getAction())) {
+            return fetchUserFeed(context, (Account) intent.getParcelableExtra("account"), intent.getData());
+        } else return new ResultData(Activity.RESULT_CANCELED);
+    }
+
+    private ResultData updateObject(Context context, Account acct, Uri uri) {
         Log.i(TAG, "updateObject: Starting update for object " + uri);
         ContentResolver res = context.getContentResolver();
         Cursor c = res.query(Uri.parse(PumpContentProvider.OBJECT_URL),
@@ -60,8 +87,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
         try {
             if(c.getCount() == 0) {
                 Log.e(TAG, "Not in database");
-                result.setResultCode(Activity.RESULT_CANCELED);
-                return;
+                return new ResultData(Activity.RESULT_CANCELED);
             }
             c.moveToFirst();
             String objJSON = c.getString(0);
@@ -74,8 +100,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
             }
 
             if(fetchURL == null || fetchURL.length() == 0) {
-                result.setResultCode(Activity.RESULT_CANCELED);
-                return;
+                return new ResultData(Activity.RESULT_CANCELED);
             }
 
             Log.i(TAG, "Fetch from URL " + fetchURL);
@@ -90,20 +115,21 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
 
             Log.i(TAG, "updateObject: Finished for object " + uri);
 
-            result.setResultCode(Activity.RESULT_OK);
+
+            ResultData result = new ResultData(Activity.RESULT_OK);
             Bundle extras = new Bundle();
             extras.putString("object", objJSON);
-            result.setResultExtras(extras);
+            result.extras = extras;
+            return result;
         } catch(Exception ex) {
-            result.setResultCode(Activity.RESULT_CANCELED);
             Log.e(TAG, "updateObject: For object " + uri, ex);
+            return new ResultData(Activity.RESULT_CANCELED);
         } finally {
             c.close();
-            result.finish();
         }
     }
 
-    private void updateReplies(PendingResult result, Context context, Account acct, Uri uri) {
+    private ResultData updateReplies(Context context, Account acct, Uri uri) {
         Log.i(TAG, "updateReplies: Starting update for object " + uri);
         ContentResolver res = context.getContentResolver();
         Cursor c = res.query(Uri.parse(PumpContentProvider.OBJECT_URL),
@@ -113,8 +139,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
         try {
             if(c.getCount() == 0) {
                 Log.e(TAG, "Not in database");
-                result.setResultCode(Activity.RESULT_CANCELED);
-                return;
+                return new ResultData(Activity.RESULT_CANCELED);
             }
             c.moveToFirst();
             String objJSON = c.getString(0);
@@ -122,8 +147,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
             JSONObject collection = obj.optJSONObject("replies");
             if(collection == null) {
                 Log.e(TAG, "No replies information");
-                result.setResultCode(Activity.RESULT_CANCELED);
-                return;
+                return new ResultData(Activity.RESULT_CANCELED);
             }
 
             String fetchURL = collection.optString("url", null);
@@ -133,8 +157,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
             }
 
             if(fetchURL == null || fetchURL.length() == 0) {
-                result.setResultCode(Activity.RESULT_CANCELED);
-                return;
+                return new ResultData(Activity.RESULT_CANCELED);
             }
 
             // Drop the items stanza to prevent recursion when we merge the data into the
@@ -162,18 +185,17 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
             res.applyBatch(PumpContentProvider.AUTHORITY, operations);
             Log.i(TAG, "updateReplies: Finished for object " + uri);
 
-            result.setResultCode(Activity.RESULT_OK);
+            return new ResultData(Activity.RESULT_OK);
         } catch(Exception ex) {
-            result.setResultCode(Activity.RESULT_CANCELED);
             Log.e(TAG, "updateReplies: For object " + uri, ex);
+            return new ResultData(Activity.RESULT_CANCELED);
         } finally {
             c.close();
-            result.finish();
         }
     }
 
 
-    private void fetchUserFeed(PendingResult result, Context context, Account acct, Uri uri) {
+    private ResultData fetchUserFeed(Context context, Account acct, Uri uri) {
         Log.i(TAG, "fetchUserFeed: Fetch feed for user " + uri);
         ContentResolver res = context.getContentResolver();
         Cursor c = res.query(Uri.parse(PumpContentProvider.OBJECT_URL),
@@ -183,8 +205,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
         try {
             if(c.getCount() == 0) {
                 Log.e(TAG, "Not in database");
-                result.setResultCode(Activity.RESULT_CANCELED);
-                return;
+                return new ResultData(Activity.RESULT_CANCELED);
             }
             c.moveToFirst();
             String objJSON = c.getString(0);
@@ -193,22 +214,19 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
             JSONObject links = obj.optJSONObject("links");
             if(links == null) {
                 Log.e(TAG, "No links information");
-                result.setResultCode(Activity.RESULT_CANCELED);
-                return;
+                return new ResultData(Activity.RESULT_CANCELED);
             }
 
             JSONObject feedLink = links.optJSONObject("activity-outbox");
             if(feedLink == null) {
                 Log.e(TAG, "No feed information");
-                result.setResultCode(Activity.RESULT_CANCELED);
-                return;
+                return new ResultData(Activity.RESULT_CANCELED);
             }
 
             String fetchURL = feedLink.optString("href", null);
             if(fetchURL == null || fetchURL.length() == 0) {
                 Log.e(TAG, "No feed link");
-                result.setResultCode(Activity.RESULT_CANCELED);
-                return;
+                return new ResultData(Activity.RESULT_CANCELED);
             }
 
             Log.i(TAG, "Fetch from URL " + fetchURL);
@@ -231,13 +249,12 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
             res.applyBatch(PumpContentProvider.AUTHORITY, operations);
             Log.i(TAG, "fetchUserFeed: Finished for " + uri);
 
-            result.setResultCode(Activity.RESULT_OK);
+            return new ResultData(Activity.RESULT_OK);
         } catch(Exception ex) {
-            result.setResultCode(Activity.RESULT_CANCELED);
             Log.e(TAG, "fetchUserFeed: For object " + uri, ex);
+            return new ResultData(Activity.RESULT_CANCELED);
         } finally {
             c.close();
-            result.finish();
         }
     }
 }

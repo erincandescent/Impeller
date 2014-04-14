@@ -53,6 +53,7 @@ repositories {
 
 dependencies {
     compile 'com.android.support:support-v4:19.1.0+'
+    compile 'com.android.support:appcompat-v7:19.1.0+'
     compile 'oauth.signpost:signpost-core:1.2'
     compile 'com.google.guava:guava:16.0.1'
     compile 'net.sourceforge.htmlcleaner:htmlcleaner:2.7'
