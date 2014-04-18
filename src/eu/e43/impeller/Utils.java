@@ -247,6 +247,10 @@ public class Utils {
         return humanDate(parseDate(isoDate));
     }
 
+    public static int getScreenDensityDpi(Context ctx) {
+        return ctx.getResources().getDisplayMetrics().densityDpi;
+    }
+
     public static int dip(Context ctx, int dip) {
         final float density = ctx.getResources().getDisplayMetrics().density;
         return (int) (density * dip + 0.5f);
