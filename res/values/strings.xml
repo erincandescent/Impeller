@@ -20,7 +20,9 @@
     <string name="action_like">Like</string>
     <string name="action_unlike">Unlike</string>
     <string name="action_reply">Reply</string>
-    <string name="action_replyImage">Reply with image</string><string name="hint_comment">Comment...</string>
+    <string name="action_replyImage">Reply with image</string>
+
+    <string name="hint_comment">Comment...</string>
 
     <string name="posted_by">Posted by</string>
 

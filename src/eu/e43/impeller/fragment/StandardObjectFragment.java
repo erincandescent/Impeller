@@ -54,6 +54,7 @@ import eu.e43.impeller.activity.ActivityWithAccount;
 import eu.e43.impeller.uikit.InReplyToView;
 import eu.e43.impeller.uikit.LocationView;
 import eu.e43.impeller.uikit.OverlayController;
+import eu.e43.impeller.uikit.ToolbarView;
 import eu.e43.impeller.uikit.TouchImageView;
 
 public class StandardObjectFragment extends ObjectFragment implements View.OnClickListener, ListView.OnItemClickListener, PopupMenu.OnMenuItemClickListener {
@@ -132,6 +133,11 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
             lv.addHeaderView(inReplyToView);
             header.setBackgroundResource(R.drawable.card_middle_bg);
         }
+
+        ToolbarView toolbar = (ToolbarView) header.findViewById(R.id.objectToolbar);
+        toolbar.inflate(R.menu.object);
+        toolbar.setOnItemClickListener(this);
+
         lv.addHeaderView(header);
         lv.addFooterView(footer);
 
@@ -237,14 +243,12 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
         TextView        authorName      = (TextView)     root.findViewById(R.id.actorName);
         TextView        dateView        = (TextView)     root.findViewById(R.id.objectDate);
         TextView        titleView       = (TextView)     root.findViewById(R.id.objectTitle);
-        ToggleButton    likeButton      = (ToggleButton) root.findViewById(R.id.likeButton);
-        ImageButton     replyButton     = (ImageButton)  root.findViewById(R.id.replyButton);
         Button          postReplyButton = (Button)       root.findViewById(R.id.postReplyButton);
+        ToolbarView     toolbar         = (ToolbarView)  root.findViewById(R.id.objectToolbar);
 
-        likeButton.setChecked(obj.optBoolean("liked", false));
+        Menu toolMenu = toolbar.getMenu();
+        toolMenu.findItem(R.id.action_like).setChecked(obj.optBoolean("liked", false));
 
-        likeButton.setOnClickListener(this);
-        replyButton.setOnClickListener(this);
         postReplyButton.setOnClickListener(this);
 
         String title = obj.optString("displayName", null);
@@ -357,32 +361,25 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
         if(rootView == null)
             return;
 
-        ToggleButton likeButton = (ToggleButton) rootView.findViewById(R.id.likeButton);
-        if(likeButton == null)
-            return;
+        ToolbarView tbr = (ToolbarView) rootView.findViewById(R.id.objectToolbar);
+        Menu theMenu = tbr.getMenu();
+
+        MenuItem likeItem = theMenu.findItem(R.id.action_like);
 
         if(getObject() == null) return;
 
         boolean liked = getObject().optBoolean("liked", false);
-        likeButton.setChecked(liked);
+        likeItem.setChecked(liked);
+
+        if(getObject().optString("url") == null) {
+            theMenu.findItem(R.id.action_viewInBrowser).setVisible(false);
+        }
+        tbr.onMenuUpdated();
 	}
 
     @Override
     public void onClick(View view) {
         switch(view.getId()) {
-            case R.id.likeButton: {
-                new DoLike(getObject(), ((ToggleButton)view).isChecked());
-                break;
-            }
-
-            case R.id.replyButton: {
-                PopupMenu mnu = new PopupMenu(getActivity(), view);
-                mnu.inflate(R.menu.reply);
-                mnu.setOnMenuItemClickListener(this);
-                mnu.show();
-                break;
-            }
-
             case R.id.postReplyButton:
                 View root = getView();
                 ListView lv = (ListView) root.findViewById(android.R.id.list);
@@ -444,22 +441,38 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
         }
     }
 
-    // For reply menu
+    // Toolbar actions
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         switch(item.getItemId()) {
-            case R.id.action_replyImage:
+            case R.id.action_like: {
+                new DoLike(getObject(), item.isChecked());
+                break;
+            }
+
+            case R.id.action_replyImage: {
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                 photoPickerIntent.setType("image/*");
                 startActivityForResult(photoPickerIntent, ACTIVITY_SELECT_REPLY_PHOTO);
                 return true;
+            }
 
-            case R.id.action_replyNote:
+            case R.id.action_replyNote: {
                 Intent noteIntent = new Intent(getActivity(), PostActivity.class);
                 noteIntent.setAction(PostActivity.ACTION_REPLY);
                 noteIntent.putExtra("account", m_account);
                 noteIntent.putExtra("inReplyTo", getObject().toString());
                 startActivity(noteIntent);
+                return true;
+            }
+
+            case R.id.action_viewInBrowser: {
+                String url = getObject().optString("url");
+                Uri uri = Uri.parse(url);
+                Intent showIntent = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(showIntent);
+                return true;
+            }
         }
         return false;
     }

@@ -10,7 +10,7 @@
             android:id="@+id/actorImage"
             android:layout_width="48dp"
             android:layout_height="48dp"
-        android:layout_weight="0" />
+            android:layout_weight="0" />
 
     <LinearLayout
         android:orientation="vertical"
@@ -59,22 +59,9 @@
 
     </LinearLayout>
 
-    <ToggleButton
-        android:layout_width="@android:dimen/app_icon_size"
+    <eu.e43.impeller.uikit.ToolbarView
+        android:id="@+id/objectToolbar"
+        android:layout_width="wrap_content"
         android:layout_height="@android:dimen/app_icon_size"
-        android:id="@+id/likeButton"
-        android:layout_weight="0"
-        android:background="@drawable/ic_like_dark"
-        android:textOff=""
-        android:textOn="" />
-
-    <ImageButton
-        android:layout_width="@android:dimen/app_icon_size"
-        android:layout_height="@android:dimen/app_icon_size"
-        android:id="@+id/replyButton"
-        android:src="@drawable/ic_action_reply_dark"
-        android:background="@android:color/transparent"
-        android:scaleType="fitCenter"
-        android:layout_weight="0" />
-
+        android:layout_weight="0"/>
 </LinearLayout>
