@@ -18,6 +18,7 @@ package eu.e43.impeller;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +47,8 @@ import java.util.TimeZone;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import eu.e43.impeller.content.PumpContentProvider;
 
 public class Utils {
     public static Uri getHostUri(Context ctx, Account user, String... components) {
@@ -275,4 +278,26 @@ public class Utils {
         return stub;
     }
 
+    public static JSONObject findPost(Context ctx, JSONObject object) throws JSONException {
+        Cursor res = ctx.getContentResolver().query(
+                Uri.parse(PumpContentProvider.ACTIVITY_URL),
+                new String[] { "_json" },
+                "actor=? AND verb='post' AND object.id=?",
+                new String[] {
+                        object.getJSONObject("author").getString("id"),
+                        object.getString("id")
+                },
+                null);
+
+        try {
+            if (res.getCount() > 0) {
+                res.moveToFirst();
+                return new JSONObject(res.getString(0));
+            } else {
+                return null;
+            }
+        } finally {
+            res.close();
+        }
+    }
 }
