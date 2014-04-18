@@ -1,0 +1,3 @@
+[submodule "tokenautocomplete"]
+	path = tokenautocomplete
+	url = https://oshepherd@github.com/oshepherd/TokenAutoComplete.git

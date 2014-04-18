@@ -4,7 +4,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.8.3'
+        classpath 'com.android.tools.build:gradle:0.9+'
     }
 }
 
@@ -57,12 +57,10 @@ dependencies {
     compile 'oauth.signpost:signpost-core:1.2'
     compile 'com.google.guava:guava:16.0.1'
     compile 'net.sourceforge.htmlcleaner:htmlcleaner:2.7'
-    compile project(':jiraconnect-android-main')
-	
-	
-	
 
-    // HTML parsing and generation
+    compile project(':jiraconnect-android-main')
+
+    compile project(':tokenautocomplete:library')
 }
 
 configurations {

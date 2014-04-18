@@ -1,1 +1,2 @@
 include ':jiraconnect-android-main'
+include ':tokenautocomplete:library'
