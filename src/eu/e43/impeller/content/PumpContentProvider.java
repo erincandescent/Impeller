@@ -65,6 +65,7 @@ public class PumpContentProvider extends ContentProvider {
         ms_uriMatcher.addURI(AUTHORITY, "activity/*", ACTIVITY);
         ms_uriMatcher.addURI(AUTHORITY, "feed/*",     FEED);
 
+        ms_objectProjection.put("_ID", "_ID");
         ms_objectProjection.put("id", "id");
         ms_objectProjection.put("objectType", "objectType");
         ms_objectProjection.put("author", "author");
@@ -72,9 +73,10 @@ public class PumpContentProvider extends ContentProvider {
         ms_objectProjection.put("updated", "updated");
         ms_objectProjection.put("inReplyTo", "inReplyTo");
         ms_objectProjection.put("_json", "_json");
-        addStateProjections(ms_objectProjection, "objects.id");
 
+        ms_activityProjection.put("_ID",            "activity._ID");
         ms_activityProjection.put("id",             "activity.id");
+        ms_activityProjection.put("object.id",      "object.id");
         ms_activityProjection.put("verb",           "activity.verb");
         ms_activityProjection.put("actor",          "activity.actor");
         ms_activityProjection.put("object",         "activity.object");
@@ -83,9 +85,10 @@ public class PumpContentProvider extends ContentProvider {
         ms_activityProjection.put("updated",        "object.updated");
         ms_activityProjection.put("objectType",     "object.objectType");
         ms_activityProjection.put("_json",          "activity_object._json");
-        addStateProjections(ms_activityProjection,  "activity.object");
 
+        ms_feedProjection.put("_ID",                "feed_entries._ID");
         ms_feedProjection.put("id",                 "feed_entries.id");
+        ms_feedProjection.put("object.id",          "object.id");
         ms_feedProjection.put("published",          "feed_entries.published");
         ms_feedProjection.put("verb",               "activity.verb");
         ms_feedProjection.put("actor",              "activity.actor");
@@ -95,6 +98,9 @@ public class PumpContentProvider extends ContentProvider {
         ms_feedProjection.put("updated",            "object.updated");
         ms_feedProjection.put("objectType",         "object.objectType");
         ms_feedProjection.put("_json",              "activity_object._json");
+
+        addStateProjections(ms_objectProjection, "objects.id");
+        addStateProjections(ms_activityProjection,  "activity.object");
         addStateProjections(ms_feedProjection,      "activity.object");
     }
 
@@ -228,7 +234,8 @@ public class PumpContentProvider extends ContentProvider {
         try {
             m_database.beginTransaction();
             Uri path;
-            switch(ms_uriMatcher.match(uri)) {
+            int match = ms_uriMatcher.match(uri);
+            switch(match) {
                 case FEED:
                     insertFeedEntry(obj, uri.getLastPathSegment());
 
@@ -248,7 +255,6 @@ public class PumpContentProvider extends ContentProvider {
                             .appendPath("activity")
                             .appendPath(id)
                             .build();
-
 
                     break;
 
