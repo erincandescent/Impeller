@@ -48,7 +48,6 @@ public class ActivityAdapter extends BaseAdapter {
 
     Cursor                      m_cursor;
 	ActivityWithAccount m_ctx;
-
     int m_lastScannedObjectPosition;
 
     HashMap<String, Integer>    m_objectPositions = new HashMap<String, Integer>();
@@ -215,7 +214,7 @@ public class ActivityAdapter extends BaseAdapter {
                 AvatarView targetUserAvatar = (AvatarView) v.findViewById(R.id.targetUserAvatar);
                 targetUserAvatar.setVisibility(View.GONE);
 
-                description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
+                PumpHtml.setFromHtml(m_ctx, description, ActivityUtils.localizedDescription(m_ctx, json));
                 ImageLoader ldr = m_ctx.getImageLoader();
                 try {
                     ldr.setImage(actorAvatar, getImage(json.getJSONObject("actor")));
@@ -255,7 +254,7 @@ public class ActivityAdapter extends BaseAdapter {
                         PumpHtml.setFromHtml(m_ctx, caption, content);
                     }
 
-                    PumpHtml.setFromHtml(m_ctx, description, json.optString("content", "(Action string missing)"));
+                    PumpHtml.setFromHtml(m_ctx, description, ActivityUtils.localizedDescription(m_ctx, json));
 
                     m_ctx.getImageLoader().setImage(actorAvatar, getImage(json.getJSONObject("actor")));
 
@@ -282,14 +281,14 @@ public class ActivityAdapter extends BaseAdapter {
                     v = new Wrapper(vi.inflate(R.layout.view_image, null));
                 }
 
-                TextView imgDescription = (TextView)  v.findViewById(R.id.description);
-                ImageView imgImg        = (ImageView) v.findViewById(R.id.imageImage);
+                TextView description = (TextView)  v.findViewById(R.id.description);
+                ImageView img        = (ImageView) v.findViewById(R.id.imageImage);
 
                 try {
-                    PumpHtml.setFromHtml(m_ctx, imgDescription, json.optString("content", "(Action string missing)"));
-                    m_ctx.getImageLoader().setImage(imgImg, getImage(json.getJSONObject("object")));
+                    PumpHtml.setFromHtml(m_ctx, description, ActivityUtils.localizedDescription(m_ctx, json));
+                    m_ctx.getImageLoader().setImage(img, getImage(json.getJSONObject("object")));
                 } catch(JSONException e) {
-                    imgDescription.setText(e.getMessage());
+                    description.setText(e.getMessage());
                 }
                 break;
             }

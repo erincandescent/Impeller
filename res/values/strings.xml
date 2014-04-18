@@ -19,6 +19,8 @@
     <string name="action_post">Post</string>
     <string name="action_post_note">Post Note</string>
     <string name="action_post_image">Post Image</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_about">About</string>
     <string name="action_like">Like</string>
     <string name="action_unlike">Unlike</string>
     <string name="action_reply">Reply</string>
@@ -59,5 +61,52 @@
     <string name="error_no_message_specified">No message specified</string>
     <string name="error_no_recipients">No recipients specified</string>
     <string name="direct_notification_title">Message from %s</string>
-
+    
+    <string name="verb_posted">posted</string>
+    <string name="verb_followed">followed</string>
+    <string name="verb_stopped_following">stoped following</string>
+    <string name="verb_favorited">favorited</string>
+    <string name="verb_unfavorited">unfavorited</string>
+    <string name="verb_shared">shared</string>
+    <string name="verb_unshared">unshared</string>
+    <string name="verb_liked">liked</string>
+    <string name="verb_unliked">unliked</string>
+    <string name="verb_deleted">deleted</string>
+    <string name="verb_created">created</string>
+    <string name="verb_added">added</string>
+    <string name="verb_updated">updated</string>
+    <string name="verb_joined">joined</string>
+    <string name="verb_removed">removed</string>
+    <string name="verb_left">left</string>
+    <string name="verb_played">played</string>
+    <string name="verb_listened_to">listened to</string>
+    <string name="verb_checked_in_at">checked in at</string>
+    
+    <string name="object_type_a_note">a note</string>
+    <string name="object_type_an_image">an image</string>
+    <string name="object_type_a_comment">a comment</string>
+    <string name="object_type_a_person">a person</string>
+    <string name="object_type_a_group">a group</string>
+    <string name="object_type_an_activity">an activity</string>
+    <string name="object_type_a_place">a place</string>
+    <string name="object_type_a_collection">a collection</string>
+    <string name="object_type_a_review">a review</string>
+    <string name="object_type_an_article">an article</string>
+    <string name="object_type_a_video">a video</string>
+    <string name="object_type_an_audio">an audio</string>
+    <string name="object_type_a_service">a service</string>
+    <string name="object_type_an_application">an application</string>
+    <string name="object_type_a_game">a game</string>
+    <string name="object_type_an_event">an event</string>
+    <string name="object_type_a_file">a file</string>
+    <string name="object_type_an_object">an object</string>
+    
+    <!-- Use this to change word order if the language requires it -->
+    <!-- 1 = actor, 2 = verb, 3 = object, 4 = target of a reply -->
+    <string name="format_string_activity">%1$s %2$s %3$s</string>
+    <string name="format_string_reply">%1$s %2$s %3$s in reply to %4$s</string>
+    
+    <string name="actor_unknown">Unknown</string>
+    <string name="comment_meta_by">By</string>
+    <string name="comment_meta_at">\u0020at</string>
 </resources>
