@@ -62,8 +62,6 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
 
 	@Override
 	public View getView(int position, View v, ViewGroup parent) {
-		Log.v(TAG, "getView(" + position + ")");
-
         ActivityWithAccount activity = (ActivityWithAccount) m_ctx.getActivity();
 		if(v == null) {
 			LayoutInflater vi = LayoutInflater.from(m_ctx.getActivity());
@@ -124,13 +122,13 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         data.setNotificationUri(m_ctx.getActivity().getContentResolver(), Uri.parse(PumpContentProvider.OBJECT_URL));
-        notifyDataSetChanged();
         m_cursor = data;
+        notifyDataSetChanged();
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        notifyDataSetInvalidated();
         m_cursor = null;
+        notifyDataSetInvalidated();
     }
 }
