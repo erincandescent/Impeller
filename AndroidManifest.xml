@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="eu.e43.impeller"
     android:requiredAccountType="eu.e43.impeller"
-    android:versionCode="0009000"
-    android:versionName="0.9" >
+    android:versionCode="0009001"
+    android:versionName="0.9a" >
 
     <uses-sdk
         android:minSdkVersion="8"

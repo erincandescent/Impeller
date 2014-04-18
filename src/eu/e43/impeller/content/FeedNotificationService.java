@@ -165,7 +165,9 @@ public class FeedNotificationService extends Service {
         }
 
         private void finalizeNotification() {
-            Intent showIntent = new Intent(Intent.ACTION_VIEW, m_contentUri, FeedNotificationService.this, MainActivity.class);
+            Intent showIntent = new Intent(
+                    Intent.ACTION_VIEW, Uri.parse(m_activity.optJSONObject("object").optString("id")),
+                    FeedNotificationService.this, MainActivity.class);
             showIntent.putExtra("account", m_acct);
 
             Intent replyIntent = new Intent(PostActivity.ACTION_REPLY, null, FeedNotificationService.this, PostActivity.class);
