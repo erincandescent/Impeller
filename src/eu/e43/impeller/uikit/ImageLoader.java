@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
@@ -37,7 +38,7 @@ import eu.e43.impeller.uikit.AvatarView;
 
 public class ImageLoader {
 	static final String TAG = "ImageLoader";
-	private Activity m_ctx;
+	private Context m_ctx;
 	private Account m_account;
     // Largest edge of display (i.e. bigger of width/height)
     //private int m_largestEdge;
@@ -53,7 +54,7 @@ public class ImageLoader {
 		public void error(URI uri);
 	}
 	
-	public ImageLoader(Activity ctx, Account acct) {
+	public ImageLoader(Context ctx, Account acct) {
 		m_ctx       = ctx;
 		m_account	= acct;
 
