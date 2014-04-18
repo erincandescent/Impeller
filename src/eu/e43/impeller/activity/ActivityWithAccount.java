@@ -23,7 +23,8 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
 	private static final String TAG = "ActivityWithAccount";
 	public    AccountManager 	m_accountManager 	= null;
 	public    Account           m_account           = null;
-	private ImageLoader m_imageLoader		= null;
+	private   ImageLoader       m_imageLoader		= null;
+    private   Intent            m_startIntent       = null;
 
 	public ActivityWithAccount() {
 		super();
@@ -34,6 +35,7 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
     }
 
 	protected abstract void onCreateEx(Bundle savedInstanceState);
+    protected void onStartIntent(Intent startIntent) {}
 
 	@Override
 	protected final void onCreate(Bundle savedInstanceState) {
@@ -47,28 +49,25 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
             Log.v(TAG, "Device doesn't support HttpResponseCache. Disabled.");
         }
 
+        Intent startIntent = getIntent();
         if(savedInstanceState != null && savedInstanceState.containsKey("account")) {
             m_account = savedInstanceState.getParcelable("account");
+        } else if(startIntent.hasExtra("account")) {
+            Account a = (Account) startIntent.getParcelableExtra("account");
+            if(a.type.equals(Authenticator.ACCOUNT_TYPE)) {
+                m_account = a;
+            }
         }
+
+        if(savedInstanceState == null)
+            m_startIntent = startIntent;
 
 		onCreateEx(savedInstanceState);
 
         if(m_account != null) {
             haveGotAccount(m_account);
             return;
-        }
-				
-		Intent startIntent = getIntent();
-		if(startIntent.hasExtra("account")) {
-			Account a = (Account) startIntent.getParcelableExtra("account");
-			if(a.type.equals(Authenticator.ACCOUNT_TYPE)) {
-				m_account = a;
-				haveGotAccount(a);
-				return;
-			}
-		}
-
-        queryForAccount();
+        } else queryForAccount();
     }
 
     /** Query the user for an account (asynchronously). Default implementation uses a chooser. Call
@@ -121,11 +120,14 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
     /** If overriding queryAccount, call this when you have found an account */
     protected void haveGotAccount(Account a) {
         m_account = a;
-        Intent i = getIntent();
-        i.putExtra("account", a);
-        setIntent(i);
         getSupportActionBar().setSubtitle(a.name);
         gotAccount(a);
+
+        if(m_startIntent != null) {
+            Intent i = m_startIntent;
+            m_startIntent = null;
+            onStartIntent(i);
+        }
     }
 
 	protected void gotAccount(Account a) {}
