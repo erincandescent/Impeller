@@ -254,6 +254,7 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
         toolMenu.findItem(R.id.action_like).setChecked(obj.optBoolean("liked", false));
 
         postReplyButton.setOnClickListener(this);
+        authorIcon.setOnClickListener(this);
 
         SpannableStringBuilder caption = new SpannableStringBuilder();
 
@@ -392,14 +393,14 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
     @Override
     public void onClick(View view) {
         switch(view.getId()) {
-            case R.id.postReplyButton:
+            case R.id.postReplyButton: {
                 View root = getView();
                 ListView lv = (ListView) root.findViewById(android.R.id.list);
 
                 EditText editor = (EditText) lv.findViewById(R.id.replyText);
                 editor.clearComposingText();
 
-                if(editor.getText().length() == 0) {
+                if (editor.getText().length() == 0) {
                     break;
                 }
 
@@ -410,19 +411,20 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
                     comment.put("objectType", "comment");
                     comment.put("inReplyTo", getObject());
                     comment.put("content", Html.toHtml(editor.getText()));
-                } catch(JSONException e) {
+                } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
 
                 new PostReply(comment);
                 break;
+            }
 
-            case R.id.image:
+            case R.id.image: {
                 TouchImageView img = new TouchImageView(getActivity());
                 img.setImageDrawable(((ImageView) view).getDrawable());
                 getMainActivity().showOverlay(new OverlayController() {
                     @Override
-                    public void onHidden() { 
+                    public void onHidden() {
                     }
 
                     @Override
@@ -436,20 +438,32 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
                     }
                 }, img);
                 break;
+            }
 
-            case R.id.video_preview:
+            case R.id.video_preview: {
                 JSONObject stream = getObject().optJSONObject("stream");
-                if(stream == null) return;
+                if (stream == null) return;
                 String url = stream.optString("url");
-                if(url == null) return;
+                if (url == null) return;
 
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setDataAndType(Uri.parse(url), stream.optString("type", "video/*"));
                 try {
                     startActivity(i);
-                } catch(ActivityNotFoundException ex) {
+                } catch (ActivityNotFoundException ex) {
                     Toast.makeText(getActivity(), "Unable to launch video player", Toast.LENGTH_SHORT).show();
                 }
+            }
+
+            case R.id.actorImage: {
+                JSONObject author = getObject().optJSONObject("author");
+                if(author != null) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(author.optString("id")),
+                            getActivity(), MainActivity.class);
+                    Log.v(TAG, "Showing author" + intent);
+                    startActivity(intent);
+                }
+            }
         }
     }
 
