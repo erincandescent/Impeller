@@ -238,7 +238,9 @@ public class Utils {
     }
 
     public static String humanDate(long milis) {
-        return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(new Date(milis));
+        return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT)
+                .format(new Date(milis))
+                .replace(' ', '\u00A0');
     }
 
     public static String humanDate(String isoDate) {
