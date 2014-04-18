@@ -166,13 +166,13 @@ public class FeedFragment
         switch(m_feedId) {
             case MAJOR_FEED:
                 return new CursorLoader(getActivity(), uri,
-                        new String[] { "_json", "replies", "likes", "shares" },
+                        new String[] { "_ID", "object.id", "_json", "replies", "likes", "shares" },
                         "verb='share' OR (verb='post' AND object.objectType<>'comment')", null,
                         "feed_entries._ID DESC");
 
             case MINOR_FEED:
                 return new CursorLoader(getActivity(), uri,
-                        new String[] { "_json", "replies", "likes", "shares" },
+                        new String[] { "_ID", "object.id", "_json", "replies", "likes", "shares" },
                         "NOT (verb='share' OR (verb='post' AND object.objectType<>'comment'))", null,
                         "feed_entries._ID DESC");
 

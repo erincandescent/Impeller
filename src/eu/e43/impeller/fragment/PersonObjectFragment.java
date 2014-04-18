@@ -183,7 +183,7 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
         Uri uri = Uri.parse(PumpContentProvider.ACTIVITY_URL);
 
         return new CursorLoader(getActivity(), uri,
-           new String[] { "_json", "replies", "likes", "shares" },
+           new String[] { "_ID", "object.id", "_json", "replies", "likes", "shares" },
            "activity.actor=?", new String[] { getObject().optString("id") },
            "activity.published DESC");
     }

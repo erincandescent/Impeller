@@ -37,20 +37,26 @@ import eu.e43.impeller.Utils;
 import eu.e43.impeller.activity.ActivityWithAccount;
 
 public class ActivityAdapter extends BaseAdapter {
-	static final String TAG = "ActivityAdapter";
-	
+	private static final String TAG = "ActivityAdapter";
+
+    private static final int FIELD_ROWID   = 0;
+    private static final int FIELD_ID      = 1;
+    private static final int FIELD_JSON    = 2;
+    private static final int FIELD_REPLIES = 3;
+    private static final int FIELD_LIKES   = 4;
+    private static final int FIELD_SHARES  = 5;
+
     Cursor                      m_cursor;
 	ActivityWithAccount m_ctx;
 
-    HashMap<String, Integer>    m_objectPositions;
     int m_lastScannedObjectPosition;
 
-    LruCache<Integer, JSONObject> m_objects = new LruCache<Integer, JSONObject>(20);
+    HashMap<String, Integer>    m_objectPositions = new HashMap<String, Integer>();
+    LruCache<Integer, JSONObject> m_objects = new LruCache<Integer, JSONObject>(32);
 
 	public ActivityAdapter(ActivityWithAccount ctx) {
 		m_cursor = null;
 		m_ctx  = ctx;
-        m_objectPositions = new HashMap<String, Integer>();
 	}
 
     public int findItemById(String id) {
@@ -58,13 +64,16 @@ public class ActivityAdapter extends BaseAdapter {
         if(pos == null) {
             if(m_cursor == null) return -1;
 
-            if(!m_cursor.moveToPosition(m_lastScannedObjectPosition)) return -1;
+            if(!m_cursor.moveToPosition(m_lastScannedObjectPosition))
+                return -1;
+
             do {
-                String objId = m_cursor.getString(1);
+                String objId = m_cursor.getString(FIELD_ID);
                 pos = m_cursor.getPosition();
                 m_objectPositions.put(id, pos);
+                m_lastScannedObjectPosition = pos;
+
                 if(id.equals(objId)) {
-                    m_lastScannedObjectPosition = pos;
                     return pos;
                 }
             } while(m_cursor.moveToNext());
@@ -105,7 +114,6 @@ public class ActivityAdapter extends BaseAdapter {
     public void updateCursor(Cursor c) {
         if(m_cursor != null && m_cursor != c) m_cursor.close();
         m_cursor = c;
-        m_objects.evictAll();
         m_lastScannedObjectPosition = 0;
         m_objectPositions.clear();
         notifyDataSetChanged();
@@ -127,27 +135,22 @@ public class ActivityAdapter extends BaseAdapter {
 
 	@Override
 	public Object getItem(int position) {
-        JSONObject act = m_objects.get(position);
+        m_cursor.moveToPosition(position);
+        int id = m_cursor.getInt(FIELD_ROWID);
+
+        JSONObject act = m_objects.get(id);
         if(act != null) {
             return act;
         } else {
             try {
-                m_cursor.moveToPosition(position);
-                act = new JSONObject(m_cursor.getString(0));
-                JSONObject obj = act.optJSONObject("object");
-                if(obj != null) {
-                    String id = obj.optString("id");
-                    if(id != null) {
-                        m_objectPositions.put(id, position);
-                    }
-                }
+                m_objectPositions.put(m_cursor.getString(FIELD_ID), position);
 
-                act.put("_replies", m_cursor.getInt(1));
-                act.put("_likes",   m_cursor.getInt(2));
-                act.put("_shares",  m_cursor.getInt(3));
+                act = new JSONObject(m_cursor.getString(FIELD_JSON));
+                act.put("_replies", m_cursor.getInt(FIELD_REPLIES));
+                act.put("_likes",   m_cursor.getInt(FIELD_LIKES));
+                act.put("_shares",  m_cursor.getInt(FIELD_SHARES));
 
-                m_objects.put(position, act);
-                m_objectPositions.put(m_cursor.getString(1), position);
+                m_objects.put(id, act);
                 return act;
             } catch(JSONException e) {
                 throw new RuntimeException(e);
@@ -242,7 +245,6 @@ public class ActivityAdapter extends BaseAdapter {
                 AvatarView actorAvatar  = (AvatarView) v.findViewById(R.id.actorAvatar);
                 AvatarView authorAvatar = (AvatarView) v.findViewById(R.id.authorAvatar);
 
-                description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
                 try {
                     JSONObject obj = json.getJSONObject("object");
                     String content = obj.optString("content");
@@ -252,6 +254,8 @@ public class ActivityAdapter extends BaseAdapter {
                         caption.setVisibility(View.VISIBLE);
                         PumpHtml.setFromHtml(m_ctx, caption, content);
                     }
+
+                    PumpHtml.setFromHtml(m_ctx, description, json.optString("content", "(Action string missing)"));
 
                     m_ctx.getImageLoader().setImage(actorAvatar, getImage(json.getJSONObject("actor")));
 
@@ -282,7 +286,7 @@ public class ActivityAdapter extends BaseAdapter {
                 ImageView imgImg        = (ImageView) v.findViewById(R.id.imageImage);
 
                 try {
-                    imgDescription.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
+                    PumpHtml.setFromHtml(m_ctx, imgDescription, json.optString("content", "(Action string missing)"));
                     m_ctx.getImageLoader().setImage(imgImg, getImage(json.getJSONObject("object")));
                 } catch(JSONException e) {
                     imgDescription.setText(e.getMessage());
