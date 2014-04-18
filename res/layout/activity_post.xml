@@ -67,12 +67,15 @@
             layout="@layout/view_post_location"
             android:layout_margin="4dp" />
 
-        <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/public_post"
-                android:id="@+id/isPublic"
-            android:layout_margin="4dp" />
 
+        <com.tokenautocomplete.TokenCompleteTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/postTo" />
+
+        <com.tokenautocomplete.TokenCompleteTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/postCc" />
     </LinearLayout>
 </ScrollView>
