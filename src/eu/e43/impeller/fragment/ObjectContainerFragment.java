@@ -111,7 +111,8 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
     @Override
     public void onStart() {
         super.onStart();
-        onObjectUpdated();
+        if(m_object != null)
+            onObjectUpdated();
     }
 
     @Override
@@ -128,9 +129,6 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
     }
 
     public void onObjectUpdated() {
-        if(m_object == null)
-            return;
-
         Log.i(TAG, "Object " + m_id + " updated");
 
         View rootView = getView();
@@ -147,7 +145,9 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
 
             // Construct the child fragment
             ObjectFragment frag = null;
-            if("person".equals(m_object.optString("objectType"))) {
+            if(m_object == null) {
+                frag = new NullObjectFragment();
+            } else if("person".equals(m_object.optString("objectType"))) {
                 frag = new PersonObjectFragment();
             } else {
                 frag = new StandardObjectFragment();
@@ -169,25 +169,6 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
 
     public void queryForObjectUpdate()
     {
-        /*
-        BroadcastReceiver updateRx = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if(getResultCode() != Activity.RESULT_OK) return;
-
-                Bundle ex = getResultExtras(true);
-                JSONObject obj = null;
-                try {
-                    obj = new JSONObject(ex.getString("object"));
-                    m_object = obj;
-                    onObjectUpdated();
-                } catch (JSONException e) {
-                    Log.e(TAG, "Updated object and got bad data", e);
-                }
-            }
-        };
-        */
-
         getActivity().sendOrderedBroadcast(new Intent(
                 ContentUpdateReceiver.UPDATE_OBJECT, Uri.parse(m_id),
                 getActivity(), ContentUpdateReceiver.class
@@ -235,9 +216,7 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
         }
 
         if(data == null || data.getCount() == 0) {
-            if(m_object == null) {
-                Toast.makeText(getActivity(), "Unable to fetch object", Toast.LENGTH_SHORT);
-            } else {
+            if(m_object != null) {
                 Log.w(TAG, "No rows returned for object query? " + m_id);
             }
         } else {
@@ -250,8 +229,9 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
                 throw new RuntimeException("Database contained invalid JSON", e);
             }
             m_object = obj;
-            onObjectUpdated();
         }
+
+        onObjectUpdated();
     }
 
     @Override
