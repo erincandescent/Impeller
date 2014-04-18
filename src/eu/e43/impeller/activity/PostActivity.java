@@ -548,6 +548,23 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
     }
 
     private void onPost() {
+        if(m_type == TYPE_NOTE && m_content.getText().length() == 0) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.title_error_dialog)
+                    .setMessage(R.string.error_no_message_specified)
+                    .show();
+            return;
+        }
+
+        if(m_postTo.length() == 0 && m_postCc.length() == 0 && !m_implicitAudience) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.title_error_dialog)
+                    .setMessage(R.string.error_no_recipients)
+                    .show();
+            return;
+        }
+
+
         JSONObject obj = new JSONObject();
         if(m_title != null) m_title.clearComposingText();
         if(m_content != null) m_content.clearComposingText();
