@@ -69,6 +69,7 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
         if(savedInstanceState != null) {
             try {
                 m_object = new JSONObject(savedInstanceState.getString("object"));
+                m_child = (ObjectFragment) getChildFragmentManager().getFragment(savedInstanceState, "child");
             } catch (JSONException e) {
                 // We encoded the damn object!
                 throw new RuntimeException(e);
@@ -89,26 +90,6 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        if(savedInstanceState != null) {
-            String type = m_object.optString("objectType");
-
-            if(type.equals("person")) {
-                m_child = new PersonObjectFragment();
-            } else {
-                m_child = new StandardObjectFragment();
-            }
-            m_child = ObjectFragment.prepare(m_child, m_id);
-            m_child.setInitialSavedState((SavedState) savedInstanceState.getParcelable("child"));
-            getChildFragmentManager().beginTransaction()
-                    .add(R.id.objectDisplayFragment, m_child)
-                    .commit();
-        }
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
         if(m_object != null)
@@ -124,7 +105,7 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
         }
 
         if(m_child != null) {
-            outState.putParcelable("child", getChildFragmentManager().saveFragmentInstanceState(m_child));
+            getChildFragmentManager().putFragment(outState, "child", m_child);
         }
     }
 
