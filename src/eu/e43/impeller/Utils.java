@@ -183,6 +183,9 @@ public class Utils {
 	}
 	
 	public static String getImageUrl(JSONObject img) {
+        if(img == null)
+            return null;
+
 		String url = getProxyUrl(img);
 		if(url == null)
 			url = img.optString("url");
