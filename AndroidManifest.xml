@@ -30,7 +30,8 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
-        android:theme="@style/Theme.AppCompat.Light" >
+        android:theme="@style/Theme.AppCompat.Light"
+        android:allowTaskReparenting="true">
         <provider
             android:name=".content.PumpContentProvider"
             android:authorities="eu.e43.impeller.content"
@@ -120,11 +121,19 @@
 
         <activity
             android:name=".activity.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:launchMode="singleTask">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <data
+                    android:scheme="content"
+                    android:host="eu.e43.impeller.content" />
             </intent-filter>
         </activity>
 
