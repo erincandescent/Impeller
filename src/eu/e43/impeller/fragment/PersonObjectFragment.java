@@ -68,6 +68,7 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
 
 
         ListView lv = new ListView(getActivity());
+        lv.setId(android.R.id.list);
         lv.setPadding(0, 0, 0, 0);
         lv.addHeaderView(header);
         lv.setDivider(null);
