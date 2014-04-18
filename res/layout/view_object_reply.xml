@@ -16,11 +16,11 @@
         android:background="@android:color/transparent"
         android:layout_gravity="bottom|left|top"
         android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/replyButton"
         android:layout_alignParentLeft="true"
         android:minLines="2"
         android:textAlignment="textStart"
-        android:autoLink="all" />
+        android:autoLink="all"
+        android:layout_toLeftOf="@+id/postReplyButton" />
 
     <Button
             android:layout_width="wrap_content"
