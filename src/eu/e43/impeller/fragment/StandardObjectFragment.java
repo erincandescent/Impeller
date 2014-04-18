@@ -9,10 +9,14 @@ import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.SpannableStringBuilder;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -118,8 +122,10 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ListView lv = (ListView) inflater.inflate(R.layout.fragment_object_standard, null);
 
-        for(WebView wv : m_webViews) {
-            wv.onPause();
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            for(WebView wv : m_webViews) {
+                wv.onPause();
+            }
         }
 
         JSONObject obj = getObject();
@@ -240,9 +246,7 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
 
     private void objectUpdated(JSONObject obj, View root) {
         AvatarView      authorIcon      = (AvatarView)   root.findViewById(R.id.actorImage);
-        TextView        authorName      = (TextView)     root.findViewById(R.id.actorName);
-        TextView        dateView        = (TextView)     root.findViewById(R.id.objectDate);
-        TextView        titleView       = (TextView)     root.findViewById(R.id.objectTitle);
+        TextView        captionView     = (TextView)     root.findViewById(R.id.objectCaption);
         Button          postReplyButton = (Button)       root.findViewById(R.id.postReplyButton);
         ToolbarView     toolbar         = (ToolbarView)  root.findViewById(R.id.objectToolbar);
 
@@ -251,23 +255,31 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
 
         postReplyButton.setOnClickListener(this);
 
+        SpannableStringBuilder caption = new SpannableStringBuilder();
+
         String title = obj.optString("displayName", null);
         if(title != null) {
-            titleView.setVisibility(View.VISIBLE);
-            titleView.setText(title);
-        } else titleView.setVisibility(View.GONE);
+            caption.append(title + "\n");
+            caption.setSpan(new StyleSpan(Typeface.BOLD), 0, title.length(), 0);
+            caption.setSpan(new RelativeSizeSpan(1.3f), 0, title.length(), 0);
+        }
 
         JSONObject author = obj.optJSONObject("author");
         if(author != null) {
-            authorName.setText(author.optString("displayName"));
+            int authorStart = caption.length();
+            caption.append(author.optString("displayName"));
+            caption.setSpan(new StyleSpan(Typeface.BOLD), authorStart, caption.length(), 0);
+            caption.append(" ");
             JSONObject img = author.optJSONObject("image");
             if(img != null) {
                 getImageLoader().setImage(authorIcon, Utils.getImageUrl(img));
             }
-        } else {
-            authorName.setText("No author.");
         }
-        dateView.setText(Utils.humanDate(obj.optString("published")));
+
+        int dateStart = caption.length();
+        caption.append(Utils.humanDate(obj.optString("published")));
+        caption.setSpan(new StyleSpan(Typeface.ITALIC), dateStart, caption.length(), 0);
+        captionView.setText(caption);
 
         updateLikeState();
 
