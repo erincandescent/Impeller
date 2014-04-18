@@ -1,23 +1,31 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item   android:id="@+id/action_post"
-            android:menuCategory="container"
-            android:title="@string/action_post"
-            android:icon="@drawable/ic_menu_compose"
-            android:checked="false"
-            android:enabled="true"
-            android:visible="true"
-            android:showAsAction="always"/>
-    <item   android:id="@+id/action_checkin"
-            android:menuCategory="container"
-            android:title="Check in"
-            android:enabled="true"
-            android:showAsAction="never"
-            android:visible="false"/>
-    <item   android:id="@+id/action_post_image"
-            android:menuCategory="container"
-            android:title="@string/action_post_image"
-            android:checked="false"
-            android:enabled="true"
-            android:visible="true"
-            android:showAsAction="never"/>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:impeller="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_post"
+        android:menuCategory="secondary"
+        android:title="@string/action_post_note"
+        android:icon="@drawable/ic_note"
+        android:checked="false"
+        android:enabled="true"
+        android:visible="true"
+        impeller:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_post_image"
+        android:menuCategory="secondary"
+        android:icon="@drawable/ic_picture"
+        android:title="@string/action_post_image"
+        android:checked="false"
+        android:enabled="true"
+        android:visible="true"
+        impeller:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_checkin"
+        android:menuCategory="secondary"
+        android:title="Check in"
+        android:enabled="true"
+        impeller:showAsAction="never"
+        android:visible="false"/>
 </menu>

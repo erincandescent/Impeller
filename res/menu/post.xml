@@ -6,6 +6,6 @@
             android:menuCategory="container"
             android:title="@string/action_post"
             android:visible="true"
-            android:icon="@drawable/ic_menu_post"
+            android:icon="@drawable/ic_action_send_now"
             impeller:showAsAction="always"/>
 </menu>

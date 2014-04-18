@@ -87,7 +87,7 @@
             android:textOn="@string/action_following"
             android:checked="false"
             android:background="@android:color/transparent"
-            android:button="@drawable/ic_follow_dark"
+            android:button="@drawable/ic_follow"
             android:focusableInTouchMode="true"
             android:paddingRight="8dp" />
 

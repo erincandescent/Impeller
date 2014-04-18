@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">Impeller</string>
     <string name="cancel_button">Cancel</string>
 
@@ -15,20 +16,17 @@
 
     <!-- Menu items -->
     <string name="action_sign_out">Sign out</string>
-    <string name="action_post">New Post</string>
+    <string name="action_post">Post</string>
+    <string name="action_post_note">Post Note</string>
     <string name="action_post_image">Post Image</string>
     <string name="action_like">Like</string>
     <string name="action_unlike">Unlike</string>
     <string name="action_reply">Reply</string>
     <string name="action_replyImage">Reply with image</string>
-
     <string name="hint_comment">Comment...</string>
-
     <string name="posted_by">Posted by</string>
-
     <string name="title_activity_post">New post</string>
     <string name="title_activity_post_reply">Reply</string>
-    <string name="post_button">Post</string>
 
     <!-- Post activity -->
     <string name="public_post">Make post public</string>
@@ -38,18 +36,20 @@
     <string name="no_location">None</string>
     <string name="hint_message">Message...</string>
     <string name="hint_title">Title... (optional)</string>
-
     <string name="posting_title">Posting...</string>
     <string name="status_submitting_post">Submitting post</string>
     <string name="status_uploading_image">Uploading image</string>
-
     <string name="just_a_moment">Just a moment</string>
     <string name="getting_information">Getting information...</string>
 
     <!-- Preferences -->
     <string name="pref_title_limit_database_size">Limit maximum database size</string>
-    <string name="pref_database_max_item_count">Maximum item count</string><string name="in_reply_to_post_by">In reply to a post by</string><string name="action_follow">Follow</string><string name="action_following">Following</string>
-    <string name="action_replyNote">Reply with note</string><string name="accountpicker_new_account">New Account</string>
+    <string name="pref_database_max_item_count">Maximum item count</string>
+    <string name="in_reply_to_post_by">In reply to a post by</string>
+    <string name="action_follow">Follow</string>
+    <string name="action_following">Following</string>
+    <string name="action_replyNote">Reply with note</string>
+    <string name="accountpicker_new_account">New Account</string>
     <string name="post_to_label">To:</string>
     <string name="post_cc_label">Cc:</string>
     <string name="public_collection">Public</string>
@@ -59,4 +59,5 @@
     <string name="error_no_message_specified">No message specified</string>
     <string name="error_no_recipients">No recipients specified</string>
     <string name="direct_notification_title">Message from %s</string>
+
 </resources>

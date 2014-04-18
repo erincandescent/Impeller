@@ -34,7 +34,6 @@ import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -192,15 +191,15 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
         switch(m_type) {
             case TYPE_NOTE:
             case TYPE_COMMENT:
-                m_postType.setImageResource(R.drawable.ic_note_dark);
+                m_postType.setImageResource(R.drawable.ic_note);
                 break;
 
             case TYPE_IMAGE:
-                m_postType.setImageResource(R.drawable.ic_picture_dark);
+                m_postType.setImageResource(R.drawable.ic_picture);
                 break;
 
             case TYPE_VIDEO:
-                m_postType.setImageResource(R.drawable.ic_video_dark);
+                m_postType.setImageResource(R.drawable.ic_video);
                 break;
         }
 

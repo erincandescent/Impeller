@@ -5,7 +5,7 @@
         android:id="@+id/action_like"
         android:title="@string/action_like"
         android:checkable="true"
-        android:icon="@drawable/ic_like_dark" />
+        android:icon="@drawable/ic_like" />
 
     <item android:title="@string/action_reply"
           android:icon="@drawable/ic_action_reply">

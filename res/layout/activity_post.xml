@@ -23,7 +23,7 @@
                 android:id="@+id/postType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_note_dark"
+                android:src="@drawable/ic_note"
                 android:layout_margin="4dp" />
 
             <EditText
@@ -71,11 +71,17 @@
         <com.tokenautocomplete.TokenCompleteTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/postTo" />
+            android:id="@+id/postTo"
+            android:imeOptions="flagNoFullscreen|flagNoExtractUi"
+            android:background="@android:color/white"
+            android:padding="4dp"/>
 
         <com.tokenautocomplete.TokenCompleteTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/postCc" />
+            android:id="@+id/postCc"
+            android:imeOptions="flagNoFullscreen|flagNoExtractUi"
+            android:background="@android:color/white"
+            android:padding="4dp" />
     </LinearLayout>
 </ScrollView>
