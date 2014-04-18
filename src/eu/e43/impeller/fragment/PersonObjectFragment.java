@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -36,7 +37,7 @@ import eu.e43.impeller.uikit.ImageLoader;
 /**
  * Created by oshepherd on 04/04/14.
  */
-public class PersonObjectFragment extends ObjectFragment implements CompoundButton.OnCheckedChangeListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class PersonObjectFragment extends ObjectFragment implements CompoundButton.OnCheckedChangeListener, LoaderManager.LoaderCallbacks<Cursor>, AdapterView.OnItemClickListener {
     private static final String TAG = "PersonObjectFragment";
 
     private MainActivity getMainActivity()
@@ -73,6 +74,7 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
         m_adapter = new ActivityAdapter(getMainActivity());
         getLoaderManager().initLoader(0, null, this);
         lv.setAdapter(m_adapter);
+        lv.setOnItemClickListener(this);
 
         objectUpdated(getObject(), lv);
         return lv;
@@ -119,6 +121,16 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         // Only follow button for now - so we assume its' that. A good assumption, one would hope.
         new DoFollow(isChecked);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        JSONObject activity = (JSONObject) parent.getItemAtPosition(position);
+        JSONObject object = activity.optJSONObject("object");
+        if(object != null) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(object.optString("id")),
+                    getActivity(), MainActivity.class));
+        }
     }
 
     // ================
