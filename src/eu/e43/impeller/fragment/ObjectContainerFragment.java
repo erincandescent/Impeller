@@ -118,7 +118,9 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putString("object", m_object.toString());
+        if(m_object != null) {
+            outState.putString("object", m_object.toString());
+        }
 
         if(m_child != null) {
             outState.putParcelable("child", getChildFragmentManager().saveFragmentInstanceState(m_child));
@@ -128,6 +130,8 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
     public void onObjectUpdated() {
         if(m_object == null)
             return;
+
+        Log.i(TAG, "Object " + m_id + " updated");
 
         View rootView = getView();
         if(rootView != null) {
@@ -199,6 +203,11 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
     @Override
     public void onStop() {
         super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
         getMainActivity().onHideObjectFragment(this);
     }
 
@@ -228,7 +237,6 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
         if(data == null || data.getCount() == 0) {
             if(m_object == null) {
                 Toast.makeText(getActivity(), "Unable to fetch object", Toast.LENGTH_SHORT);
-                getFragmentManager().popBackStack();
             } else {
                 Log.w(TAG, "No rows returned for object query? " + m_id);
             }
