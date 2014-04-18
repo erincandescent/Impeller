@@ -219,6 +219,39 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
 	}
 
     @Override
+    protected void onStartIntent(Intent startIntent) {
+        onNewIntent(startIntent);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        if(intent.hasExtra("account")) {
+            haveGotAccount((Account) intent.getParcelableExtra("account"));
+        }
+
+        String action = intent.getAction();
+        if(Intent.ACTION_VIEW.equals(action)) {
+            Uri uri = intent.getData();
+            if(uri == null)
+                return;
+
+            Uri id = null;
+            if(uri.getScheme().equals("content") && uri.getHost().equals("eu.e43.impeller.content")) {
+                id = Uri.parse(uri.getLastPathSegment());
+            } else {
+                id = uri;
+            }
+
+            setIntent(intent);
+            showObjectInMode(Mode.OBJECT, id);
+        } else {
+            Log.d(TAG, "Unknown new intent " + intent);
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
