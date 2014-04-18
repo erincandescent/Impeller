@@ -1,8 +1,10 @@
 package eu.e43.impeller.content;
 
+import android.accounts.Account;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
@@ -23,6 +25,7 @@ import java.util.Map;
 
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
+import eu.e43.impeller.account.Authenticator;
 
 /**
  * Created by OShepherd on 01/07/13.
@@ -33,6 +36,8 @@ public class PumpContentProvider extends ContentProvider {
     public static final String FEED_URL     = "content://eu.e43.impeller.content/feed";
     public static final String ACTIVITY_URL = "content://eu.e43.impeller.content/activity";
     public static final String OBJECT_URL   = "content://eu.e43.impeller.content/object";
+
+    public static final String ACTION_NEW_FEED_ENTRY = "eu.e43.impeller.content.NEW_FEED_ENTRY";
 
     private static final String TAG = "PumpContentProvider";
     private static final UriMatcher ms_uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);

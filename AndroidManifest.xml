@@ -52,6 +52,27 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".content.FeedNotificationReceiver"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="eu.e43.impeller.content.NEW_FEED_ENTRY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".content.FeedNotificationService"
+            android:exported="false"
+            android:process=":sync">
+
+            <intent-filter>
+                <action android:name="eu.e43.impeller.content.FeedNotificationService.DirectMessage" />
+            </intent-filter>
+        </service>
+
         <service
             android:name=".account.AuthenticatorService"
             android:enabled="true"

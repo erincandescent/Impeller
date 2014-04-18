@@ -5,8 +5,10 @@ import android.accounts.AccountManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.database.Cursor;
@@ -23,6 +25,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import eu.e43.impeller.Utils;
+import eu.e43.impeller.account.Authenticator;
 import eu.e43.impeller.account.OAuth;
 
 /**
@@ -109,7 +112,16 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
                             .build());
                     syncResult.stats.numEntries++;
                 }
-                res.applyBatch(PumpContentProvider.AUTHORITY, actions);
+
+                ContentProviderResult[] results = res.applyBatch(PumpContentProvider.AUTHORITY, actions);
+                for(ContentProviderResult result : results) {
+                    Intent noticeIntent = new Intent(PumpContentProvider.ACTION_NEW_FEED_ENTRY);
+                    noticeIntent.putExtra("account", account);
+                    noticeIntent.putExtra("contentUri", result.uri);
+
+                    Log.i(TAG, "Sending notification " + noticeIntent);
+                    getContext().sendBroadcast(noticeIntent);
+                }
 
                 SharedPreferences.Editor e = m_syncState.edit();
                 if(items.length() != 0)
