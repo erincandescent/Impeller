@@ -194,6 +194,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     	super.onDestroy();
     }
 
+    @Override
     protected void gotAccount(Account acct) {
         PreferenceManager.getDefaultSharedPreferences(this)
             .edit()
@@ -204,16 +205,15 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        if(m_feedFragment == null) {
-        FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
-        //if(m_objectFragment != null) {
-        //    tx.remove(m_objectFragment);
-        //}
-        tx.replace(R.id.feed_fragment, new FeedFragment());
-        tx.commit();
-        }
-
-        setDisplayMode(m_displayMode);
+        if(m_feedFragment == null || !acct.equals(m_feedFragment.getAccount())) {
+            FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
+            if(m_objectFragment != null) {
+                tx.remove(m_objectFragment);
+            }
+            tx.replace(R.id.feed_fragment, new FeedFragment());
+            tx.commit();
+            setDisplayMode(Mode.FEED);
+        } else setDisplayMode(m_displayMode);
 
         ((NavigationDrawerAdapter)m_navigationDrawer.getAdapter()).notifyDataSetChanged();
 	}

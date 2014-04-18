@@ -280,6 +280,10 @@ public class FeedFragment
         getActivity().getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
     }
 
+    public Account getAccount() {
+        return m_account;
+    }
+
     /** Tabs */
     public enum FeedID {
         MAJOR_FEED(R.string.feed_major),
