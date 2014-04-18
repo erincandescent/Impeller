@@ -69,7 +69,6 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
         if(savedInstanceState != null) {
             try {
                 m_object = new JSONObject(savedInstanceState.getString("object"));
-                m_child = (ObjectFragment) getChildFragmentManager().getFragment(savedInstanceState, "child");
             } catch (JSONException e) {
                 // We encoded the damn object!
                 throw new RuntimeException(e);
@@ -90,6 +89,30 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        if(savedInstanceState != null) {
+            Class<ObjectFragment> childClass = (Class<ObjectFragment>)
+                    savedInstanceState.getSerializable("childClass");
+            if(childClass != null) {
+                try {
+                    m_child = childClass.newInstance();
+                } catch (java.lang.InstantiationException e) {
+                    throw new RuntimeException(e);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+                m_child = ObjectFragment.prepare(m_child, m_id);
+                m_child.setInitialSavedState((SavedState) savedInstanceState.getParcelable("child"));
+                getChildFragmentManager().beginTransaction()
+                        .add(R.id.objectDisplayFragment, m_child)
+                        .commit();
+            }
+        }
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         if(m_object != null)
@@ -105,7 +128,8 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
         }
 
         if(m_child != null) {
-            getChildFragmentManager().putFragment(outState, "child", m_child);
+            outState.putSerializable("childClass", m_child.getClass());
+            outState.putParcelable("child", getChildFragmentManager().saveFragmentInstanceState(m_child));
         }
     }
 
