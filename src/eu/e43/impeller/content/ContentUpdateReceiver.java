@@ -56,6 +56,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
                     } catch(RuntimeException ex) {
                         Log.e(TAG, "Error", ex);
                         res.setResultCode(Activity.RESULT_CANCELED);
+                    } finally {
                         res.finish();
                     }
                     return null;
