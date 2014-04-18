@@ -7,10 +7,10 @@
     android:background="@drawable/card_bottom_bg">
 
     <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:ems="10"
-            android:id="@+id/replyText"
+        android:id="@+id/replyText"
         android:gravity="fill_horizontal|bottom|left|right|top"
         android:hint="@string/hint_comment"
         android:background="@android:color/transparent"
@@ -20,12 +20,13 @@
         android:minLines="2"
         android:textAlignment="textStart"
         android:autoLink="all"
+        android:imeOptions="flagNoExtractUi|flagNoFullscreen"
         android:layout_toLeftOf="@+id/postReplyButton" />
 
     <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/action_reply"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/action_reply"
         android:minHeight="24dp"
         android:gravity="right"
         android:layout_gravity="right"
