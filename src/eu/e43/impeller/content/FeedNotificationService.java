@@ -48,6 +48,8 @@ public class FeedNotificationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        m_latestStartId = startId;
+
         Log.v(TAG, "Got " + intent);
         if(intent.getAction().equals(ACTION_NOTIFY_DIRECT)) {
             try {
@@ -56,7 +58,6 @@ public class FeedNotificationService extends Service {
                         intent.getData(),
                         intent.getStringExtra("activity"));
                 m_pendingNotifications.add(not);
-                m_latestStartId = startId;
 
                 return START_REDELIVER_INTENT;
             } catch (JSONException e) {
@@ -67,7 +68,11 @@ public class FeedNotificationService extends Service {
                 }
                 return START_NOT_STICKY;
             }
-        } else return super.onStartCommand(intent, flags, startId);
+        } else {
+            if(m_pendingNotifications.isEmpty())
+                stopSelfResult(startId);
+            return START_NOT_STICKY;
+        }
     }
 
     private class PendingNotification {
