@@ -1,6 +1,5 @@
 package eu.e43.impeller.activity;
 
-import org.htmlcleaner.CompactHtmlSerializer;
 import org.htmlcleaner.ContentNode;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.TagNode;
@@ -9,11 +8,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.accounts.Account;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
@@ -22,7 +23,10 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
@@ -30,11 +34,12 @@ import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import com.tokenautocomplete.TokenCompleteTextView;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +49,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.List;
 
 import eu.e43.impeller.Constants;
 import eu.e43.impeller.LocationServices;
@@ -52,13 +58,15 @@ import eu.e43.impeller.content.PumpContentProvider;
 import eu.e43.impeller.ogp.MetaElement;
 import eu.e43.impeller.ogp.OpenGraph;
 import eu.e43.impeller.uikit.LocationAdapter;
+import eu.e43.impeller.uikit.PeopleAdapter;
+import eu.e43.impeller.uikit.PersonTokenViewAdapter;
 import eu.e43.impeller.uikit.PumpHtml;
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
 import eu.e43.impeller.account.OAuth;
 import oauth.signpost.OAuthConsumer;
 
-public class PostActivity extends ActivityWithAccount {
+public class PostActivity extends ActivityWithAccount implements LoaderManager.LoaderCallbacks<Cursor> {
 	public static final String ACTION_REPLY = "eu.e43.impeller.action.REPLY";
 	
 	private static final String TAG = "PostActivity";
@@ -70,15 +78,20 @@ public class PostActivity extends ActivityWithAccount {
     private static final int TYPE_IMAGE   = 2;
     private static final int TYPE_VIDEO   = 3;
 
+    private static final int LOADER_PEOPLE = 0;
+
     // UI widgets
     EditText        m_title;
     ImageView       m_postType;
     ImageView       m_imageView;
 	EditText 	    m_content;
     Spinner         m_location;
-    CheckBox        m_isPublic;
     ProgressDialog  m_progress;
     LocationAdapter m_locations;
+    TokenCompleteTextView
+                    m_postTo, m_postCc;
+    PeopleAdapter   m_peopleAdapter;
+    boolean         m_implicitAudience = false;
 
     // Object properties
     int             m_type;             // objectType
@@ -93,22 +106,35 @@ public class PostActivity extends ActivityWithAccount {
     String          m_sourceLink;
 
 
-    protected void onCreateEx(Bundle _) {
+    protected void onCreateEx(Bundle icicle) {
         setContentView(R.layout.activity_post);
+        m_postTo = (TokenCompleteTextView) findViewById(R.id.postTo);
+        m_postCc = (TokenCompleteTextView) findViewById(R.id.postCc);
+
+        if(icicle == null) {
+            m_postTo.setPrefix(getString(R.string.post_to_label));
+            m_postCc.setPrefix(getString(R.string.post_cc_label));
+        }
+
+        m_peopleAdapter = new PeopleAdapter(this);
+        m_postTo.setAdapter(m_peopleAdapter);
+        m_postCc.setAdapter(m_peopleAdapter);
+
+        PersonTokenViewAdapter ad = new PersonTokenViewAdapter(this);
+        m_postTo.setViewAdapter(ad);
+        m_postCc.setViewAdapter(ad);
     }
 
 	@Override
-	protected void gotAccount(Account a_, Bundle _) {
+	protected void gotAccount(Account a_) {
         Intent intent = getIntent();
         String type = intent.getType();
+        m_peopleAdapter.buildSpecialObjects();
+        getSupportLoaderManager().initLoader(LOADER_PEOPLE, null, this);
 
         Log.v(TAG, "MIME Type is " + type);
         if(type == null || type.startsWith("text/")) {
-            if(ACTION_REPLY.equals(intent.getAction())) {
-                m_type = TYPE_COMMENT;
-            } else {
-                m_type = TYPE_NOTE;
-            }
+            m_type = TYPE_NOTE;
         } else if(type.startsWith("image/")) {
             m_type = TYPE_IMAGE;
             m_imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
@@ -160,21 +186,20 @@ public class PostActivity extends ActivityWithAccount {
         m_imageView     = (ImageView) findViewById(R.id.image);
         m_location      = (Spinner)   findViewById(R.id.location);
         m_content       = (EditText)  findViewById(R.id.content);
-        m_isPublic      = (CheckBox)  findViewById(R.id.isPublic);
         m_postType      = (ImageView) findViewById(R.id.postType);
 
         switch(m_type) {
             case TYPE_NOTE:
             case TYPE_COMMENT:
-                m_postType.setImageResource(R.drawable.ic_note_dark);
+                m_postType.setImageResource(R.drawable.ic_note);
                 break;
 
             case TYPE_IMAGE:
-                m_postType.setImageResource(R.drawable.ic_picture_dark);
+                m_postType.setImageResource(R.drawable.ic_picture);
                 break;
 
             case TYPE_VIDEO:
-                m_postType.setImageResource(R.drawable.ic_video_dark);
+                m_postType.setImageResource(R.drawable.ic_video);
                 break;
         }
 
@@ -200,8 +225,8 @@ public class PostActivity extends ActivityWithAccount {
 
         if(ACTION_REPLY.equals(getIntent().getAction())) {
             setTitle(R.string.title_activity_post_reply);
-            m_title.setVisibility(View.GONE);
-            m_title.setText("");
+            //m_title.setVisibility(View.GONE);
+            //m_title.setText("");
 
             try {
                 m_inReplyTo = new JSONObject(getIntent().getStringExtra("inReplyTo"));
@@ -210,6 +235,41 @@ public class PostActivity extends ActivityWithAccount {
                 setResult(RESULT_CANCELED);
                 finish();
             }
+
+            if(m_proposedTitle == null) {
+                m_proposedTitle = m_inReplyTo.optString("displayName", null);
+                if (m_proposedTitle != null) m_title.setText("Re: " + m_proposedTitle);
+            }
+
+            JSONObject post = null;
+            try {
+                post = Utils.findPost(this, m_inReplyTo);
+            } catch(JSONException e) {
+                Log.e(TAG, "Fidning post for object", e);
+            }
+            if(post == null) {
+                m_implicitAudience = true;
+                m_postTo.setVisibility(View.GONE);
+                m_postCc.setVisibility(View.GONE);
+            } else {
+                m_postTo.addObject(post.optJSONObject("actor"));
+
+                JSONArray to = post.optJSONArray("to");
+                if(to != null) for(int i = 0; i < to.length(); i++) {
+                    JSONObject dest = to.optJSONObject(i);
+                    if(dest != null)
+                        m_postTo.addObject(dest);
+                }
+
+                JSONArray cc = post.optJSONArray("cc");
+                if(cc != null) for(int i = 0; i < cc.length(); i++) {
+                    JSONObject dest = cc.optJSONObject(i);
+                    if(dest != null)
+                        m_postCc.addObject(dest);
+                }
+            }
+        } else {
+            m_postCc.addObject(m_peopleAdapter.getFollowersObject());
         }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -244,11 +304,6 @@ public class PostActivity extends ActivityWithAccount {
         }
     }
 
-	@Override
-	protected void gotAccount(Account a) {
-		m_account = a;
-	}
-
     private void dismissProgress() {
         if(m_progress != null) {
             m_progress.dismiss();
@@ -264,6 +319,40 @@ public class PostActivity extends ActivityWithAccount {
 
     private boolean isImageLink() {
         return m_imageUri.getScheme().equals("http") || m_imageUri.getScheme().equals("https");
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        if(id == LOADER_PEOPLE) {
+            Uri uri = Uri.parse(PumpContentProvider.OBJECT_URL);
+
+            return new CursorLoader(this, uri,
+                    new String[] { "_ID", "_json" },
+                    "objectType='person'", null,
+                    "id ASC");
+        } else throw new RuntimeException();
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if(loader != null && data != null) {
+            data.setNotificationUri(
+                    getContentResolver(),
+                    ((CursorLoader) loader).getUri());
+        }
+
+        if(data != null) {
+            Log.i(TAG, "LoadFinished with " + data.getCount());
+        } else {
+            Log.w(TAG, "LoadFinished with NULL");
+        }
+
+        m_peopleAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        m_peopleAdapter.swapCursor(null);
     }
 
     private class DiscoveryTask extends AsyncTask<URI, Void, Void> {
@@ -458,6 +547,23 @@ public class PostActivity extends ActivityWithAccount {
     }
 
     private void onPost() {
+        if(m_type == TYPE_NOTE && m_content.getText().length() == 0) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.title_error_dialog)
+                    .setMessage(R.string.error_no_message_specified)
+                    .show();
+            return;
+        }
+
+        if(m_postTo.length() == 0 && m_postCc.length() == 0 && !m_implicitAudience) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.title_error_dialog)
+                    .setMessage(R.string.error_no_recipients)
+                    .show();
+            return;
+        }
+
+
         JSONObject obj = new JSONObject();
         if(m_title != null) m_title.clearComposingText();
         if(m_content != null) m_content.clearComposingText();
@@ -613,24 +719,21 @@ public class PostActivity extends ActivityWithAccount {
 
 
             JSONObject act = new JSONObject();
-            if(m_isPublic.isChecked()) {
-                JSONObject thePublic = new JSONObject();
-                thePublic.put("id",         "http://activityschema.org/collection/public");
-                thePublic.put("objectType", "collection");
+            if(!m_implicitAudience) {
+                List<Object> toPeople = m_postTo.getObjects();
+                JSONArray to = new JSONArray();
+                for(Object dest : toPeople) {
+                    to.put(dest);
+                }
 
-                JSONArray to = new JSONArray();
-                to.put(thePublic);
+                List<Object> ccPeople = m_postCc.getObjects();
+                JSONArray cc = new JSONArray();
+                for(Object dest : ccPeople) {
+                    cc.put(dest);
+                }
+
                 act.put("to", to);
-            } else if(m_inReplyTo == null) {
-                // To work around Pump.io bug 885, explicitly send to followers if not a reply
-                JSONObject followers = new JSONObject();
-                String followersUri = Utils.getUserUri(this, m_account, "followers").toString();
-                followers.put("id", followersUri);
-                followers.put("url", followersUri);
-                followers.put("objectType", "collection");
-                JSONArray to = new JSONArray();
-                to.put(followers);
-                act.put("to", to);
+                act.put("cc", cc);
             }
 
             String generator = Utils.readAll(getResources().openRawResource(R.raw.generator));

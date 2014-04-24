@@ -1,7 +1,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
-    android:layout_width="match_parent"
+    android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:padding="8dp"
     android:background="@drawable/card_top_bg">
@@ -9,26 +9,19 @@
     <eu.e43.impeller.uikit.AvatarView
             android:id="@+id/actorImage"
             android:layout_width="48dp"
-            android:layout_height="48dp" />
+            android:layout_height="48dp"
+            android:layout_weight="0" />
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp">
+        android:id="@+id/objectCaption"
+        android:layout_marginLeft="8dp"
+        android:layout_weight="1" />
 
-        <TextView
-                android:id="@+id/actorName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="By Person"
-                android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-                android:id="@+id/objectDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="At time and date"
-                android:textAppearance="?android:attr/textAppearanceMedium"/>
-    </LinearLayout>
+    <eu.e43.impeller.uikit.ToolbarView
+        android:id="@+id/objectToolbar"
+        android:layout_width="wrap_content"
+        android:layout_height="@android:dimen/app_icon_size"
+        android:layout_weight="0"/>
 </LinearLayout>

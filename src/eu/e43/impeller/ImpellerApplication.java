@@ -6,7 +6,9 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Debug;
+import android.os.StrictMode;
 
 import com.atlassian.jconnect.droid.Api;
 
@@ -25,14 +27,20 @@ import eu.e43.impeller.content.PumpContentProvider;
         resNotifText = R.string.crash_notification_text,
         resDialogText = R.string.crash_notification_dialog_text)
 public class ImpellerApplication extends Application {
+    private static final String TAG = "ImpellerApplication";
+
     public static Typeface fontAwesome;
     public static int ms_versionCode;
 
     @Override
     public void onCreate() {
-        if(!Debug.isDebuggerConnected()) {
-            Api.init(this);
-        }
+        if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= 9) {
+            StrictMode.setThreadPolicy(
+                    new StrictMode.ThreadPolicy.Builder()
+                        .detectAll()
+                        .penaltyLog()
+                        .build());
+        } else Api.init(this);
 
         super.onCreate();
 

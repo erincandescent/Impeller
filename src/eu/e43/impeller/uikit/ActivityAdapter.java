@@ -20,7 +20,7 @@ import org.json.JSONObject;
 
 import android.database.Cursor;
 import android.text.Html;
-import android.util.LruCache;
+import android.support.v4.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,20 +37,25 @@ import eu.e43.impeller.Utils;
 import eu.e43.impeller.activity.ActivityWithAccount;
 
 public class ActivityAdapter extends BaseAdapter {
-	static final String TAG = "ActivityAdapter";
-	
+	private static final String TAG = "ActivityAdapter";
+
+    private static final int FIELD_ROWID   = 0;
+    private static final int FIELD_ID      = 1;
+    private static final int FIELD_JSON    = 2;
+    private static final int FIELD_REPLIES = 3;
+    private static final int FIELD_LIKES   = 4;
+    private static final int FIELD_SHARES  = 5;
+
     Cursor                      m_cursor;
 	ActivityWithAccount m_ctx;
-
-    HashMap<String, Integer>    m_objectPositions;
     int m_lastScannedObjectPosition;
 
-    LruCache<Integer, JSONObject> m_objects = new LruCache<Integer, JSONObject>(20);
+    HashMap<String, Integer>    m_objectPositions = new HashMap<String, Integer>();
+    LruCache<Integer, JSONObject> m_objects = new LruCache<Integer, JSONObject>(32);
 
 	public ActivityAdapter(ActivityWithAccount ctx) {
 		m_cursor = null;
 		m_ctx  = ctx;
-        m_objectPositions = new HashMap<String, Integer>();
 	}
 
     public int findItemById(String id) {
@@ -58,13 +63,16 @@ public class ActivityAdapter extends BaseAdapter {
         if(pos == null) {
             if(m_cursor == null) return -1;
 
-            if(!m_cursor.moveToPosition(m_lastScannedObjectPosition)) return -1;
+            if(!m_cursor.moveToPosition(m_lastScannedObjectPosition))
+                return -1;
+
             do {
-                String objId = m_cursor.getString(1);
+                String objId = m_cursor.getString(FIELD_ID);
                 pos = m_cursor.getPosition();
                 m_objectPositions.put(id, pos);
+                m_lastScannedObjectPosition = pos;
+
                 if(id.equals(objId)) {
-                    m_lastScannedObjectPosition = pos;
                     return pos;
                 }
             } while(m_cursor.moveToNext());
@@ -105,7 +113,6 @@ public class ActivityAdapter extends BaseAdapter {
     public void updateCursor(Cursor c) {
         if(m_cursor != null && m_cursor != c) m_cursor.close();
         m_cursor = c;
-        m_objects.evictAll();
         m_lastScannedObjectPosition = 0;
         m_objectPositions.clear();
         notifyDataSetChanged();
@@ -127,27 +134,22 @@ public class ActivityAdapter extends BaseAdapter {
 
 	@Override
 	public Object getItem(int position) {
-        JSONObject act = m_objects.get(position);
+        m_cursor.moveToPosition(position);
+        int id = m_cursor.getInt(FIELD_ROWID);
+
+        JSONObject act = m_objects.get(id);
         if(act != null) {
             return act;
         } else {
             try {
-                m_cursor.moveToPosition(position);
-                act = new JSONObject(m_cursor.getString(0));
-                JSONObject obj = act.optJSONObject("object");
-                if(obj != null) {
-                    String id = obj.optString("id");
-                    if(id != null) {
-                        m_objectPositions.put(id, position);
-                    }
-                }
+                m_objectPositions.put(m_cursor.getString(FIELD_ID), position);
 
-                act.put("_replies", m_cursor.getInt(1));
-                act.put("_likes",   m_cursor.getInt(2));
-                act.put("_shares",  m_cursor.getInt(3));
+                act = new JSONObject(m_cursor.getString(FIELD_JSON));
+                act.put("_replies", m_cursor.getInt(FIELD_REPLIES));
+                act.put("_likes",   m_cursor.getInt(FIELD_LIKES));
+                act.put("_shares",  m_cursor.getInt(FIELD_SHARES));
 
-                m_objects.put(position, act);
-                m_objectPositions.put(m_cursor.getString(1), position);
+                m_objects.put(id, act);
                 return act;
             } catch(JSONException e) {
                 throw new RuntimeException(e);
@@ -165,7 +167,7 @@ public class ActivityAdapter extends BaseAdapter {
 	@Override
 	public int getViewTypeCount()
 	{
-		return 2;
+		return 3;
 	}
 	
 	@Override
@@ -174,16 +176,25 @@ public class ActivityAdapter extends BaseAdapter {
 		JSONObject json = (JSONObject) getItem(pos);
 		return getItemViewType(json);
 	}
-	
+
+    private static final int VT_BASIC = 0;
+    private static final int VT_POST  = 1;
+    private static final int VT_IMAGE = 2;
+
 	public int getItemViewType(JSONObject act) {
-		JSONObject obj = act.optJSONObject("object");
-		if(obj == null) {
-			return 1;
-		} else if("image".equals(obj.optString("objectType"))) {
-			return 1;
-		} else { //if("note".equals(obj.optString("objectType"))) {
-			return 0;
-		}
+        if(act.optString("verb", "post").equals("post") || act.optString("verb").equals("share")) {
+            JSONObject obj = act.optJSONObject("object");
+
+            if(obj == null) {
+                return VT_BASIC;
+            } else if("image".equals(obj.optString("objectType"))) {
+                return VT_IMAGE;
+            } else {
+                return VT_POST;
+            }
+        } else {
+            return VT_BASIC;
+        }
 	}
 	
 	@Override
@@ -192,70 +203,103 @@ public class ActivityAdapter extends BaseAdapter {
 	    int type = getItemViewType(json);
 
 	    switch(type) {
-	    case 0:
-	    	// General case
-		    if (v == null) {
-		        LayoutInflater vi = LayoutInflater.from(m_ctx);
-		        v = new Wrapper(vi.inflate(R.layout.post_view, null));
-		    }
+            case VT_BASIC: {
+                if (v == null) {
+                    LayoutInflater vi = LayoutInflater.from(m_ctx);
+                    v = new Wrapper(vi.inflate(R.layout.view_activity, null));
+                }
 
-		    TextView   caption      = (TextView)   v.findViewById(R.id.caption);
-		    TextView   description  = (TextView)   v.findViewById(R.id.description);
-		    AvatarView actorAvatar  = (AvatarView) v.findViewById(R.id.actorAvatar);
-            AvatarView authorAvatar = (AvatarView) v.findViewById(R.id.authorAvatar);
+                TextView   description      = (TextView)   v.findViewById(R.id.description);
+                AvatarView actorAvatar      = (AvatarView) v.findViewById(R.id.actorAvatar);
+                AvatarView targetUserAvatar = (AvatarView) v.findViewById(R.id.targetUserAvatar);
+                targetUserAvatar.setVisibility(View.GONE);
 
-			description.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
-		    try {
-		    	JSONObject obj = json.getJSONObject("object");
-		    	String content = obj.optString("content");
-                if(content == null) {
-                    caption.setVisibility(View.GONE);
-                } else {
+                PumpHtml.setFromHtml(m_ctx, description, ActivityUtils.localizedDescription(m_ctx, json));
+                ImageLoader ldr = m_ctx.getImageLoader();
+                try {
+                    ldr.setImage(actorAvatar, getImage(json.getJSONObject("actor")));
+
+                    JSONObject obj = json.optJSONObject("object");
+                    if(obj != null) {
+                        if(obj.optString("objectType", "note").equals("person")) {
+                            ldr.setImage(targetUserAvatar, getImage(obj));
+                            targetUserAvatar.setVisibility(View.VISIBLE);
+                        }
+                    }
+                } catch(JSONException ex) {
+                    description.setText(ex.getMessage());
+                }
+
+                break;
+            }
+
+            case VT_POST: {
+                if (v == null) {
+                    LayoutInflater vi = LayoutInflater.from(m_ctx);
+                    v = new Wrapper(vi.inflate(R.layout.post_view, null));
+                }
+
+                TextView   caption      = (TextView)   v.findViewById(R.id.caption);
+                TextView   description  = (TextView)   v.findViewById(R.id.description);
+                AvatarView actorAvatar  = (AvatarView) v.findViewById(R.id.actorAvatar);
+                AvatarView authorAvatar = (AvatarView) v.findViewById(R.id.authorAvatar);
+
+                try {
+                    JSONObject obj = json.getJSONObject("object");
+                    String content = obj.optString("content");
+                    if(content == null) {
+                        caption.setVisibility(View.GONE);
+                    } else {
+                        caption.setVisibility(View.VISIBLE);
+                        PumpHtml.setFromHtml(m_ctx, caption, content);
+                    }
+
+                    PumpHtml.setFromHtml(m_ctx, description, ActivityUtils.localizedDescription(m_ctx, json));
+
+                    m_ctx.getImageLoader().setImage(actorAvatar, getImage(json.getJSONObject("actor")));
+
+                    String actorId  = json.getJSONObject("actor").getString("id");
+                    String authorId = json.getJSONObject("object").getJSONObject("author").getString("id");
+                    if(actorId.equals(authorId)) {
+                        authorAvatar.setVisibility(View.GONE);
+                    } else {
+                        authorAvatar.setVisibility(View.VISIBLE);
+                        m_ctx.getImageLoader().setImage(authorAvatar,
+                                getImage(json.getJSONObject("object").getJSONObject("author")));
+                    }
+                } catch (JSONException e) {
                     caption.setVisibility(View.VISIBLE);
-                    PumpHtml.setFromHtml(m_ctx, caption, content);
+                    caption.setText(Html.fromHtml(e.getLocalizedMessage()));
+                    //caption.loadData(e.getLocalizedMessage(), "text/plain", "utf-8");
                 }
-				
-				m_ctx.getImageLoader().setImage(actorAvatar, getImage(json.getJSONObject("actor")));
-
-                String actorId  = json.getJSONObject("actor").getString("id");
-                String authorId = json.getJSONObject("object").getJSONObject("author").getString("id");
-                if(actorId.equals(authorId)) {
-                    authorAvatar.setVisibility(View.GONE);
-                } else {
-                    authorAvatar.setVisibility(View.VISIBLE);
-                    m_ctx.getImageLoader().setImage(authorAvatar,
-                            getImage(json.getJSONObject("object").getJSONObject("author")));
-                }
-			} catch (JSONException e) {
-                caption.setVisibility(View.VISIBLE);
-				caption.setText(Html.fromHtml(e.getLocalizedMessage()));
-				//caption.loadData(e.getLocalizedMessage(), "text/plain", "utf-8");
-			}
-		    break;
+                break;
+            }
 		    
-	    case 1:
-	    	// Image
-	    	if(v == null) {
-	    		LayoutInflater vi = LayoutInflater.from(m_ctx);
-	    		v = new Wrapper(vi.inflate(R.layout.view_image, null));
-	    	}
-	    	
-	    	TextView imgDescription = (TextView)  v.findViewById(R.id.description);
-	    	ImageView imgImg        = (ImageView) v.findViewById(R.id.imageImage);
-	    	
-	    	try {
-	    		imgDescription.setText(Html.fromHtml(json.optString("content", "(Action string missing)")));
-	    		m_ctx.getImageLoader().setImage(imgImg, getImage(json.getJSONObject("object")));
-	    	} catch(JSONException e) {
-	    		imgDescription.setText(e.getMessage());
-	    	}
-	    	break;
+            case VT_IMAGE: {
+                if(v == null) {
+                    LayoutInflater vi = LayoutInflater.from(m_ctx);
+                    v = new Wrapper(vi.inflate(R.layout.view_image, null));
+                }
+
+                TextView description = (TextView)  v.findViewById(R.id.description);
+                ImageView img        = (ImageView) v.findViewById(R.id.imageImage);
+
+                try {
+                    PumpHtml.setFromHtml(m_ctx, description, ActivityUtils.localizedDescription(m_ctx, json));
+                    m_ctx.getImageLoader().setImage(img, getImage(json.getJSONObject("object")));
+                } catch(JSONException e) {
+                    description.setText(e.getMessage());
+                }
+                break;
+            }
 	    }
 
-        int replies = json.optInt("_replies");
-        int likes   = json.optInt("_likes");
-        int shares  = json.optInt("_shares");
-        Utils.updateStatebar(v, replies, likes, shares);
+        if(type != VT_BASIC) {
+            int replies = json.optInt("_replies");
+            int likes   = json.optInt("_likes");
+            int shares  = json.optInt("_shares");
+            Utils.updateStatebar(v, replies, likes, shares);
+        }
 		
 		return v;
 	}

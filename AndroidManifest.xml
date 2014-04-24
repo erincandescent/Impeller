@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="eu.e43.impeller"
-    android:versionCode="0008007"
-    android:versionName="0.8.7"
-    android:requiredAccountType="eu.e43.impeller">
+    android:requiredAccountType="eu.e43.impeller"
+    android:versionCode="0009002"
+    android:versionName="0.9b" >
 
     <uses-sdk
-        android:minSdkVersion="14"
+        android:minSdkVersion="8"
         android:targetSdkVersion="19" />
 
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -22,97 +22,131 @@
     <uses-permission android:name="android.permission.WRITE_SOCIAL_STREAM" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
+        android:name="eu.e43.impeller.ImpellerApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme"
-        android:name="eu.e43.impeller.ImpellerApplication">
-
+        android:largeHeap="true"
+        android:theme="@style/Theme.AppCompat.Light"
+        android:allowTaskReparenting="true">
         <provider
-            android:name="eu.e43.impeller.content.PumpContentProvider"
-            android:label="Pump.io"
+            android:name=".content.PumpContentProvider"
             android:authorities="eu.e43.impeller.content"
             android:enabled="true"
             android:exported="true"
-            android:syncable="true"
+            android:label="Pump.io"
             android:process=":sync"
-            />
+            android:syncable="true" />
 
         <receiver
-            android:name="eu.e43.impeller.content.ContentUpdateReceiver"
+            android:name=".content.ContentUpdateReceiver"
             android:enabled="true"
             android:exported="false"
-            android:process=":sync"
-            />
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="eu.e43.impeller.UpdateReplies"/>
+                <action android:name="eu.e43.impeller.UpdateObject"/>
+                <action android:name="eu.e43.impeller.FetchUserFeed"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".content.FeedNotificationReceiver"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="eu.e43.impeller.content.NEW_FEED_ENTRY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
 
         <service
-                android:name="eu.e43.impeller.account.AuthenticatorService"
-                android:enabled="true"
-                android:exported="true"
-                android:process=":sync">
+            android:name=".content.FeedNotificationService"
+            android:exported="false"
+            android:process=":sync">
+
+            <intent-filter>
+                <action android:name="eu.e43.impeller.content.FeedNotificationService.DirectMessage" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".account.AuthenticatorService"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":sync" >
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
 
             <meta-data
-                    android:name="android.accounts.AccountAuthenticator"
-                    android:resource="@xml/authenticator" />
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
         </service>
 
         <service
-                android:name="eu.e43.impeller.content.FeedSyncService"
-                android:exported="true"
-                android:process=":sync">
+            android:name=".content.FeedSyncService"
+            android:exported="true"
+            android:process=":sync" >
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
 
             <meta-data
-                    android:name="android.content.SyncAdapter"
-                    android:resource="@xml/feed_sync_adapter" />
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/feed_sync_adapter" />
         </service>
 
         <service
-                android:name="eu.e43.impeller.contacts.SyncService"
-                android:exported="true"
-                android:process=":sync">
+            android:name=".contacts.SyncService"
+            android:exported="true"
+            android:process=":sync">
+
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
 
             <meta-data
-                    android:name="android.content.SyncAdapter"
-                    android:resource="@xml/contact_sync_adapter" />
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/contact_sync_adapter" />
+
             <meta-data
-                    android:name="android.provider.CONTACTS_STRUCTURE"
-                    android:resource="@xml/contact_profile" />
+                android:name="android.provider.CONTACTS_STRUCTURE"
+                android:resource="@xml/contact_profile" />
         </service>
 
         <activity
-                android:name=".activity.MainActivity"
-                android:label="@string/app_name"
-                android:configChanges="orientation|screenSize">
+            android:name=".activity.MainActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTask">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <data
+                    android:scheme="content"
+                    android:host="eu.e43.impeller.content" />
+            </intent-filter>
         </activity>
 
         <activity
-                android:name="eu.e43.impeller.account.LoginActivity"
-                android:label="@string/title_activity_login"
-                android:windowSoftInputMode="adjustResize|stateVisible" >
-        </activity>
+            android:name=".account.LoginActivity"
+            android:label="@string/title_activity_login"
+            android:windowSoftInputMode="adjustResize|stateVisible" />
 
         <activity
             android:name=".activity.PostActivity"
             android:label="@string/title_activity_post"
-            android:theme="@style/AppTheme"
-            android:parentActivityName="eu.e43.impeller.activity.MainActivity">
-            
-			<intent-filter>
+            android:parentActivityName=".activity.MainActivity">
+            <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
@@ -120,34 +154,45 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="eu.e43.impeller.activity.CheckinActivity"
+        <activity
+            android:name=".activity.CheckinActivity"
             android:label="@string/title_activity_checkin"
-            android:parentActivityName="MainActivity"
-            android:theme="@style/AppTheme">
-            <meta-data android:name="android.support.PARENT_ACTIVITY"
-                android:value="MainActivity" />
-        </activity>
-
-        <activity android:name="eu.e43.impeller.activity.SettingsActivity"
-                  android:theme="@style/AppTheme"
-                  android:parentActivityName="eu.e43.impeller.activity.MainActivity"
-                  android:launchMode="singleInstance"
-                  android:excludeFromRecents="true"
-                  android:finishOnTaskLaunch="true" />
-
-        <activity android:name="org.acra.CrashReportDialog"
-            android:theme="@style/AppDialogTheme"
-            android:launchMode="singleInstance"
-            android:excludeFromRecents="true"
-            android:finishOnTaskLaunch="true" />
-
-        <activity android:name="eu.e43.impeller.activity.AboutActivity"
-            android:label="@string/title_activity_about"
-            android:parentActivityName="MainActivity">
+            android:parentActivityName=".activity.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="eu.e43.impeller.activity.MainActivity" />
+                android:value=".activity.MainActivity" />
         </activity>
+
+        <activity
+            android:name=".activity.SettingsActivity"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:launchMode="singleInstance"
+            android:parentActivityName=".activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
+
+        <activity
+            android:name="org.acra.CrashReportDialog"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.Base.AppCompat.Dialog.FixedSize" />
+
+        <activity
+            android:name=".activity.AboutActivity"
+            android:label="@string/title_activity_about"
+            android:parentActivityName=".activity.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
+
+        <activity
+            android:name=".activity.AccountPickerActivity"
+            android:label="@string/title_activity_login" />
     </application>
 
 </manifest>

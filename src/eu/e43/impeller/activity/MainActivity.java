@@ -17,33 +17,39 @@ package eu.e43.impeller.activity;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 
 import android.accounts.Account;
 import android.annotation.TargetApi;
-import android.app.ActionBar;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.Browser;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.ViewFlipper;
 
+import eu.e43.impeller.account.Authenticator;
 import eu.e43.impeller.fragment.FeedFragment;
-import eu.e43.impeller.fragment.ObjectFragment;
+import eu.e43.impeller.fragment.ObjectContainerFragment;
+import eu.e43.impeller.fragment.StandardObjectFragment;
 import eu.e43.impeller.R;
 import eu.e43.impeller.fragment.SplashFragment;
 import eu.e43.impeller.content.PumpContentProvider;
-import eu.e43.impeller.uikit.BrowserChrome;
+import eu.e43.impeller.uikit.NavigationDrawerAdapter;
+import eu.e43.impeller.uikit.OverlayController;
 
-public class MainActivity extends ActivityWithAccount implements ActionBar.TabListener {
+public class MainActivity extends ActivityWithAccount implements AdapterView.OnItemClickListener {
 	static final String TAG = "MainActivity";
 
     /** Time to do next feed fetch */
@@ -52,11 +58,20 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
     /** Tablet UI mode? */
     private boolean         m_isTablet      = false;
 
+    /** Drawer toggle controller */
+    private ActionBarDrawerToggle m_drawerToggle = null;
+
+    /** Drawer layout */
+    private DrawerLayout m_drawerLayout = null;
+
+    /** Navigation drawer */
+    private ListView m_navigationDrawer = null;
+
     /** Pointer to the active feed fragment (if any) */
     private FeedFragment m_feedFragment     = null;
 
     /** Pointer to the active object fragment (if any) */
-    private ObjectFragment m_objectFragment = null;
+    private ObjectContainerFragment m_objectFragment = null;
 
     /** Display mode */
     public enum Mode {
@@ -78,48 +93,86 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
         PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
         setContentView(R.layout.activity_main);
 
-        ActionBar ab = getActionBar();
-        ab.addTab(ab.newTab()
-                .setTabListener(this)
-                .setText(R.string.tab_main_feed)
-                .setTag(FeedFragment.FeedID.MAJOR_FEED),
-                true);
-        ab.addTab(ab.newTab()
-                .setTabListener(this)
-                .setText(R.string.tab_minor_feed)
-                .setTag(FeedFragment.FeedID.MINOR_FEED));
-        //ab.addTab(ab.newTab()
-        //    .setTabListener(this)
-        //    .setText(R.string.tab_direct_feed)
-        //    .setTag(FeedFragment.FeedID.DIRECT_FEED));
+        m_drawerLayout     = (DrawerLayout) findViewById(R.id.drawer_layout);
+        m_navigationDrawer = (ListView) findViewById(R.id.navigation_drawer);
+        m_navigationDrawer.setAdapter(new NavigationDrawerAdapter(this));
+        m_drawerToggle = new ActionBarDrawerToggle(
+                this,
+                m_drawerLayout,
+                R.drawable.ic_navigation_drawer,
+                R.string.drawer_open,
+                R.string.drawer_close
+        );
+        m_drawerLayout.setDrawerListener(m_drawerToggle);
+        m_navigationDrawer.setOnItemClickListener(this);
 
         m_isTablet = "two_pane".equals(findViewById(R.id.main_activity).getTag());
 
         if(savedInstanceState == null) {
-            getActionBar().hide();
-            getFragmentManager().beginTransaction()
+            getSupportActionBar().hide();
+            getSupportFragmentManager().beginTransaction()
                 .add(R.id.feed_fragment, new SplashFragment())
                 .setTransition(FragmentTransaction.TRANSIT_NONE)
                 .commit();
         } else {
-            m_displayMode       = (Mode) savedInstanceState.getSerializable("displayMode");
-            m_feedFragment      = (FeedFragment)   getFragmentManager().getFragment(savedInstanceState, "feedFragment");
-            m_objectFragment    = (ObjectFragment) getFragmentManager().getFragment(savedInstanceState, "objectFragment");
-            setDisplayMode(m_displayMode);
+            m_feedFragment      = (FeedFragment)            getSupportFragmentManager().getFragment(savedInstanceState, "feedFragment");
+            m_objectFragment    = (ObjectContainerFragment) getSupportFragmentManager().getFragment(savedInstanceState, "objectFragment");
+
+            setDisplayMode((Mode) savedInstanceState.getSerializable("displayMode"));
+            Log.i(TAG, "Restoring in display mode " + m_displayMode.toString());
         }
 	}
+
+    @Override
+    protected void queryForAccount() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Account[] accts = m_accountManager.getAccountsByType(Authenticator.ACCOUNT_TYPE);
+
+        Account theAccount = null;
+        String lastAccount = prefs.getString("lastAccount", null);
+        if(lastAccount != null) {
+            for(Account act : accts) {
+                if(lastAccount.equals(act.name)) {
+                    theAccount = act;
+                    break;
+                }
+            }
+        }
+
+        if(theAccount == null) {
+            if(accts.length > 0) {
+                theAccount = accts[0];
+            } else {
+                super.queryForAccount();
+                return;
+            }
+        }
+
+        haveGotAccount(theAccount);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        m_drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        m_drawerToggle.onConfigurationChanged(newConfig);
+    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putSerializable("displayMode", m_displayMode);
-        outState.putInt("selectedTab", getActionBar().getSelectedNavigationIndex());
 
         if(m_feedFragment != null)
-            outState.putParcelable("feedFragment",   getFragmentManager().saveFragmentInstanceState(m_feedFragment));
+            getSupportFragmentManager().putFragment(outState, "feedFragment", m_feedFragment);
         if(m_objectFragment != null)
-            outState.putParcelable("objectFragment", getFragmentManager().saveFragmentInstanceState(m_objectFragment));
+            getSupportFragmentManager().putFragment(outState, "objectFragment", m_objectFragment);
     }
 
     @Override
@@ -141,10 +194,62 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
     	super.onDestroy();
     }
 
-    protected void gotAccount(Account acct, Bundle icicle) {
-        setDisplayMode(m_displayMode);
-        getActionBar().show();
+    @Override
+    protected void gotAccount(Account acct) {
+        PreferenceManager.getDefaultSharedPreferences(this)
+            .edit()
+            .putString("lastAccount", acct.name)
+            .commit();
+
+        getSupportActionBar().show();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
+        if(m_feedFragment == null || !acct.equals(m_feedFragment.getAccount())) {
+            FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
+            if(m_objectFragment != null) {
+                tx.remove(m_objectFragment);
+            }
+            tx.replace(R.id.feed_fragment, new FeedFragment());
+            tx.commit();
+            setDisplayMode(Mode.FEED);
+        } else setDisplayMode(m_displayMode);
+
+        ((NavigationDrawerAdapter)m_navigationDrawer.getAdapter()).notifyDataSetChanged();
 	}
+
+    @Override
+    protected void onStartIntent(Intent startIntent) {
+        onNewIntent(startIntent);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        if(intent.hasExtra("account")) {
+            haveGotAccount((Account) intent.getParcelableExtra("account"));
+        }
+
+        String action = intent.getAction();
+        if(Intent.ACTION_VIEW.equals(action)) {
+            Uri uri = intent.getData();
+            if(uri == null)
+                return;
+
+            Uri id = null;
+            if(uri.getScheme().equals("content") && uri.getHost().equals("eu.e43.impeller.content")) {
+                id = Uri.parse(uri.getLastPathSegment());
+            } else {
+                id = uri;
+            }
+
+            setIntent(intent);
+            showObjectInMode(Mode.OBJECT, id);
+        } else {
+            Log.d(TAG, "Unknown new intent " + intent);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -154,9 +259,13 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (m_drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
         switch (item.getItemId()) {
             case android.R.id.home:
-                FragmentManager fm = getFragmentManager();
+                FragmentManager fm = getSupportFragmentManager();
                 fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 return true;
 
@@ -174,8 +283,6 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
     }
 
     private void setDisplayMode(Mode m) {
-
-
         View fdFrag = findViewById(R.id.feed_fragment);
         View ctFrag = m_isTablet ? findViewById(R.id.content_container) : findViewById(R.id.content_fragment);
 
@@ -183,25 +290,24 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
         if(m != m_displayMode)
             evictOverlay();
 
-        boolean shouldShowTabs = m_isTablet ? (m != Mode.OBJECT) : (m == Mode.FEED);
-        int newNavMode = shouldShowTabs ? ActionBar.NAVIGATION_MODE_TABS : ActionBar.NAVIGATION_MODE_STANDARD;
-        if(newNavMode != getActionBar().getNavigationMode())
-            getActionBar().setNavigationMode(newNavMode);
-
         switch(m) {
             case FEED:
                 fdFrag.setVisibility(View.VISIBLE);
                 ctFrag.setVisibility(View.GONE);
+                m_drawerToggle.setDrawerIndicatorEnabled(true);
                 break;
 
             case FEED_OBJECT:
                 fdFrag.setVisibility(m_isTablet ? View.VISIBLE : View.GONE);
                 ctFrag.setVisibility(View.VISIBLE);
+                m_drawerToggle.setDrawerIndicatorEnabled(false);
                 break;
 
             case OBJECT:
                 fdFrag.setVisibility(View.GONE);
                 ctFrag.setVisibility(View.VISIBLE);
+                m_drawerToggle.setDrawerIndicatorEnabled(false);
+                break;
         }
 
         m_displayMode = m;
@@ -212,14 +318,8 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
     }
 
     public void showObjectInMode(Mode mode, Uri id) {
-        Bundle args = new Bundle();
-        args.putParcelable("id", id);
-        args.putString("mode", mode.toString());
-
-        ObjectFragment objFrag = new ObjectFragment();
-        objFrag.setArguments(args);
-
-        FragmentManager fm = getFragmentManager();
+        ObjectContainerFragment objFrag = ObjectContainerFragment.newInstance(id.toString(), mode);
+        FragmentManager fm = getSupportFragmentManager();
         if(m_objectFragment != null && mode == Mode.FEED_OBJECT) {
             fm.popBackStack();
         }
@@ -234,7 +334,12 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
     }
 
     public void onAddFeedFragment(FeedFragment fFrag) {
+        Log.i(TAG, "Add feed fragment");
         m_feedFragment = fFrag;
+
+        if(m_displayMode == Mode.FEED) {
+            setTitle(m_feedFragment.getFeedId().getNameString());
+        }
 
         if(m_objectFragment != null) {
             m_feedFragment.setSelectedItem((Uri) m_objectFragment.getArguments().getParcelable("id"));
@@ -242,20 +347,23 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
     }
 
     public void onRemoveFeedFragment(FeedFragment fFrag) {
+        Log.i(TAG, "Remove feed fragment");
         if(m_feedFragment == fFrag)
             m_feedFragment = null;
     }
 
-    public void onShowObjectFragment(ObjectFragment oFrag) {
+    public void onShowObjectFragment(ObjectContainerFragment oFrag) {
+        Log.i(TAG, "Show object fragment in mode "+ oFrag.getMode() + " " + oFrag);
         m_objectFragment = oFrag;
 
         if(m_feedFragment != null && m_displayMode == Mode.FEED_OBJECT)
-            m_feedFragment.setSelectedItem((Uri) oFrag.getArguments().getParcelable("id"));
+            m_feedFragment.setSelectedItem(Uri.parse(oFrag.getArguments().getString(ObjectContainerFragment.PARAM_ID)));
 
         setDisplayMode(oFrag.getMode());
     }
 
-    public void onHideObjectFragment(ObjectFragment oFrag) {
+    public void onHideObjectFragment(ObjectContainerFragment oFrag) {
+        Log.i(TAG, "Hide object fragment " + oFrag);
         if(m_objectFragment == oFrag) {
             m_objectFragment = null;
         } else {
@@ -268,85 +376,100 @@ public class MainActivity extends ActivityWithAccount implements ActionBar.TabLi
             m_feedFragment.setSelection(-1);
     }
 
-    /* Tab listener */
-    private HashMap<FeedFragment.FeedID, FeedFragment> tabs = new HashMap<FeedFragment.FeedID, FeedFragment>();
+    /* Navigation listener */
+
     @Override
-    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
-        FeedFragment.FeedID id = (FeedFragment.FeedID) tab.getTag();
+    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        assert(adapterView == m_navigationDrawer);
 
-        Log.i(TAG, "Select feed " + id);
+        if(l < 0) {
+            // Account
+            Account acct = (Account) m_navigationDrawer.getItemAtPosition(i);
+            haveGotAccount(acct);
+            m_drawerLayout.closeDrawer(m_navigationDrawer);
+        } else if(l > 0) {
+            // Feed
+            FeedFragment.FeedID id = (FeedFragment.FeedID) m_navigationDrawer.getItemAtPosition(i);
+            FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
 
-        FeedFragment frag;
-        if(tabs.containsKey(id)) {
-            frag = tabs.get(id);
-        } else {
-            frag = new FeedFragment();
-            Bundle args = new Bundle();
-            args.putSerializable("feed", id);
-            frag.setArguments(args);
-            tabs.put(id, frag);
+            if(m_feedFragment.getFeedId() != id) {
+                FeedFragment ff = new FeedFragment();
+                Bundle args = new Bundle();
+                args.putSerializable("feed", id);
+                ff.setArguments(args);
+                trans.replace(R.id.feed_fragment, ff);
+            }
+
+            if(m_objectFragment != null) {
+                trans.remove(m_objectFragment);
+            }
+
+            setDisplayMode(Mode.FEED);
+            trans.commit();
+            m_drawerLayout.closeDrawer(m_navigationDrawer);
+        } // else separator
+    }
+
+    // Overlays
+    OverlayController m_overlayController;
+
+    public void showOverlay(OverlayController controller, View overlay) {
+        if(m_overlayController != null) {
+            evictOverlay();
         }
-
-        setDisplayMode(Mode.FEED);
-
-        if(m_objectFragment != null)
-            ft.remove(m_objectFragment);
-        ft.replace(R.id.feed_fragment, frag);
-    }
-
-    @Override
-    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
-        Log.i(TAG, "Deselect feed " + tab.getTag());
-    }
-
-    @Override
-    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
-        Log.i(TAG, "Reselect feed " + tab.getTag());
-    }
-
-    BrowserChrome m_chrome;
-    // WebView overlays
-    public void showOverlay(BrowserChrome chrome, View overlay) {
-        if(m_chrome != null) evictOverlay();
         ViewFlipper flipper = (ViewFlipper) findViewById(R.id.overlay_flipper);
         flipper.addView(overlay);
         flipper.setDisplayedChild(1);
-        m_chrome = chrome;
+        m_overlayController = controller;
         setUiFlags();
     }
 
     private void evictOverlay() {
-        BrowserChrome chrome = m_chrome;
-        if(chrome != null) {
-            hideOverlay(chrome);
-            chrome.onHideCustomView();
+        OverlayController controller = m_overlayController;
+        if(controller != null) {
+            hideOverlay(controller);
+            controller.onHidden();
         }
     }
 
-    public void hideOverlay(BrowserChrome chrome) {
-        if(m_chrome == chrome) {
+    @Override
+    public void onBackPressed() {
+        if(m_overlayController != null) {
+            evictOverlay();
+        } else super.onBackPressed();
+    }
+
+    public void hideOverlay(OverlayController controller) {
+        if(m_overlayController == controller) {
             ViewFlipper flipper = (ViewFlipper) findViewById(R.id.overlay_flipper);
             flipper.setDisplayedChild(0);
             flipper.removeViewAt(1);
-            m_chrome = null;
+            m_overlayController = null;
             setUiFlags();
         }
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     void setUiFlags() {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+            return;
+
         ViewFlipper flipper = (ViewFlipper) findViewById(R.id.overlay_flipper);
-        if(m_chrome != null) {
+        if(m_overlayController != null) {
             // Fullscreen
             int flags =
                       View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_FULLSCREEN;
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                flags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            if(m_overlayController.isImmersive()) {
+                flags |=
+                      View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    flags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+                }
             }
 
             flipper.setSystemUiVisibility(flags);

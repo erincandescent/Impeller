@@ -3,13 +3,13 @@ package eu.e43.impeller.uikit;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Fragment;
-import android.app.LoaderManager;
-import android.content.CursorLoader;
-import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,8 +62,6 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
 
 	@Override
 	public View getView(int position, View v, ViewGroup parent) {
-		Log.v(TAG, "getView(" + position + ")");
-
         ActivityWithAccount activity = (ActivityWithAccount) m_ctx.getActivity();
 		if(v == null) {
 			LayoutInflater vi = LayoutInflater.from(m_ctx.getActivity());
@@ -93,8 +91,10 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
 			if(imageObj != null)
 				activity.getImageLoader().setImage(authorAvatar, Utils.getImageUrl(imageObj));
 
-            commentMeta.setText("By " + author.optString("displayName") + " at " +
-                    Utils.humanDate(comment.optString("published")));
+            commentMeta.setText(m_ctx.getResources().getString(R.string.comment_meta_by) + " "
+				+ author.optString("displayName")
+				+ m_ctx.getResources().getString(R.string.comment_meta_at) + " "
+				+ Utils.humanDate(comment.optString("published")));
 		}
 
         JSONObject imageObj = comment.optJSONObject("image");
@@ -124,13 +124,13 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         data.setNotificationUri(m_ctx.getActivity().getContentResolver(), Uri.parse(PumpContentProvider.OBJECT_URL));
-        notifyDataSetChanged();
         m_cursor = data;
+        notifyDataSetChanged();
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        notifyDataSetInvalidated();
         m_cursor = null;
+        notifyDataSetInvalidated();
     }
 }

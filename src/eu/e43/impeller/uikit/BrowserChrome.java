@@ -6,7 +6,7 @@ import android.webkit.WebChromeClient;
 
 import eu.e43.impeller.activity.MainActivity;
 
-public class BrowserChrome extends WebChromeClient {
+public class BrowserChrome extends WebChromeClient implements OverlayController {
     private static final String TAG = "BrowserChrome";
 
     private MainActivity m_activity;
@@ -49,5 +49,18 @@ public class BrowserChrome extends WebChromeClient {
 
         m_customView = null;
         m_customViewCallback = null;
+    }
+
+    @Override
+    public void onHidden() {
+        super.onHideCustomView();
+    }
+
+    @Override
+    public void onShown() {
+    }
+
+    public boolean isImmersive() {
+        return true;
     }
 }

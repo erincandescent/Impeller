@@ -20,5 +20,5 @@
         android:layout_weight="1"
         android:layout_alignParentTop="true"
         android:layout_marginTop="0dp"
-        android:layout_toRightOf="@+id/textView" />
+        android:layout_toRightOf="@+id/name_text" />
 </RelativeLayout>

@@ -10,4 +10,6 @@ public class Constants {
     public static final int MY_LOCATION_NEVER = 0;
     public static final int MY_LOCATION_FETCH = 1;
     public static final int MY_LOCATION_SET   = 2;
+
+    public static final int NOTIFICATION_DIRECT = 0;
 }

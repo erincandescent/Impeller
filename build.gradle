@@ -4,7 +4,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.8.3'
+        classpath 'com.android.tools.build:gradle:0.9+'
     }
 }
 
@@ -12,7 +12,7 @@ apply plugin: 'android'
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.1"
+    buildToolsVersion "19.0.3"
 
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
@@ -52,13 +52,15 @@ repositories {
 }
 
 dependencies {
-    compile project(':jiraconnect-android-main')
-	compile 'com.android.support:support-v4:19.0.1'
-	compile 'oauth.signpost:signpost-core:1.2'
-	compile 'com.google.guava:guava:16.0.1'
+    compile 'com.android.support:support-v4:19.1.+'
+    compile 'com.android.support:appcompat-v7:19.1.+'
 
-    // HTML parsing and generation
+    compile 'oauth.signpost:signpost-core:1.2'
+    compile 'com.google.guava:guava:16.0.1'
     compile 'net.sourceforge.htmlcleaner:htmlcleaner:2.7'
+
+    compile project(':jiraconnect-android-main')
+    compile project(':tokenautocomplete:library')
 }
 
 configurations {

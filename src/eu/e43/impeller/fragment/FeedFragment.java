@@ -2,13 +2,9 @@ package eu.e43.impeller.fragment;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.app.ListFragment;
-import android.app.LoaderManager;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.CursorLoader;
+import android.content.ContentResolver;
 import android.content.Intent;
-import android.content.Loader;
 import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -20,12 +16,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.ProgressBar;
+import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 
 import org.json.JSONObject;
 
 import eu.e43.impeller.activity.CheckinActivity;
-import eu.e43.impeller.activity.SettingsActivity;
 import eu.e43.impeller.uikit.ActivityAdapter;
 import eu.e43.impeller.R;
 import eu.e43.impeller.activity.MainActivity;
@@ -38,8 +37,7 @@ import eu.e43.impeller.content.PumpContentProvider;
 public class FeedFragment
         extends ListFragment
         implements LoaderManager.LoaderCallbacks<Cursor>,
-        SyncStatusObserver
-{
+        SyncStatusObserver, SwipeRefreshLayout.OnRefreshListener {
     Account             m_account;
     ActivityAdapter     m_adapter;
     Menu                m_menu              = null;
@@ -47,6 +45,7 @@ public class FeedFragment
     int                 m_selection         = -1;
     Object              m_statusHandle      = null;
     FeedID              m_feedId            = null;
+    SwipeRefreshLayout  m_swipeRefreshView  = null;
 
     // Activity IDs
     private static final int ACTIVITY_SELECT_PHOTO = 1;
@@ -61,10 +60,12 @@ public class FeedFragment
         setRetainInstance(true);
         setHasOptionsMenu(true);
 
-        m_feedId = (FeedID) getArguments().getSerializable("feed");
+        if(getArguments() != null && getArguments().containsKey("feed")) {
+            m_feedId = (FeedID) getArguments().getSerializable("feed");
+        } else {
+            m_feedId = FeedID.MAJOR_FEED;
+        }
     }
-
-
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -98,7 +99,15 @@ public class FeedFragment
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_feed, null);
+        View root = inflater.inflate(R.layout.fragment_feed, null);
+        m_swipeRefreshView = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefresh);
+        m_swipeRefreshView.setOnRefreshListener(this);
+        m_swipeRefreshView.setColorScheme(R.color.im_primary, R.color.im_pink, R.color.im_primary, R.color.im_pink);
+        return root;
+    }
+
+    public FeedID getFeedId() {
+        return m_feedId;
     }
 
     @Override
@@ -110,6 +119,8 @@ public class FeedFragment
     }
 
     public void setSelectedItem(Uri id) {
+        if(id == null) return;
+
         int sel = m_adapter.findItemById(id.toString());
         if(sel != m_selection) {
             getListView().setItemChecked(sel, true);
@@ -155,15 +166,15 @@ public class FeedFragment
         switch(m_feedId) {
             case MAJOR_FEED:
                 return new CursorLoader(getActivity(), uri,
-                        new String[] { "_json", "replies", "likes", "shares" },
+                        new String[] { "_ID", "object.id", "_json", "replies", "likes", "shares" },
                         "verb='share' OR (verb='post' AND object.objectType<>'comment')", null,
-                        "feed_entries.published DESC");
+                        "feed_entries._ID DESC");
 
             case MINOR_FEED:
                 return new CursorLoader(getActivity(), uri,
-                        new String[] { "_json", "replies", "likes", "shares" },
+                        new String[] { "_ID", "object.id", "_json", "replies", "likes", "shares" },
                         "NOT (verb='share' OR (verb='post' AND object.objectType<>'comment'))", null,
-                        "feed_entries.published DESC");
+                        "feed_entries._ID DESC");
 
             case DIRECT_FEED:
                 throw new RuntimeException("Not yet implemented");
@@ -203,10 +214,6 @@ public class FeedFragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_refresh:
-                refresh(item);
-                return true;
-
             case R.id.action_post:
                 Intent postIntent = new Intent(getActivity(), PostActivity.class);
                 postIntent.putExtra("account", m_account);
@@ -229,11 +236,6 @@ public class FeedFragment
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    public void refresh(MenuItem itm) {
-        getActivity().getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
-    }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -261,35 +263,41 @@ public class FeedFragment
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(m_menu == null) return;
-
-                MenuItem itm = m_menu.findItem(R.id.action_refresh);
-                if(itm == null) return;
+                if(m_swipeRefreshView == null)
+                    return;
 
                 if(getActivity() == null) return;
                 boolean syncing = getActivity().getContentResolver().isSyncActive(
                         m_account, PumpContentProvider.AUTHORITY);
 
-                if(syncing) {
-                    if(itm.getActionView() != null) return;
-                    Context themedContext = getActivity().getActionBar().getThemedContext();
-                    ProgressBar pbar = new ProgressBar(themedContext);
-
-                    // Set an ID to prevent data being restored for view with different ID
-                    pbar.setId(R.id.syncProgress);
-                    pbar.setIndeterminate(true);
-                    itm.setActionView(pbar);
-                } else {
-                    itm.setActionView(null);
-                }
+                m_swipeRefreshView.setRefreshing(syncing);
             }
         });
     }
 
+    @Override
+    public void onRefresh() {
+        getActivity().getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+    }
+
+    public Account getAccount() {
+        return m_account;
+    }
+
     /** Tabs */
     public enum FeedID {
-        MAJOR_FEED,
-        MINOR_FEED,
-        DIRECT_FEED
+        MAJOR_FEED(R.string.feed_major),
+        MINOR_FEED(R.string.feed_minor),
+        DIRECT_FEED(R.string.feed_direct);
+
+        private int nameString = 0;
+
+        private FeedID(int ns) {
+            nameString = ns;
+        }
+
+        public int getNameString() {
+            return nameString;
+        }
     }
 }

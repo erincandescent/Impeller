@@ -1,14 +1,17 @@
 package eu.e43.impeller.content;
 
+import android.accounts.Account;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -22,6 +25,7 @@ import java.util.Map;
 
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
+import eu.e43.impeller.account.Authenticator;
 
 /**
  * Created by OShepherd on 01/07/13.
@@ -32,6 +36,8 @@ public class PumpContentProvider extends ContentProvider {
     public static final String FEED_URL     = "content://eu.e43.impeller.content/feed";
     public static final String ACTIVITY_URL = "content://eu.e43.impeller.content/activity";
     public static final String OBJECT_URL   = "content://eu.e43.impeller.content/object";
+
+    public static final String ACTION_NEW_FEED_ENTRY = "eu.e43.impeller.content.NEW_FEED_ENTRY";
 
     private static final String TAG = "PumpContentProvider";
     private static final UriMatcher ms_uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -64,6 +70,7 @@ public class PumpContentProvider extends ContentProvider {
         ms_uriMatcher.addURI(AUTHORITY, "activity/*", ACTIVITY);
         ms_uriMatcher.addURI(AUTHORITY, "feed/*",     FEED);
 
+        ms_objectProjection.put("_ID", "_ID");
         ms_objectProjection.put("id", "id");
         ms_objectProjection.put("objectType", "objectType");
         ms_objectProjection.put("author", "author");
@@ -71,9 +78,10 @@ public class PumpContentProvider extends ContentProvider {
         ms_objectProjection.put("updated", "updated");
         ms_objectProjection.put("inReplyTo", "inReplyTo");
         ms_objectProjection.put("_json", "_json");
-        addStateProjections(ms_objectProjection, "objects.id");
 
+        ms_activityProjection.put("_ID",            "activity._ID");
         ms_activityProjection.put("id",             "activity.id");
+        ms_activityProjection.put("object.id",      "object.id");
         ms_activityProjection.put("verb",           "activity.verb");
         ms_activityProjection.put("actor",          "activity.actor");
         ms_activityProjection.put("object",         "activity.object");
@@ -82,9 +90,10 @@ public class PumpContentProvider extends ContentProvider {
         ms_activityProjection.put("updated",        "object.updated");
         ms_activityProjection.put("objectType",     "object.objectType");
         ms_activityProjection.put("_json",          "activity_object._json");
-        addStateProjections(ms_activityProjection,  "activity.object");
 
+        ms_feedProjection.put("_ID",                "feed_entries._ID");
         ms_feedProjection.put("id",                 "feed_entries.id");
+        ms_feedProjection.put("object.id",          "object.id");
         ms_feedProjection.put("published",          "feed_entries.published");
         ms_feedProjection.put("verb",               "activity.verb");
         ms_feedProjection.put("actor",              "activity.actor");
@@ -94,6 +103,9 @@ public class PumpContentProvider extends ContentProvider {
         ms_feedProjection.put("updated",            "object.updated");
         ms_feedProjection.put("objectType",         "object.objectType");
         ms_feedProjection.put("_json",              "activity_object._json");
+
+        addStateProjections(ms_objectProjection, "objects.id");
+        addStateProjections(ms_activityProjection,  "activity.object");
         addStateProjections(ms_feedProjection,      "activity.object");
     }
 
@@ -159,7 +171,10 @@ public class PumpContentProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        qb.setStrict(true);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+            qb.setStrict(true);
+
         switch(ms_uriMatcher.match(uri)) {
             case ACTIVITY:
                 qb.appendWhere("activity.id=");
@@ -224,7 +239,8 @@ public class PumpContentProvider extends ContentProvider {
         try {
             m_database.beginTransaction();
             Uri path;
-            switch(ms_uriMatcher.match(uri)) {
+            int match = ms_uriMatcher.match(uri);
+            switch(match) {
                 case FEED:
                     insertFeedEntry(obj, uri.getLastPathSegment());
 
@@ -244,7 +260,6 @@ public class PumpContentProvider extends ContentProvider {
                             .appendPath("activity")
                             .appendPath(id)
                             .build();
-
 
                     break;
 
@@ -356,7 +371,7 @@ public class PumpContentProvider extends ContentProvider {
 
             JSONObject obj = act.optJSONObject("object");
             if(obj != null) {
-                if(!obj.has("author"))
+                if(!obj.has("author") && "post".equals(act.optString("verb", "post")))
                     obj.put("author", act.optJSONObject("actor"));
             }
 

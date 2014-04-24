@@ -79,7 +79,7 @@ public class AvatarView extends View {
         if(m_drawCircle) {
             final float halfWidth = canvas.getWidth() / 2;
             final float halfHeight = canvas.getHeight() / 2;
-            final float radius = Math.max(halfWidth, halfHeight);
+            final float radius = Math.min(halfWidth, halfHeight);
             canvas.drawCircle(halfWidth, halfHeight, radius, m_paint);
         } else {
             canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), m_paint);
