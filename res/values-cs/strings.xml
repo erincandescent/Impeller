@@ -1,31 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">Impeller</string>
     <string name="cancel_button">Zrušit</string>
 
+    <!-- Navigation -->
+    <string name="account_category">Účty</string>
+    <string name="drawer_open">Otevřít Navigaci</string>
+    <string name="drawer_close">Zavřít Navigaci</string>
+
     <!-- Tabs -->
-    <string name="tab_main_feed">Hlavní</string>
-    <string name="tab_minor_feed">Mezitím</string>
-    <string name="tab_direct_feed">Zprávy</string>
+    <string name="feed_major">Hlavní</string>
+    <string name="feed_minor">Mezitím</string>
+    <string name="feed_direct">Zprávy</string>
 
     <!-- Menu items -->
     <string name="action_sign_out">Odhlásit se</string>
-    <string name="action_refresh">Obnovit</string>
-    <string name="action_post">Nový Příspěvek</string>
+    <string name="action_post">Vložit</string>
+    <string name="action_post_note">Vložit Příspěvek</string>
+    <string name="action_post_image">Vložit Obrázek</string>
     <string name="action_settings">Nastavení</string>
     <string name="action_about">O aplikaci</string>
-    <string name="action_post_image">Vložit Obrázek</string>
     <string name="action_like">To se mi líbí</string>
     <string name="action_unlike">Už se mi to nelíbí</string>
     <string name="action_reply">Odpovědět</string>
     <string name="action_replyImage">Odpovědět obrázkem</string>
     <string name="hint_comment">Komentář...</string>
-
     <string name="posted_by">Vložil(a)</string>
-
     <string name="title_activity_post">Nový příspěvek</string>
     <string name="title_activity_post_reply">Odpověď</string>
-    <string name="post_button">Odeslat</string>
 
     <!-- Post activity -->
     <string name="public_post">Sdílet veřejně</string>
@@ -35,11 +38,9 @@
     <string name="no_location">žádné</string>
     <string name="hint_message">Zpráva...</string>
     <string name="hint_title">Nadpis... (není nutný)</string>
-
     <string name="posting_title">Odesílám...</string>
     <string name="status_submitting_post">Odesílám příspěvek</string>
     <string name="status_uploading_image">Nahrávám obrázek</string>
-
     <string name="just_a_moment">Chvilku strpení</string>
     <string name="getting_information">Načítám informace...</string>
 
@@ -47,10 +48,23 @@
     <string name="pref_title_limit_database_size">Omezit maximální velikost databáze</string>
     <string name="pref_database_max_item_count">Maximální počet záznamů</string>
     <string name="in_reply_to_post_by">Odpověď na příspěvek od</string>
+    <string name="action_follow">Sledovat</string>
+    <string name="action_following">Sledovaní</string>
+    <string name="action_replyNote">Odpovědět textem</string>
+    <string name="accountpicker_new_account">Nový účet</string>
+    <string name="post_to_label">Komu:</string>
+    <string name="post_cc_label">Skrytá kopie:</string>
+    <string name="public_collection">Veřejné</string>
+    <string name="followers_collection">Sledující</string>
+    <string name="action_viewInBrowser">Otevřít v prohlížeči</string>
+    <string name="title_error_dialog">Chyba</string>
+    <string name="error_no_message_specified">Zpráva není vyplněna</string>
+    <string name="error_no_recipients">Není uveden žádný adresát</string>
+    <string name="direct_notification_title">Zpráva od %s</string>
     
     <string name="verb_posted">vložil(a)</string>
-    <string name="verb_followed">si přidal(a) do přátel</string>
-    <string name="verb_stopped_following">si odebral(a) z přátel</string>
+    <string name="verb_followed">začal(a) sledovat</string>
+    <string name="verb_stopped_following">přestal(a) sledovat</string>
     <string name="verb_favorited">se líbí</string>
     <string name="verb_unfavorited">se už nelíbí</string>
     <string name="verb_shared">přeposlal(a)</string>
@@ -95,7 +109,4 @@
     <string name="actor_unknown">Neznámý</string>
     <string name="comment_meta_by">Od</string>
     <string name="comment_meta_at">,</string>
-
-    <!-- This is used to detect language, it is N for english and Y for all translations -->
-    <string name="is_this_a_localization">Y</string>
 </resources>
