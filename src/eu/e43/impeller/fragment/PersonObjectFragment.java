@@ -148,7 +148,7 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
                 if(state)
                     action = "follow";
                 else
-                    action = "unfollow";
+                    action = "stop-following";
 
                 JSONObject act = new JSONObject();
                 act.put("verb", action);
