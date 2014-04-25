@@ -1,0 +1,44 @@
+<resources>
+    <string name="title_activity_settings">Nastavení</string>
+
+    <!-- "General" Settings -->
+    <string name="pref_title_location_maps">Mapy míst</string>
+    <string name="pref_summary_location_maps">Zobrazovat mapu u objektů s místem</string>
+
+    <string name="pref_title_my_location">Moje poloha</string>
+    <string-array name="pref_my_location_titles">
+        <item>Vypnout sledování polohy</item>
+        <item>Sledovat polohu, ale nepřikládat automaticky</item>
+        <item>Automaticky přidávat mojí polohu ke všem aktivitám</item>
+    </string-array>
+    <string-array name="pref_my_location_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data a Synchronizace</string>
+
+<string name="pref_title_sync_frequency">Jak často synchronizovat?</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 minut</item>
+        <item>30 minut</item>
+        <item>1 hodina</item>
+        <item>3 hodiny</item>
+        <item>6 hodin</item>
+        <item>Nikdy</item>
+    </string-array>
+
+    <string name="pref_title_system_sync_settings">Nastavení synchronizace v systému</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">Upozornění</string>
+
+    <string name="pref_title_new_message_notifications">Upozornění na novou zprávu</string>
+
+    <string name="pref_title_ringtone">Zvonění</string>
+    <string name="pref_ringtone_silent">Tiché</string>
+
+    <string name="pref_title_vibrate">Vibrace</string>
+</resources>
