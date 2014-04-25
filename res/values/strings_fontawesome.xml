@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="icon_thumbs_up"></string>
-    <string name="icon_share"></string>
-    <string name="icon_comments"></string>
-    <string name="icon_globe">&#xf0ac;</string>
+    <string translatable="false" name="icon_thumbs_up"></string>
+    <string translatable="false" name="icon_share"></string>
+    <string translatable="false" name="icon_comments"></string>
+    <string translatable="false" name="icon_globe">&#xf0ac;</string>
 </resources>
