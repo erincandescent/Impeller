@@ -6,8 +6,8 @@
 
     <!-- Navigation -->
     <string name="account_category">Учётные записи</string>
-    <string name="drawer_open">Open Navigation Drawer</string>
-    <string name="drawer_close">Close Navigation Drawer</string>
+    <string name="drawer_open">Открыть панель навигации</string>
+    <string name="drawer_close">Закрыть панель навигации</string>
 
     <!-- Tabs -->
     <string name="feed_major">Главное</string>
@@ -15,14 +15,14 @@
     <string name="feed_direct">Сообщения</string>
 
     <!-- Menu items -->
-    <string name="action_sign_out">Sign out</string>
+    <string name="action_sign_out">Выйти</string>
     <string name="action_post">Отправить</string>
     <string name="action_post_note">Отправить заметку</string>
     <string name="action_post_image">Отправить изображение</string>
     <string name="action_settings">Настройки</string>
     <string name="action_about">О программе</string>
-    <string name="action_like">Like</string>
-    <string name="action_unlike">Unlike</string>
+    <string name="action_like">Нравится</string>
+    <string name="action_unlike">Больше не нравится</string>
     <string name="action_reply">Ответить</string>
     <string name="action_replyImage">Ответить с изображением</string>
     <string name="hint_comment">Комментарии...</string>
