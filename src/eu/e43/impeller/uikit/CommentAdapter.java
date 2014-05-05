@@ -92,8 +92,7 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
 				activity.getImageLoader().setImage(authorAvatar, Utils.getImageUrl(imageObj));
 
             commentMeta.setText(m_ctx.getResources().getString(R.string.comment_meta_by) + " "
-				+ author.optString("displayName")
-				+ m_ctx.getResources().getString(R.string.comment_meta_at) + " "
+				+ author.optString("displayName") + ", "
 				+ Utils.humanDate(comment.optString("published")));
 		}
 

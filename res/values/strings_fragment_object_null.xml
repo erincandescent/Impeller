@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="object_null_title">Oh dear...</string>
-  <string name="object_null_message">There doesn't appear to be anything here...</string>
+  <string name="object_null_message">There doesn\'t appear to be anything here...</string>
 </resources>
