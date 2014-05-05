@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="crash_notification.title">В Impeller произошла ошибка</string>
+    <string name="crash_notification.text">Нажмите, чтобы отправить сообщение об ошибке.</string>
+    <string name="crash_notification.dialog_text">В Impeller произошла ошибка. Пожалуйста нажмите на кнопку OK, чтобы отправить данные разработчикам.</string>
+    <string name="crash_notification.dialog_request_user_email">Ваш email адрес:</string>
+</resources>

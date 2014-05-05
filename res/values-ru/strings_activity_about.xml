@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_activity_about">О приложении Impeller</string>
+    <string name="btn_submit_feedback">Отправить отзыв</string>
+    <string name="about_crafted_with_love">Создано с любовью,</string>
+    <string name="about_for_every_user">для каждлого пользователя Pump.io</string>
+    <string name="about_by">Автор: Owen Shepherd, 2013</string>
+    <string name="btn_view_feedback">Просмотреть список отзывов</string>
+</resources>

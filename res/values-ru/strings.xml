@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Impeller</string>
+    <string name="cancel_button">Отмена</string>
+
+    <!-- Navigation -->
+    <string name="account_category">Учётные записи</string>
+    <string name="drawer_open">Открыть панель навигации</string>
+    <string name="drawer_close">Закрыть панель навигации</string>
+
+    <!-- Tabs -->
+    <string name="feed_major">Главное</string>
+    <string name="feed_minor">Между тем</string>
+    <string name="feed_direct">Сообщения</string>
+
+    <!-- Menu items -->
+    <string name="action_sign_out">Выйти</string>
+    <string name="action_post">Отправить</string>
+    <string name="action_post_note">Отправить заметку</string>
+    <string name="action_post_image">Отправить изображение</string>
+    <string name="action_settings">Настройки</string>
+    <string name="action_about">О программе</string>
+    <string name="action_like">Нравится</string>
+    <string name="action_unlike">Больше не нравится</string>
+    <string name="action_reply">Ответить</string>
+    <string name="action_replyImage">Ответить с изображением</string>
+    <string name="hint_comment">Комментарии...</string>
+    <string name="posted_by">Отправитель</string>
+    <string name="title_activity_post">Новое сообщение</string>
+    <string name="title_activity_post_reply">Ответ</string>
+
+    <!-- Post activity -->
+    <string name="public_post">Сделать публичным</string>
+    <string name="post_description">Описание:</string>
+    <string name="post_title">Заголовок:</string>
+    <string name="post_location">Местоположение:</string>
+    <string name="no_location">Нет</string>
+    <string name="hint_message">Сообщение...</string>
+    <string name="hint_title">Название... (не обязательно)</string>
+    <string name="posting_title">Отправка...</string>
+    <string name="status_submitting_post">Отправка сообщения</string>
+    <string name="status_uploading_image">Загрузка изображение</string>
+    <string name="just_a_moment">Подождите минутку</string>
+    <string name="getting_information">Получение информации...</string>
+
+    <!-- Preferences -->
+    <string name="pref_title_limit_database_size">Ограничить максимальный размер базы данных</string>
+    <string name="pref_database_max_item_count">Максимальное количество записей</string>
+    <string name="in_reply_to_post_by">Ответ на сообщение от</string>
+    <string name="action_follow">Подписаться</string>
+    <string name="action_following">Подписки</string>
+    <string name="action_replyNote">Ответить заметкой</string>
+    <string name="accountpicker_new_account">Новая учётная запись</string>
+    <string name="post_to_label">Кому:</string>
+    <string name="post_cc_label">Скрытая копия:</string>
+    <string name="public_collection">Публичные</string>
+    <string name="followers_collection">Подписчики</string>
+    <string name="action_viewInBrowser">Открыть в браузере</string>
+    <string name="title_error_dialog">Ошибка</string>
+    <string name="error_no_message_specified">Отсутствует текст сообщения</string>
+    <string name="error_no_recipients">Не указаны получатели</string>
+    <string name="direct_notification_title">Сообщение от %s</string>
+    
+    <string name="verb_posted">отправил</string>
+    <string name="verb_followed">подписался</string>
+    <string name="verb_stopped_following">отписался</string>
+    <string name="verb_favorited">добавил в избранное</string>
+    <string name="verb_unfavorited">удалил из избранного</string>
+    <string name="verb_shared">пересказал</string>
+    <string name="verb_unshared">удалил пересказ</string>
+    <string name="verb_liked">добавил в понравившееся</string>
+    <string name="verb_unliked">удалил из понравившегося</string>
+    <string name="verb_deleted">удалил</string>
+    <string name="verb_created">создал</string>
+    <string name="verb_added">добавил</string>
+    <string name="verb_updated">обновил</string>
+    <string name="verb_joined">присоединил</string>
+    <string name="verb_removed">удалил</string>
+    <string name="verb_left">оставил</string>
+    <string name="verb_played">просмотрел</string>
+    <string name="verb_listened_to">прослушал</string>
+    <string name="verb_checked_in_at">зарегистрировался в</string>
+    
+    <string name="object_type_a_note">заметку</string>
+    <string name="object_type_an_image">изображение</string>
+    <string name="object_type_a_comment">комментарий</string>
+    <string name="object_type_a_person">человека</string>
+    <string name="object_type_a_group">группу</string>
+    <string name="object_type_an_activity">активность</string>
+    <string name="object_type_a_place">место</string>
+    <string name="object_type_a_collection">коллекцию</string>
+    <string name="object_type_a_review">рецензию</string>
+    <string name="object_type_an_article">статью</string>
+    <string name="object_type_a_video">видео</string>
+    <string name="object_type_an_audio">аудио</string>
+    <string name="object_type_a_service">сервис</string>
+    <string name="object_type_an_application">приложение</string>
+    <string name="object_type_a_game">игру</string>
+    <string name="object_type_an_event">событие</string>
+    <string name="object_type_a_file">файл</string>
+    <string name="object_type_an_object">объект</string>
+    
+    <!-- Use this to change word order if the language requires it -->
+    <!-- 1 = actor, 2 = verb, 3 = object, 4 = target of a reply -->
+    <string name="format_string_activity">%1$s %2$s %3$s</string>
+    <string name="format_string_reply">%1$s %2$s %3$s в ответ на %4$s</string>
+    
+    <string name="actor_unknown">Неизвестный</string>
+    <string name="comment_meta_by">От</string>
+    <string name="comment_meta_at">,</string>
+</resources>
