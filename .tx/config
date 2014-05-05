@@ -1,0 +1,45 @@
+[main]
+host = https://www.transifex.com
+
+[impeller.strings_activity_aboutxml]
+file_filter = res/values-<lang>/strings_activity_about.xml
+source_file = res/values/strings_activity_about.xml
+source_lang = en
+type = ANDROID
+
+[impeller.strings_activity_checkinxml]
+file_filter = res/values-<lang>/strings_activity_checkin.xml
+source_file = res/values/strings_activity_checkin.xml
+source_lang = en
+type = ANDROID
+
+[impeller.strings_activity_loginxml]
+file_filter = res/values-<lang>/strings_activity_login.xml
+source_file = res/values/strings_activity_login.xml
+source_lang = en
+type = ANDROID
+
+[impeller.strings_activity_settingsxml]
+file_filter = res/values-<lang>/strings_activity_settings.xml
+source_file = res/values/strings_activity_settings.xml
+source_lang = en
+type = ANDROID
+
+[impeller.strings_crash_reportxml]
+file_filter = res/values-<lang>/strings_crash_report.xml
+source_file = res/values/strings_crash_report.xml
+source_lang = en
+type = ANDROID
+
+[impeller.strings_fragment_object_nullxml]
+file_filter = res/values-<lang>/strings_fragment_object_null.xml
+source_file = res/values/strings_fragment_object_null.xml
+source_lang = en
+type = ANDROID
+
+[impeller.stringsxml]
+file_filter = res/values-<lang>/strings.xml
+source_file = res/values/strings.xml
+source_lang = en
+type = ANDROID
+
