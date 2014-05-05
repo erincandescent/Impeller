@@ -40,10 +40,16 @@ android {
     signingConfigs {
         release
     }
+
     buildTypes {
         release {
             signingConfig signingConfigs.release
         }
+    }
+
+    defaultConfig {
+        // Add pseudolocale to all builds
+        resConfig "zz_ZZ"
     }
 }
 
