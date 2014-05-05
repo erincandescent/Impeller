@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">Impeller</string>
     <string name="cancel_button">Cancel</string>
@@ -103,8 +103,8 @@
     
     <!-- Use this to change word order if the language requires it -->
     <!-- 1 = actor, 2 = verb, 3 = object, 4 = target of a reply -->
-    <string name="format_string_activity">%1$s %2$s %3$s</string>
-    <string name="format_string_reply">%1$s %2$s %3$s in reply to %4$s</string>
+    <string name="format_string_activity"><xliff:g id="name" example="John Smith">%1$s</xliff:g> <xliff:g id="verb" example="liked">%2$s</xliff:g> <xliff:g id="object" example="a note">%3$s</xliff:g></string>
+    <string name="format_string_reply"><xliff:g id="name" example="John Smith">%1$s</xliff:g> <xliff:g id="verb" example="liked">%2$s</xliff:g> <xliff:g id="object" example="a comment">%3$s</xliff:g> in reply to <xliff:g id="replyObject" example="a note">%4$s</xliff:g></string>
     
     <string name="actor_unknown">Unknown</string>
     <string name="comment_meta_by">By</string>
