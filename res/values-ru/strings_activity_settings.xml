@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="title_activity_settings">Настройки</string>
+  <!--"General" Settings-->
+  <string name="pref_title_location_maps">Карты местоположений</string>
+  <string name="pref_summary_location_maps">Показывать карту для объектов местоположения</string>
+  <string name="pref_title_my_location">Моё местоположение</string>
+  <string-array name="pref_my_location_titles">
+    <item>Отключить определение местоположения</item>
+    <item>Определять местоположение, но не прикреплять автоматически</item>
+    <item>Добавлять моё местоположение ко всем активностям</item>
+  </string-array>
+  <string-array name="pref_my_location_values">
+    <item>0</item>
+    <item>1</item>
+    <item>2</item>
+  </string-array>
+  <!--Example settings for Data & Sync-->
+  <string name="pref_header_data_sync">Данные и синхронизация</string>
+  <string name="pref_title_sync_frequency">Частоста синхронизации</string>
+  <!--Warning: Keep synchronized with pref_sync_frequency_values from
+       - values_activity_settings.xml-->
+  <string-array name="pref_sync_frequency_titles">
+    <item>15 минут</item>
+    <item>30 минут</item>
+    <item>1 час</item>
+    <item>3 часа</item>
+    <item>6 часов</item>
+    <item>Никогда</item>
+  </string-array>
+  <string name="pref_title_system_sync_settings">Системные настройки синхронизации</string>
+  <!--Example settings for Notifications-->
+  <string name="pref_header_notifications">Уведомления</string>
+  <string name="pref_title_new_message_notifications">Уведомления о новых сообщениях</string>
+  <string name="pref_title_ringtone">Звуковое оповещение</string>
+  <string name="pref_ringtone_silent">Без звука</string>
+  <string name="pref_title_vibrate">Вибрация</string>
+</resources>

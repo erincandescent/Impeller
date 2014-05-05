@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="title_activity_login">Войти</string>
+  <!--Strings related to login-->
+  <string name="prompt_id">Pump.io ID</string>
+  <string name="action_sign_in_short">Войти</string>
+  <string name="login_progress_signing_in">Вхожу…</string>
+  <string name="error_invalid_id">Это некорректный Webfinger адрес</string>
+  <string name="error_field_required">Поле должно быть заполнено</string>
+</resources>
