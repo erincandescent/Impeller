@@ -30,6 +30,5 @@ proguard/
 .idea/
 .gradle/
 build/
-gradle/
 atlassian-ide-plugin.xml
 keys.properties
