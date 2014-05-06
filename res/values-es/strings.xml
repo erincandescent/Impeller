@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="app_name">Impeller</string>
+  <string name="cancel_button">Cancelar</string>
+  <!--Navigation-->
+  <string name="account_category">Cuentas</string>
+  <string name="drawer_open">Abrir Caja de Navegación</string>
+  <string name="drawer_close">Cerrar Caja de Navegación</string>
+  <!--Tabs-->
+  <string name="feed_major">Principal</string>
+  <string name="feed_minor">Mientras tanto</string>
+  <string name="feed_direct">Mensajes</string>
+  <!--Menu items-->
+  <string name="action_sign_out">Desconectar</string>
+  <string name="action_post">Publicar</string>
+  <string name="action_post_note">Publicar Nota</string>
+  <string name="action_post_image">Publicar Imagen</string>
+  <string name="action_settings">Ajustes</string>
+  <string name="action_about">Acerca de</string>
+  <string name="action_like">Me gusta</string>
+  <string name="action_unlike">No me gusta</string>
+  <string name="action_reply">Responder</string>
+  <string name="action_replyImage">Responder con imagen</string>
+  <string name="hint_comment">Comentario...</string>
+  <string name="posted_by">Publicado por</string>
+  <string name="title_activity_post">Nuevo mensaje</string>
+  <string name="title_activity_post_reply">Responder</string>
+  <!--Post activity-->
+  <string name="public_post">Hacer público el mensaje</string>
+  <string name="post_description">Descripción:</string>
+  <string name="post_title">Título:</string>
+  <string name="post_location">Ubicación:</string>
+  <string name="no_location">Ninguno</string>
+  <string name="hint_message">Mensaje...</string>
+  <string name="hint_title">Título... (opcional)</string>
+  <string name="posting_title">Publicando...</string>
+  <string name="status_submitting_post">Enviando mensaje</string>
+  <string name="status_uploading_image">Subiendo imagen</string>
+  <string name="just_a_moment">Un momento, por favor</string>
+  <string name="getting_information">Obteniendo información...</string>
+  <!--Preferences-->
+  <string name="pref_title_limit_database_size">Limitar tamaño máximo de base de datos</string>
+  <string name="pref_database_max_item_count">Número máximo de elementos</string>
+  <string name="in_reply_to_post_by">En respuesta a un mensaje de</string>
+  <string name="action_follow">Seguir</string>
+  <string name="action_following">Siguiendo</string>
+  <string name="action_replyNote">Responder con una nota</string>
+  <string name="accountpicker_new_account">Nueva cuenta</string>
+  <string name="post_to_label">A:</string>
+  <string name="post_cc_label">Cc:</string>
+  <string name="public_collection">Público</string>
+  <string name="followers_collection">Seguidores</string>
+  <string name="action_viewInBrowser">Ver en Navegador</string>
+  <string name="title_error_dialog">Error</string>
+  <string name="error_no_message_specified">No ha especificado mensaje</string>
+  <string name="error_no_recipients">No ha especificado destinatarios</string>
+  <string name="direct_notification_title">Mensaje de %s</string>
+  <string name="verb_posted">publicado</string>
+  <string name="verb_followed">seguido</string>
+  <string name="verb_stopped_following">parado de seguir</string>
+  <string name="verb_favorited">favorito</string>
+  <string name="verb_unfavorited">no favorito</string>
+  <string name="verb_shared">compartido</string>
+  <string name="verb_unshared">no compartido</string>
+  <string name="verb_liked">gusta</string>
+  <string name="verb_unliked">no gusta</string>
+  <string name="verb_deleted">borrado</string>
+  <string name="verb_created">creado</string>
+  <string name="verb_added">añadido</string>
+  <string name="verb_updated">actualizado</string>
+  <string name="verb_joined">unido</string>
+  <string name="verb_removed">eliminado</string>
+  <string name="verb_left">restan</string>
+  <string name="verb_played">ejecutado</string>
+  <string name="verb_listened_to">escuchado</string>
+  <string name="verb_checked_in_at">registrado el</string>
+  <string name="object_type_a_note">una nota</string>
+  <string name="object_type_an_image">una imagen</string>
+  <string name="object_type_a_comment">un comentario</string>
+  <string name="object_type_a_person">una persona</string>
+  <string name="object_type_a_group">un grupo</string>
+  <string name="object_type_an_activity">una actividad</string>
+  <string name="object_type_a_place">un lugar</string>
+  <string name="object_type_a_collection">una colección</string>
+  <string name="object_type_a_review">una revisión</string>
+  <string name="object_type_an_article">un artículo</string>
+  <string name="object_type_a_video">un vídeo</string>
+  <string name="object_type_an_audio">un audio</string>
+  <string name="object_type_a_service">un servicio</string>
+  <string name="object_type_an_application">una aplicación</string>
+  <string name="object_type_a_game">un juego</string>
+  <string name="object_type_an_event">un evento</string>
+  <string name="object_type_a_file">un fichero</string>
+  <string name="object_type_an_object">un objeto</string>
+  <!--Use this to change word order if the language requires it-->
+  <!--1 = actor, 2 = verb, 3 = object, 4 = target of a reply-->
+  <string name="format_string_activity">&lt;xliff:g id="name" example="Juan Nadie"&gt;%1$s&lt;/xliff:g&gt; &lt;xliff:g id="verb" example="gusta"&gt;%2$s&lt;/xliff:g&gt; &lt;xliff:g id="object" example="una nota"&gt;%3$s&lt;/xliff:g&gt;</string>
+  <string name="format_string_reply">&lt;xliff:g id="name" example="Juan Nadie"&gt;%1$s&lt;/xliff:g&gt; &lt;xliff:g id="verb" example="gusta"&gt;%2$s&lt;/xliff:g&gt; &lt;xliff:g id="object" example="un comentario"&gt;%3$s&lt;/xliff:g&gt; en respuesta a &lt;xliff:g id="replyObject" example="una nota"&gt;%4$s&lt;/xliff:g&gt;</string>
+  <string name="actor_unknown">Desconocido</string>
+  <string name="comment_meta_by">Por</string>
+</resources>

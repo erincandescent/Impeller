@@ -1,111 +1,101 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <string name="app_name">Impeller</string>
-    <string name="cancel_button">Zrušit</string>
-
-    <!-- Navigation -->
-    <string name="account_category">Účty</string>
-    <string name="drawer_open">Otevřít Navigaci</string>
-    <string name="drawer_close">Zavřít Navigaci</string>
-
-    <!-- Tabs -->
-    <string name="feed_major">Hlavní</string>
-    <string name="feed_minor">Mezitím</string>
-    <string name="feed_direct">Zprávy</string>
-
-    <!-- Menu items -->
-    <string name="action_sign_out">Odhlásit se</string>
-    <string name="action_post">Vložit</string>
-    <string name="action_post_note">Vložit Příspěvek</string>
-    <string name="action_post_image">Vložit Obrázek</string>
-    <string name="action_settings">Nastavení</string>
-    <string name="action_about">O aplikaci</string>
-    <string name="action_like">To se mi líbí</string>
-    <string name="action_unlike">Už se mi to nelíbí</string>
-    <string name="action_reply">Odpovědět</string>
-    <string name="action_replyImage">Odpovědět obrázkem</string>
-    <string name="hint_comment">Komentář...</string>
-    <string name="posted_by">Vložil(a)</string>
-    <string name="title_activity_post">Nový příspěvek</string>
-    <string name="title_activity_post_reply">Odpověď</string>
-
-    <!-- Post activity -->
-    <string name="public_post">Sdílet veřejně</string>
-    <string name="post_description">Popis:</string>
-    <string name="post_title">Nadpis:</string>
-    <string name="post_location">Místo:</string>
-    <string name="no_location">žádné</string>
-    <string name="hint_message">Zpráva...</string>
-    <string name="hint_title">Nadpis... (není nutný)</string>
-    <string name="posting_title">Odesílám...</string>
-    <string name="status_submitting_post">Odesílám příspěvek</string>
-    <string name="status_uploading_image">Nahrávám obrázek</string>
-    <string name="just_a_moment">Chvilku strpení</string>
-    <string name="getting_information">Načítám informace...</string>
-
-    <!-- Preferences -->
-    <string name="pref_title_limit_database_size">Omezit maximální velikost databáze</string>
-    <string name="pref_database_max_item_count">Maximální počet záznamů</string>
-    <string name="in_reply_to_post_by">Odpověď na příspěvek od</string>
-    <string name="action_follow">Sledovat</string>
-    <string name="action_following">Sledovaní</string>
-    <string name="action_replyNote">Odpovědět textem</string>
-    <string name="accountpicker_new_account">Nový účet</string>
-    <string name="post_to_label">Komu:</string>
-    <string name="post_cc_label">Skrytá kopie:</string>
-    <string name="public_collection">Veřejné</string>
-    <string name="followers_collection">Sledující</string>
-    <string name="action_viewInBrowser">Otevřít v prohlížeči</string>
-    <string name="title_error_dialog">Chyba</string>
-    <string name="error_no_message_specified">Zpráva není vyplněna</string>
-    <string name="error_no_recipients">Není uveden žádný adresát</string>
-    <string name="direct_notification_title">Zpráva od %s</string>
-    
-    <string name="verb_posted">vložil(a)</string>
-    <string name="verb_followed">začal(a) sledovat</string>
-    <string name="verb_stopped_following">přestal(a) sledovat</string>
-    <string name="verb_favorited">se líbí</string>
-    <string name="verb_unfavorited">se už nelíbí</string>
-    <string name="verb_shared">přeposlal(a)</string>
-    <string name="verb_unshared">zrušil(a) přeposlání pro</string>
-    <string name="verb_liked">se líbí</string>
-    <string name="verb_unliked">se už nelíbí</string>
-    <string name="verb_deleted">smazal(a)</string>
-    <string name="verb_created">vytvořil(a)</string>
-    <string name="verb_added">přidal(a)</string>
-    <string name="verb_updated">aktualizoval(a)</string>
-    <string name="verb_joined">vstoupil(a) do</string>
-    <string name="verb_removed">odstranil(a)</string>
-    <string name="verb_left">opustil(a)</string>
-    <string name="verb_played">se díval(a) na</string>
-    <string name="verb_listened_to">poslouchal(a)</string>
-    <string name="verb_checked_in_at">hlásí, že je na</string>
-    
-    <string name="object_type_a_note">příspěvek</string>
-    <string name="object_type_an_image">obrázek</string>
-    <string name="object_type_a_comment">komentář</string>
-    <string name="object_type_a_person">člověka</string>    
-    <string name="object_type_a_group">skupiny</string>
-    <string name="object_type_an_activity">aktivitu</string>
-    <string name="object_type_a_place">místě</string>
-    <string name="object_type_a_collection">seznam</string>
-    <string name="object_type_a_review">recenzi</string>
-    <string name="object_type_an_article">článek</string>
-    <string name="object_type_a_video">video</string>
-    <string name="object_type_an_audio">audio</string>
-    <string name="object_type_a_service">službu</string>
-    <string name="object_type_an_application">aplikaci</string>
-    <string name="object_type_a_game">hru</string>
-    <string name="object_type_an_event">událost</string>
-    <string name="object_type_a_file">soubor</string>
-    <string name="object_type_an_object">objekt</string>
-    
-    <!-- Use this to change word order if the language requires it -->
-    <!-- 1 = actor, 2 = verb, 3 = object, 4 = target of a reply -->
-    <string name="format_string_activity">%1$s %2$s %3$s</string>
-    <string name="format_string_reply">%1$s %2$s %3$s - odpověď na %4$s</string>
-
-    <string name="actor_unknown">Neznámý</string>
-    <string name="comment_meta_by">Od</string>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="app_name">Impeller</string>
+  <string name="cancel_button">Zrušit</string>
+  <!--Navigation-->
+  <string name="account_category">Účty</string>
+  <string name="drawer_open">Otevřít Navigaci</string>
+  <string name="drawer_close">Zavřít Navigaci</string>
+  <!--Tabs-->
+  <string name="feed_major">Hlavní</string>
+  <string name="feed_minor">Mezitím</string>
+  <string name="feed_direct">Zprávy</string>
+  <!--Menu items-->
+  <string name="action_sign_out">Odhlásit se</string>
+  <string name="action_post">Vložit</string>
+  <string name="action_post_note">Vložit Příspěvek</string>
+  <string name="action_post_image">Vložit Obrázek</string>
+  <string name="action_settings">Nastavení</string>
+  <string name="action_about">O aplikaci</string>
+  <string name="action_like">To se mi líbí</string>
+  <string name="action_unlike">Už se mi to nelíbí</string>
+  <string name="action_reply">Odpovědět</string>
+  <string name="action_replyImage">Odpovědět obrázkem</string>
+  <string name="hint_comment">Komentář...</string>
+  <string name="posted_by">Vložil(a)</string>
+  <string name="title_activity_post">Nový příspěvek</string>
+  <string name="title_activity_post_reply">Odpověď</string>
+  <!--Post activity-->
+  <string name="public_post">Sdílet veřejně</string>
+  <string name="post_description">Popis:</string>
+  <string name="post_title">Nadpis:</string>
+  <string name="post_location">Místo:</string>
+  <string name="no_location">žádné</string>
+  <string name="hint_message">Zpráva...</string>
+  <string name="hint_title">Nadpis... (není nutný)</string>
+  <string name="posting_title">Odesílám...</string>
+  <string name="status_submitting_post">Odesílám příspěvek</string>
+  <string name="status_uploading_image">Nahrávám obrázek</string>
+  <string name="just_a_moment">Chvilku strpení</string>
+  <string name="getting_information">Načítám informace...</string>
+  <!--Preferences-->
+  <string name="pref_title_limit_database_size">Omezit maximální velikost databáze</string>
+  <string name="pref_database_max_item_count">Maximální počet záznamů</string>
+  <string name="in_reply_to_post_by">Odpověď na příspěvek od</string>
+  <string name="action_follow">Sledovat</string>
+  <string name="action_following">Sledovaní</string>
+  <string name="action_replyNote">Odpovědět textem</string>
+  <string name="accountpicker_new_account">Nový účet</string>
+  <string name="post_to_label">Komu:</string>
+  <string name="post_cc_label">Skrytá kopie:</string>
+  <string name="public_collection">Veřejné</string>
+  <string name="followers_collection">Sledující</string>
+  <string name="action_viewInBrowser">Otevřít v prohlížeči</string>
+  <string name="title_error_dialog">Chyba</string>
+  <string name="error_no_message_specified">Zpráva není vyplněna</string>
+  <string name="error_no_recipients">Není uveden žádný adresát</string>
+  <string name="direct_notification_title">Zpráva od %s</string>
+  <string name="verb_posted">vložil(a)</string>
+  <string name="verb_followed">začal(a) sledovat</string>
+  <string name="verb_stopped_following">přestal(a) sledovat</string>
+  <string name="verb_favorited">se líbí</string>
+  <string name="verb_unfavorited">se už nelíbí</string>
+  <string name="verb_shared">přeposlal(a)</string>
+  <string name="verb_unshared">zrušil(a) přeposlání pro</string>
+  <string name="verb_liked">se líbí</string>
+  <string name="verb_unliked">se už nelíbí</string>
+  <string name="verb_deleted">smazal(a)</string>
+  <string name="verb_created">vytvořil(a)</string>
+  <string name="verb_added">přidal(a)</string>
+  <string name="verb_updated">aktualizoval(a)</string>
+  <string name="verb_joined">vstoupil(a) do</string>
+  <string name="verb_removed">odstranil(a)</string>
+  <string name="verb_left">opustil(a)</string>
+  <string name="verb_played">se díval(a) na</string>
+  <string name="verb_listened_to">poslouchal(a)</string>
+  <string name="verb_checked_in_at">hlásí, že je na</string>
+  <string name="object_type_a_note">příspěvek</string>
+  <string name="object_type_an_image">obrázek</string>
+  <string name="object_type_a_comment">komentář</string>
+  <string name="object_type_a_person">člověka</string>
+  <string name="object_type_a_group">skupiny</string>
+  <string name="object_type_an_activity">aktivitu</string>
+  <string name="object_type_a_place">místě</string>
+  <string name="object_type_a_collection">seznam</string>
+  <string name="object_type_a_review">recenzi</string>
+  <string name="object_type_an_article">článek</string>
+  <string name="object_type_a_video">video</string>
+  <string name="object_type_an_audio">audio</string>
+  <string name="object_type_a_service">službu</string>
+  <string name="object_type_an_application">aplikaci</string>
+  <string name="object_type_a_game">hru</string>
+  <string name="object_type_an_event">událost</string>
+  <string name="object_type_a_file">soubor</string>
+  <string name="object_type_an_object">objekt</string>
+  <!--Use this to change word order if the language requires it-->
+  <!--1 = actor, 2 = verb, 3 = object, 4 = target of a reply-->
+  <string name="format_string_activity">&lt;xliff:g id="name" example="John Smith"&gt;%1$s&lt;/xliff:g&gt; &lt;xliff:g id="verb" example="liked"&gt;%2$s&lt;/xliff:g&gt; &lt;xliff:g id="object" example="a note"&gt;%3$s&lt;/xliff:g&gt;</string>
+  <string name="format_string_reply">&lt;xliff:g id="name" example="John Smith"&gt;%1$s&lt;/xliff:g&gt; &lt;xliff:g id="verb" example="liked"&gt;%2$s&lt;/xliff:g&gt; &lt;xliff:g id="object" example="a comment"&gt;%3$s&lt;/xliff:g&gt; - odpověď na &lt;xliff:g id="replyObject" example="a note"&gt;%4$s&lt;/xliff:g&gt;</string>
+  <string name="actor_unknown">Neznámý</string>
+  <string name="comment_meta_by">Od</string>
 </resources>

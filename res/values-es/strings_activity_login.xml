@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="title_activity_login">Registrarse</string>
+  <!--Strings related to login-->
+  <string name="prompt_id">ID Pump.io</string>
+  <string name="action_sign_in_short">Registrarse</string>
+  <string name="login_progress_signing_in">Registrando...</string>
+  <string name="error_invalid_id">Esta dirección Webfinger no es válida</string>
+  <string name="error_field_required">Este campo es obligatorio</string>
+</resources>

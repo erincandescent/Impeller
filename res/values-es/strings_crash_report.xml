@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="crash_notification.title">Impeller ha fallado</string>
+  <string name="crash_notification.text">Click para enviar un informe de fallo.</string>
+  <string name="crash_notification.dialog_text">Impeller ha fallado. Por favor, pulse OK para enviar los datos a los desarrolladores</string>
+  <string name="crash_notification.dialog_request_user_email">Su dirección de correo electrónico:</string>
+</resources>
