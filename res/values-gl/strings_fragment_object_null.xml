@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="object_null_title">Ou, non...</string>
+  <string name="object_null_message">No parece que haxa nada eiquí</string>
+</resources>
