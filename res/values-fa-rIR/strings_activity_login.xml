@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="title_activity_login">ورود</string>
+  <!--Strings related to login-->
+  <string name="prompt_id">شناسه Pump.io</string>
+  <string name="action_sign_in_short">ورود</string>
+  <string name="login_progress_signing_in">در حال ورود...</string>
+  <string name="error_invalid_id">این آدرس وب‌فینگر معتبر نیست</string>
+  <string name="error_field_required">این مدخل ضروری است</string>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="title_activity_about">درباره Impeller</string>
+  <string name="btn_submit_feedback">ثبت بازخورد</string>
+  <string name="about_crafted_with_love">بنا شده با مهر،</string>
+  <string name="about_for_every_user">برای تک تک کاربران Pump.io</string>
+  <string name="about_by">توسط Owen Shepherd، ۲۰۱۳</string>
+  <string name="btn_view_feedback">نمایش جعبه بازخورد</string>
+</resources>

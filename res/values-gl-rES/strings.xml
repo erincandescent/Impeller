@@ -94,8 +94,6 @@
   <string name="object_type_an_object">un obxecto</string>
   <!--Use this to change word order if the language requires it-->
   <!--1 = actor, 2 = verb, 3 = object, 4 = target of a reply-->
-  <string name="format_string_activity">&lt;xliff:g id="name" example="Xan Ninguén"&gt;%1$s&lt;/xliff:g&gt; &lt;xliff:g id="verb" example="gusta"&gt;%2$s&lt;/xliff:g&gt; &lt;xliff:g id="object" example="unha nota"&gt;%3$s&lt;/xliff:g&gt;</string>
-  <string name="format_string_reply">&lt;xliff:g id="name" example="Xan Ninguén"&gt;%1$s&lt;/xliff:g&gt; &lt;xliff:g id="verb" example="gusta"&gt;%2$s&lt;/xliff:g&gt; &lt;xliff:g id="object" example="un comentario"&gt;%3$s&lt;/xliff:g&gt; en resposta a &lt;xliff:g id="replyObject" example="unha nota"&gt;%4$s&lt;/xliff:g&gt;</string>
   <string name="actor_unknown">Descoñecido</string>
   <string name="comment_meta_by">Por</string>
 </resources>
