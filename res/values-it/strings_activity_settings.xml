@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="title_activity_settings">Impostazioni</string>
+  <!--"General" Settings-->
+  <string name="pref_title_location_maps">Mappe di posizione</string>
+  <string name="pref_summary_location_maps">Mostra mappa per posizione dell\' oggetto</string>
+  <string name="pref_title_my_location">Mia posizione</string>
+  <string-array name="pref_my_location_titles">
+    <item>Disabilitare informazioni di posizione </item>
+    <item>Ricerca posizione, senza impostazione predefinita</item>
+    <item>Aggiungere per default la mia posizione per le attività</item>
+  </string-array>
+  <string-array name="pref_my_location_values">
+    <item>0</item>
+    <item>1</item>
+    <item>2</item>
+  </string-array>
+  <!--Example settings for Data & Sync-->
+  <string name="pref_header_data_sync">Data &amp; sincronizzazione</string>
+  <string name="pref_title_sync_frequency">Sincronizza frequenza</string>
+  <!--Warning: Keep synchronized with pref_sync_frequency_values from
+       - values_activity_settings.xml-->
+  <string-array name="pref_sync_frequency_titles">
+    <item>15 minuti</item>
+    <item>30 minuti</item>
+    <item>1 ora</item>
+    <item>3 ore</item>
+    <item>6 ore</item>
+    <item>Mai</item>
+  </string-array>
+  <string name="pref_title_system_sync_settings">Sincronizza impostazione sistema</string>
+  <!--Example settings for Notifications-->
+  <string name="pref_header_notifications">Notificazioni</string>
+  <string name="pref_title_new_message_notifications">Notificazioni di nuovi messaggi</string>
+  <string name="pref_title_ringtone">Suonerie</string>
+  <string name="pref_ringtone_silent">Silenziare</string>
+  <string name="pref_title_vibrate">Vibrare</string>
+</resources>

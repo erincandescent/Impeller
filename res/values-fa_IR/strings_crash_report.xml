@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="crash_notification.title">ایمپلر کرش کرده است</string>
+  <string name="crash_notification.text">برای ارسال گزارش خطا کلیک کنید</string>
+  <string name="crash_notification.dialog_text">ایمپلر کرش کرده است. لطفا جهت ارسال داده‌ها به توسعه‌دهندگان کلیک کنید</string>
+  <string name="crash_notification.dialog_request_user_email">آدرس ایمیل شما:</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="crash_notification.title">Impeller è andato in crash.</string>
+  <string name="crash_notification.text">Clicca per inviare un crash report.</string>
+  <string name="crash_notification.dialog_text">Impeller è andato in crash. P.f. clicca okay per inviare i dati agli sviluppatori.</string>
+  <string name="crash_notification.dialog_request_user_email">Il tuo indirizzo email:</string>
+</resources>

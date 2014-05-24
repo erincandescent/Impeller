@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="title_activity_about">Su Impeller</string>
+  <string name="btn_submit_feedback">Inviare un commento</string>
+  <string name="about_crafted_with_love">Realizzato con amore.</string>
+  <string name="about_for_every_user">per ogni utente di Pump.io</string>
+  <string name="about_by">Di Owen Shepherd, 2013</string>
+  <string name="btn_view_feedback">Vedi casella postale di commenti</string>
+</resources>

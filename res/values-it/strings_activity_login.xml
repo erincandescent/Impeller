@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="title_activity_login">Connettersi</string>
+  <!--Strings related to login-->
+  <string name="prompt_id">ID Pump.io</string>
+  <string name="action_sign_in_short">Connettersi</string>
+  <string name="login_progress_signing_in">Collegamento in corso</string>
+  <string name="error_invalid_id">L\' indirizzo Webfinger non è valido.</string>
+  <string name="error_field_required">Questo campo è necessario</string>
+</resources>

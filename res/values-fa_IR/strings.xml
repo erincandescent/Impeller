@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="app_name">ایمپلر</string>
+  <string name="cancel_button">انصراف</string>
+  <!--Navigation-->
+  <string name="account_category">حساب‌ها</string>
+  <string name="drawer_open">بازکردن کشوی ناوبری</string>
+  <string name="drawer_close">بستن کشوی ناوبری</string>
+  <!--Tabs-->
+  <string name="feed_major">اصلی</string>
+  <string name="feed_minor">در همین حال</string>
+  <string name="feed_direct">پیام‌ها</string>
+  <!--Menu items-->
+  <string name="action_sign_out">خروج</string>
+  <string name="action_post">پست</string>
+  <string name="action_post_note">پست یادداشت</string>
+  <string name="action_post_image">پست تصویر</string>
+  <string name="action_settings">تنظیمات</string>
+  <string name="action_about">درباره</string>
+  <string name="action_like">خوشم آمد</string>
+  <string name="action_unlike">خوشم نیامد</string>
+  <string name="action_reply">پاسخ</string>
+  <string name="action_replyImage">پاسخ با عکس</string>
+  <string name="hint_comment">نظر...</string>
+  <string name="posted_by">ارسال شده توسط</string>
+  <string name="title_activity_post">پست جدید</string>
+  <string name="title_activity_post_reply">پاسخ</string>
+  <!--Post activity-->
+  <string name="public_post">همگانی‌سازی نوشته</string>
+  <string name="post_description">شرح:</string>
+  <string name="post_title">عنوان:</string>
+  <string name="post_location">مکان:</string>
+  <string name="no_location">هیچکدام</string>
+  <string name="hint_message">پیام...</string>
+  <string name="hint_title">عنوان...(دلبخواهی)</string>
+  <string name="posting_title">درحال ارسال...</string>
+  <string name="status_submitting_post">ارسال پست</string>
+  <string name="status_uploading_image">ارسال تصویر</string>
+  <string name="just_a_moment">فقط یک لحظه</string>
+  <string name="getting_information">گرفتن اطلاعات...</string>
+  <!--Preferences-->
+  <string name="pref_title_limit_database_size">محدودسازی بیشینه اندازه پایگاه داده</string>
+  <string name="pref_database_max_item_count">بیشینه تعداد عناوین</string>
+  <string name="in_reply_to_post_by">در پاسخ به یک نوشته توسط:</string>
+  <string name="action_follow">پیگیری</string>
+  <string name="action_following">در حال پیگیری</string>
+  <string name="action_replyNote">پاسخ با یادداشت</string>
+  <string name="accountpicker_new_account">حساب جدید</string>
+  <string name="post_to_label">به:</string>
+  <string name="post_cc_label">رونوشت به:</string>
+  <string name="public_collection">همگانی</string>
+  <string name="followers_collection">فالوئرها</string>
+  <string name="action_viewInBrowser">نمایش در مرورگر</string>
+  <string name="title_error_dialog">خطا</string>
+  <string name="error_no_message_specified">هیچ پیامی مشخص نشده</string>
+  <string name="error_no_recipients">هیچ گیرنده‌ای مشخص نشده</string>
+  <string name="direct_notification_title">پیام از %s</string>
+  <string name="verb_posted">ارسال شده</string>
+  <string name="verb_followed">فالو شده</string>
+  <string name="verb_stopped_following">توقف فالو</string>
+  <string name="verb_favorited">گلچین شده</string>
+  <string name="verb_unfavorited">گلچین نشده</string>
+  <string name="verb_shared">به اشتراک گذاشته شده</string>
+  <string name="verb_unshared">به اشتراک گذاری نشده</string>
+  <string name="verb_liked">لایک شده</string>
+  <string name="verb_unliked">لایک نشده</string>
+  <string name="verb_deleted">حذف شده</string>
+  <string name="verb_created">ساخته شده</string>
+  <string name="verb_added">اضافه شده</string>
+  <string name="verb_updated">بروز شده</string>
+  <string name="verb_joined">ملحق شده</string>
+  <string name="verb_removed">حذف شده</string>
+  <string name="verb_left">چپ</string>
+  <string name="verb_played">بازی شده</string>
+  <string name="verb_listened_to">گوش کرده به</string>
+  <string name="verb_checked_in_at">ورود زده در</string>
+  <string name="object_type_a_note">یک یادداشت</string>
+  <string name="object_type_an_image">یک تصویر</string>
+  <string name="object_type_a_comment">یک نظر</string>
+  <string name="object_type_a_person">یک شخص</string>
+  <string name="object_type_a_group">یک گروه</string>
+  <string name="object_type_an_activity">یک فعالیت</string>
+  <string name="object_type_a_place">یک جا</string>
+  <string name="object_type_a_collection">یک مجموعه</string>
+  <string name="object_type_a_review">یک مرور</string>
+  <string name="object_type_an_article">یک مقاله</string>
+  <string name="object_type_a_video">یک ویدیو</string>
+  <string name="object_type_an_audio">یک آوا</string>
+  <string name="object_type_a_service">یک خدمت</string>
+  <string name="object_type_an_application">یک برنامه</string>
+  <string name="object_type_a_game">یک بازی</string>
+  <string name="object_type_an_event">یک رویداد</string>
+  <string name="object_type_a_file">یک پرونده</string>
+  <string name="object_type_an_object">یک شیء</string>
+  <!--Use this to change word order if the language requires it-->
+  <!--1 = actor, 2 = verb, 3 = object, 4 = target of a reply-->
+  <string name="format_string_activity">&lt;xliff:g id="name" example="John Smith"&gt;%1$s&lt;/xliff:g&gt; &lt;xliff:g id="verb" example="liked"&gt;%2$s&lt;/xliff:g&gt; &lt;xliff:g id="object" example="a note"&gt;%3$s&lt;/xliff:g&gt;</string>
+  <string name="format_string_reply">&lt;xliff:g id="name" example="John Smith"&gt;%1$s&lt;/xliff:g&gt; &lt;xliff:g id="verb" example="liked"&gt;%2$s&lt;/xliff:g&gt; &lt;xliff:g id="object" example="a comment"&gt;%3$s&lt;/xliff:g&gt; درپاسخ به &lt;xliff:g id="replyObject" example="a note"&gt;%4$s&lt;/xliff:g&gt;</string>
+  <string name="actor_unknown">ناشناس</string>
+  <string name="comment_meta_by">توسط</string>
+</resources>
