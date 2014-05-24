@@ -1,6 +1,6 @@
 [main]
 host = https://www.transifex.com
-lang_map = gl_ES: gl-rES
+lang_map = gl_ES: gl-rES, fa_IR: fa-rIR
 
 [impeller.strings_activity_aboutxml]
 file_filter = res/values-<lang>/strings_activity_about.xml
