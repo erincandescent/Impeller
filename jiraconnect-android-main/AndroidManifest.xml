@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <application android:label="@string/jconnect.droid.app_name">
+    <application>
         <activity android:name="com.atlassian.jconnect.droid.activity.FeedbackActivity"
                   android:label="@string/jconnect.droid.create_feedback">
         </activity>
@@ -19,6 +19,5 @@
         </activity>
         <service android:name="com.atlassian.jconnect.droid.service.RemoteFeedbackService" />
         <service android:name="com.atlassian.jconnect.droid.service.FeedbackPollingService" />
-
     </application>
 </manifest> 

@@ -4,7 +4,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.9+'
+        classpath 'com.android.tools.build:gradle:0.11.+'
     }
 }
 
@@ -12,7 +12,7 @@ apply plugin: 'android'
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.3"
+    buildToolsVersion "19.1"
 
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
@@ -58,15 +58,13 @@ repositories {
 }
 
 dependencies {
+    compile project(':jiraconnect-android-main')
+    compile project(':tokenautocomplete:library')
     compile 'com.android.support:support-v4:19.1.+'
     compile 'com.android.support:appcompat-v7:19.1.+'
-
     compile 'oauth.signpost:signpost-core:1.2'
     compile 'com.google.guava:guava:16.0.1'
     compile 'net.sourceforge.htmlcleaner:htmlcleaner:2.7'
-
-    compile project(':jiraconnect-android-main')
-    compile project(':tokenautocomplete:library')
 }
 
 configurations {
@@ -84,13 +82,13 @@ if(keyPropFile.canRead()) {
 }
 
 if (signingConfig.containsKey('STORE_FILE')
-  && signingConfig.containsKey('STORE_PASSWORD')
-  && signingConfig.containsKey('KEY_ALIAS')
-  && signingConfig.containsKey('KEY_PASSWORD')) {
-    android.signingConfigs.release.storeFile     = file(signingConfig['STORE_FILE'])
+        && signingConfig.containsKey('STORE_PASSWORD')
+        && signingConfig.containsKey('KEY_ALIAS')
+        && signingConfig.containsKey('KEY_PASSWORD')) {
+    android.signingConfigs.release.storeFile = file(signingConfig['STORE_FILE'])
     android.signingConfigs.release.storePassword = signingConfig['STORE_PASSWORD']
-    android.signingConfigs.release.keyAlias      = signingConfig['KEY_ALIAS']
-    android.signingConfigs.release.keyPassword   = signingConfig['KEY_PASSWORD']
+    android.signingConfigs.release.keyAlias = signingConfig['KEY_ALIAS']
+    android.signingConfigs.release.keyPassword = signingConfig['KEY_PASSWORD']
 } else {
     android.buildTypes.release.signingConfig = null
     println 'No signing configuration or is incomplete'
