@@ -25,12 +25,12 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:name="eu.e43.impeller.ImpellerApplication"
+        android:name=".ImpellerApplication"
         android:allowBackup="true"
+        android:allowTaskReparenting="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.AppCompat.Light"
-        android:allowTaskReparenting="true">
+        android:theme="@style/Theme.AppCompat.Light" >
         <provider
             android:name=".content.PumpContentProvider"
             android:authorities="eu.e43.impeller.content"
@@ -44,21 +44,21 @@
             android:name=".content.ContentUpdateReceiver"
             android:enabled="true"
             android:exported="false"
-            android:process=":sync">
+            android:process=":sync" >
             <intent-filter>
-                <action android:name="eu.e43.impeller.UpdateReplies"/>
-                <action android:name="eu.e43.impeller.UpdateObject"/>
-                <action android:name="eu.e43.impeller.FetchUserFeed"/>
+                <action android:name="eu.e43.impeller.UpdateReplies" />
+                <action android:name="eu.e43.impeller.UpdateObject" />
+                <action android:name="eu.e43.impeller.FetchUserFeed" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name=".content.FeedNotificationReceiver"
             android:enabled="true"
             android:exported="false"
-            android:process=":sync">
+            android:process=":sync" >
             <intent-filter>
                 <action android:name="eu.e43.impeller.content.NEW_FEED_ENTRY" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
@@ -66,13 +66,11 @@
         <service
             android:name=".content.FeedNotificationService"
             android:exported="false"
-            android:process=":sync">
-
+            android:process=":sync" >
             <intent-filter>
                 <action android:name="eu.e43.impeller.content.FeedNotificationService.DirectMessage" />
             </intent-filter>
         </service>
-
         <service
             android:name=".account.AuthenticatorService"
             android:enabled="true"
@@ -86,7 +84,6 @@
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
-
         <service
             android:name=".content.FeedSyncService"
             android:exported="true"
@@ -99,12 +96,10 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/feed_sync_adapter" />
         </service>
-
         <service
             android:name=".contacts.SyncService"
             android:exported="true"
-            android:process=":sync">
-
+            android:process=":sync" >
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -112,7 +107,6 @@
             <meta-data
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/contact_sync_adapter" />
-
             <meta-data
                 android:name="android.provider.CONTACTS_STRUCTURE"
                 android:resource="@xml/contact_profile" />
@@ -121,65 +115,61 @@
         <activity
             android:name=".activity.MainActivity"
             android:label="@string/app_name"
-            android:launchMode="singleTask">
-
+            android:launchMode="singleTask" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <data
-                    android:scheme="content"
-                    android:host="eu.e43.impeller.content" />
+                    android:host="eu.e43.impeller.content"
+                    android:scheme="content" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".account.LoginActivity"
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateVisible" />
-
         <activity
             android:name=".activity.PostActivity"
             android:label="@string/title_activity_post"
-            android:parentActivityName=".activity.MainActivity">
+            android:parentActivityName=".activity.MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/plain" />
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activity.CheckinActivity"
             android:label="@string/title_activity_checkin"
-            android:parentActivityName=".activity.MainActivity">
+            android:parentActivityName=".activity.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
         </activity>
-
         <activity
             android:name=".activity.SettingsActivity"
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleInstance"
-            android:parentActivityName=".activity.MainActivity">
+            android:parentActivityName=".activity.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
         </activity>
-
         <activity
             android:name="org.acra.CrashReportDialog"
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.Base.AppCompat.Dialog.FixedSize" />
-
         <activity
             android:name=".activity.AboutActivity"
             android:label="@string/title_activity_about"
