@@ -23,6 +23,7 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
 	public static final int LOGIN_REQUEST_CODE = 65535;
 	private static final String TAG = "ActivityWithAccount";
 	public    AccountManager 	m_accountManager 	= null;
+    private   Account           m_newAccount        = null; // For resume dance
 	public    Account           m_account           = null;
 	private   ImageLoader       m_imageLoader		= null;
     private   Intent            m_startIntent       = null;
@@ -108,8 +109,7 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
 				String accountType = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
 				Log.i(TAG, "Logged in " + accountName);
 			
-				m_account = new Account(accountName, accountType);
-				haveGotAccount(m_account);
+				m_newAccount = new Account(accountName, accountType);
 			} else {
 				finish();
 			}
@@ -117,6 +117,19 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
 			super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
+
+    // Calling gotAccount inside onActivityResult makes some things impossible. For example,
+    // fragment transactions, because we haven't resumed yet. So, in those cases, delay the response
+    // until we are resumed.
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(m_newAccount != null) {
+            Account a = m_newAccount;
+            m_newAccount = null;
+            haveGotAccount(a);
+        }
+    }
 
     /** If overriding queryAccount, call this when you have found an account */
     protected void haveGotAccount(Account a) {
