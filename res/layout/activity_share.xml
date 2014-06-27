@@ -1,0 +1,79 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="eu.e43.impeller.activity.ShareActivity"
+    android:orientation="vertical">
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:rowCount="2"
+        android:columnCount="2">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/post_to_label"
+            android:id="@+id/postToLabel"
+            android:paddingEnd="5dp" />
+
+        <com.tokenautocomplete.TokenCompleteTextView
+            android:id="@+id/postTo"
+            android:imeOptions="flagNoFullscreen|flagNoExtractUi"
+            android:padding="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/post_cc_label"
+            android:id="@+id/postCcLabel"
+            android:paddingEnd="5dp" />
+
+        <com.tokenautocomplete.TokenCompleteTextView
+            android:id="@+id/postCc"
+            android:imeOptions="flagNoFullscreen|flagNoExtractUi"
+            android:padding="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+    </GridLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dip"
+        android:background="?android:attr/dividerHorizontal" />
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="0dip"
+        android:paddingLeft="2dip"
+        android:paddingRight="2dip"
+        android:measureWithLargestChild="true">
+
+        <Button
+            android:id="@+id/cancel"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@android:string/cancel"/>
+
+        <Button
+            android:id="@+id/ok"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/action_post"/>
+    </LinearLayout>
+</LinearLayout>

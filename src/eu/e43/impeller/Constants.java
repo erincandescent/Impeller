@@ -2,6 +2,10 @@ package eu.e43.impeller;
 
 /** Random useful constants */
 public class Constants {
+    // ActivityStreams extras
+    public static final String EXTRA_ACTIVITYSTREAMS_ID     = "ms.activitystrea.OBJECT_ID";
+    public static final String EXTRA_ACTIVITYSTREAMS_OBJECT = "ms.activitystrea.OBJECT";
+
     // Preferences
     public static final String PREF_SYNC_FREQUENCY = "sync_frequency";
     public static final String PREF_LOCATION_MAPS  = "location_maps";

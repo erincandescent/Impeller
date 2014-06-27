@@ -13,6 +13,9 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.style.RelativeSizeSpan;
@@ -43,6 +46,7 @@ import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.activity.PostActivity;
 import eu.e43.impeller.uikit.AvatarView;
 import eu.e43.impeller.uikit.BrowserChrome;
@@ -497,6 +501,30 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
                 Uri uri = Uri.parse(url);
                 Intent showIntent = new Intent(Intent.ACTION_VIEW, uri);
                 startActivity(showIntent);
+                return true;
+            }
+
+            case R.id.action_share: {
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                JSONObject object = getObject();
+                String title = Html.fromHtml(object.optString("displayName")).toString();
+                String body  = getObject().optString("content");
+
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_TITLE, title);
+                intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml(body));
+                intent.putExtra(PostActivity.EXTRA_HTML_TEXT, body);
+                intent.putExtra(Constants.EXTRA_ACTIVITYSTREAMS_ID, object.optString("id"));
+                intent.putExtra(Constants.EXTRA_ACTIVITYSTREAMS_OBJECT, object.toString());
+
+                FragmentManager fm = getChildFragmentManager();
+                FragmentTransaction tx = fm.beginTransaction();
+                Fragment old = fm.findFragmentByTag("dialog");
+                if(old != null)
+                    tx.remove(old);
+                tx.addToBackStack(null);
+                ShareFragment.newInstance(intent).show(tx, "dialog");
+
                 return true;
             }
         }

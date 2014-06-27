@@ -10,10 +10,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.io.IOException;
 
@@ -38,7 +41,20 @@ public class AccountPickerActivity extends ActionBarActivity implements AdapterV
 
         ListView accountList = (ListView) findViewById(R.id.account_list);
         ArrayAdapter<Account> accountAdapter = new ArrayAdapter<Account>(this, android.R.layout.simple_list_item_1,
-                accounts);
+                accounts) {
+            @Override
+            public View getView(int position, View view, ViewGroup parent) {
+                if(view == null) {
+                    view = LayoutInflater.from(getContext())
+                            .inflate(android.R.layout.simple_list_item_1, null);
+                }
+
+                TextView tv = (TextView) view.findViewById(android.R.id.text1);
+                tv.setText(getItem(position).name);
+
+                return view;
+            }
+        };
 
         accountList.setAdapter(accountAdapter);
         accountList.setOnItemClickListener(this);

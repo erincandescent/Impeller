@@ -21,6 +21,11 @@
     </item>
 
     <item
+        android:id="@+id/action_share"
+        android:title="@string/action_share"
+        android:icon="@drawable/ic_action_share" />
+
+    <item
         android:id="@+id/action_viewInBrowser"
         android:title="@string/action_viewInBrowser"/>
 </menu>

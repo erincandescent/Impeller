@@ -181,7 +181,19 @@
 
         <activity
             android:name=".activity.AccountPickerActivity"
-            android:label="@string/title_activity_login" />
+            android:label="@string/title_activity_login"
+            android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge"/>
+
+        <activity
+            android:name=".activity.ShareActivity"
+            android:label="@string/title_activity_share"
+            android:parentActivityName=".activity.MainActivity"
+            android:theme="@style/Theme.Base.AppCompat.Dialog.Light.FixedSize">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

@@ -71,7 +71,7 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
 	
 	private static final String TAG = "PostActivity";
 	// EXTRA_HTML_TEXT is a 4.2 feature
-	private static final String EXTRA_HTML_TEXT = "android.intent.extra.HTML_TEXT";
+	public static final String EXTRA_HTML_TEXT = "android.intent.extra.HTML_TEXT";
 
     private static final int TYPE_NOTE    = 0;
     private static final int TYPE_COMMENT = 1;
@@ -795,8 +795,6 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
             dismissProgress();
 
 			if(obj != null) {
-                Toast.makeText(PostActivity.this, "Posted", Toast.LENGTH_SHORT);
-
                 ContentValues cv = new ContentValues();
                 cv.put("_json", obj.toString());
                 getContentResolver().insert(Uri.parse(PumpContentProvider.ACTIVITY_URL), cv);
@@ -805,7 +803,7 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
 				setResult(RESULT_OK);
 				finish();
 			} else {
-				Toast.makeText(PostActivity.this, "Error creating post", Toast.LENGTH_SHORT).show();
+				Toast.makeText(PostActivity.this, R.string.post_error, Toast.LENGTH_SHORT).show();
 			} 
 		}
 		

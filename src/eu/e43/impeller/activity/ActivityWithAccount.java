@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.net.http.HttpResponseCache;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
@@ -120,7 +121,11 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
     /** If overriding queryAccount, call this when you have found an account */
     protected void haveGotAccount(Account a) {
         m_account = a;
-        getSupportActionBar().setSubtitle(a.name);
+
+        // No AB on dialog style activities
+        ActionBar ab = getSupportActionBar();
+        if(ab != null) ab.setSubtitle(a.name);
+
         gotAccount(a);
 
         if(m_startIntent != null) {

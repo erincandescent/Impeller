@@ -2,8 +2,7 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/im_primary">
+    android:layout_height="match_parent">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -11,8 +10,8 @@
         android:id="@+id/logo_image"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="41dp"
-        android:src="@drawable/ic_impeller_wb" />
+        android:layout_marginTop="20dp"
+        android:src="@drawable/ic_launcher" />
 
     <ListView
         android:layout_width="wrap_content"
@@ -40,6 +39,5 @@
         android:id="@+id/name_text"
         android:layout_below="@+id/logo_image"
         android:layout_centerHorizontal="true"
-        android:layout_margin="8dp"
-        android:textColor="@android:color/white" />
+        android:layout_margin="8dp" />
 </RelativeLayout>
