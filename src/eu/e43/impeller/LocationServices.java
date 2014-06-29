@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by OShepherd on 03/11/13.
@@ -142,6 +143,7 @@ public class LocationServices implements LocationListener {
     public static JSONObject buildPlace(Address addr) throws JSONException {
         JSONObject place = new JSONObject();
         place.put("objectType", "place");
+        place.put("id", "urn:uuid:" + UUID.randomUUID().toString());
 
         if(addr.hasLongitude() || addr.hasLatitude()) {
             JSONObject position = new JSONObject();
