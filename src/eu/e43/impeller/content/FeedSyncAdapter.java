@@ -44,34 +44,28 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
         m_syncState = m_context.getSharedPreferences("FeedSync", Context.MODE_PRIVATE);
     }
 
-    private Uri getFeedUri(Account account) {
-        Uri.Builder b = Uri.parse(PumpContentProvider.FEED_URL).buildUpon();
-        b.appendPath(account.name);
-        return b.build();
-    }
-
     private String getLastId(ContentResolver res, Uri feed) {
+        /*
         String id = m_syncState.getString(feed.getLastPathSegment(), null);
         if(id != null) {
             return id;
-        } else {
-            // For upgraders
+        } else {*/
             Cursor c = res.query(
                 feed,
                 new String[] { "id" },
                 null,
                 null,
-                "feed_entries.published DESC");
+                "feed_entries._ID DESC");
             if(c.getCount() > 0) {
                 c.moveToFirst();
-                id = c.getString(0);
+                String id = c.getString(0);
                 c.close();
                 return id;
             } else {
                 c.close();
                 return null;
             }
-        }
+        //}
     }
 
     @Override
@@ -84,11 +78,11 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
             JSONArray items;
             AccountManager am = (AccountManager) m_context.getSystemService(Context.ACCOUNT_SERVICE);
             ContentResolver res = m_context.getContentResolver();
-            Uri feedContentUri = getFeedUri(account);
+            PumpContentProvider.Uris uris = PumpContentProvider.Uris.get(account);
 
             do {
                 Uri.Builder b = Utils.getUserUri(m_context, account, "inbox").buildUpon();
-                String lastId = getLastId(res, feedContentUri);
+                String lastId = getLastId(res, uris.feedUri);
                 if(lastId != null)
                     b.appendQueryParameter("since", lastId);
                 b.appendQueryParameter("count", "200");
@@ -107,7 +101,7 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
                 for(int i = items.length() - 1; i >= 0; i--) {
                     JSONObject item = items.getJSONObject(i);
                     actions.add(
-                            ContentProviderOperation.newInsert(feedContentUri)
+                            ContentProviderOperation.newInsert(uris.feedUri)
                             .withValue("_json", item.toString())
                             .build());
                     syncResult.stats.numEntries++;

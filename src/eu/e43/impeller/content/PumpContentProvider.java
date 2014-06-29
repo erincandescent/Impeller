@@ -1,17 +1,20 @@
 package eu.e43.impeller.content;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Intent;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
+import android.support.v4.util.LruCache;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -20,8 +23,11 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
@@ -31,11 +37,57 @@ import eu.e43.impeller.account.Authenticator;
  * Created by OShepherd on 01/07/13.
  */
 public class PumpContentProvider extends ContentProvider {
+    public static final int RECIPIENT_TO  = 0;
+    public static final int RECIPIENT_CC  = 1;
+    public static final int RECIPIENT_BTO = 2;
+    public static final int RECIPIENT_BCC = 3;
+    public static final String[] RECIPIENT_KEYS = new String[] {
+            "to", "cc", "bto", "bcc"
+    };
+
     public static final String AUTHORITY = "eu.e43.impeller.content";
-    public static final String URL = "content://eu.e43.impeller.content";
-    public static final String FEED_URL     = "content://eu.e43.impeller.content/feed";
-    public static final String ACTIVITY_URL = "content://eu.e43.impeller.content/activity";
-    public static final String OBJECT_URL   = "content://eu.e43.impeller.content/object";
+    public static final Uri PROVIDER_URI = Uri.parse("content://eu.e43.impeller.content/");
+
+    public static class Uris {
+        private static LruCache<Account, Uris> ms_uriCache = new LruCache(2);
+        public static Uris get(Account acct) {
+            Uris v = ms_uriCache.get(acct);
+            if(v == null) {
+                v = new Uris(acct);
+                ms_uriCache.put(acct, v);
+            }
+            return v;
+        }
+
+        protected Uris(Account acct) {
+            account = acct;
+            baseUri = PROVIDER_URI.buildUpon().appendPath(acct.name).build();
+            feedUri = baseUri.buildUpon().appendPath("feed").build();
+            activitiesUri = baseUri.buildUpon().appendPath("activity").build();
+            objectsUri = baseUri.buildUpon().appendPath("object").build();
+        }
+
+        public final Account account;
+        public final Uri baseUri;
+        public final Uri feedUri;
+        public final Uri activitiesUri;
+        public final Uri objectsUri;
+
+        public Uri activityUri(int id) {
+            return activitiesUri.buildUpon().appendPath(Integer.toString(id)).build();
+        }
+
+        public Uri objectUri(int id) {
+            return objectsUri.buildUpon().appendPath(Integer.toString(id)).build();
+        }
+
+        public Uri repliesUri(int id) {
+            return objectsUri.buildUpon()
+                    .appendPath(Integer.toString(id))
+                    .appendPath("replies")
+                    .build();
+        }
+    }
 
     public static final String ACTION_NEW_FEED_ENTRY = "eu.e43.impeller.content.NEW_FEED_ENTRY";
 
@@ -48,14 +100,15 @@ public class PumpContentProvider extends ContentProvider {
     private static final Map<String, String> ms_feedProjection
             = new HashMap<String, String>();
 
-    private SQLiteDatabase m_database;
+    private PumpDatabaseManager m_mgr;
 
     /* URIs */
     private static final int OBJECTS    = 1;
     private static final int OBJECT     = 2;
-    private static final int ACTIVITIES = 3;
-    private static final int ACTIVITY   = 4;
-    private static final int FEED       = 5;
+    private static final int REPLIES    = 3;
+    private static final int ACTIVITIES = 4;
+    private static final int ACTIVITY   = 5;
+    private static final int FEED       = 6;
 
     private static void addStateProjections(Map<String, String> proj, String idField) {
         proj.put("replies",     "(SELECT COUNT(*) from objects as _rob WHERE _rob.inReplyTo=" + idField +")");
@@ -64,11 +117,12 @@ public class PumpContentProvider extends ContentProvider {
     }
 
     static {
-        ms_uriMatcher.addURI(AUTHORITY, "object",     OBJECTS);
-        ms_uriMatcher.addURI(AUTHORITY, "object/*",   OBJECT);
-        ms_uriMatcher.addURI(AUTHORITY, "activity",   ACTIVITIES);
-        ms_uriMatcher.addURI(AUTHORITY, "activity/*", ACTIVITY);
-        ms_uriMatcher.addURI(AUTHORITY, "feed/*",     FEED);
+        ms_uriMatcher.addURI(AUTHORITY, "*/object",             OBJECTS);
+        ms_uriMatcher.addURI(AUTHORITY, "*/object/#",           OBJECT);
+        ms_uriMatcher.addURI(AUTHORITY, "*/object/#/replies",   REPLIES);
+        ms_uriMatcher.addURI(AUTHORITY, "*/activity",           ACTIVITIES);
+        ms_uriMatcher.addURI(AUTHORITY, "*/activity/#",         ACTIVITY);
+        ms_uriMatcher.addURI(AUTHORITY, "*/feed",               FEED);
 
         ms_objectProjection.put("_ID", "_ID");
         ms_objectProjection.put("id", "id");
@@ -92,9 +146,9 @@ public class PumpContentProvider extends ContentProvider {
         ms_activityProjection.put("_json",          "activity_object._json");
 
         ms_feedProjection.put("_ID",                "feed_entries._ID");
-        ms_feedProjection.put("id",                 "feed_entries.id");
+        ms_feedProjection.put("id",                 "activity.id");
         ms_feedProjection.put("object.id",          "object.id");
-        ms_feedProjection.put("published",          "feed_entries.published");
+        ms_feedProjection.put("published",          "activity.published");
         ms_feedProjection.put("verb",               "activity.verb");
         ms_feedProjection.put("actor",              "activity.actor");
         ms_feedProjection.put("object",             "activity.object");
@@ -104,108 +158,103 @@ public class PumpContentProvider extends ContentProvider {
         ms_feedProjection.put("objectType",         "object.objectType");
         ms_feedProjection.put("_json",              "activity_object._json");
 
-        addStateProjections(ms_objectProjection, "objects.id");
-        addStateProjections(ms_activityProjection,  "activity.object");
-        addStateProjections(ms_feedProjection,      "activity.object");
+        addStateProjections(ms_objectProjection,    "objects._ID");
+        addStateProjections(ms_activityProjection,  "object._ID");
+        addStateProjections(ms_feedProjection,      "object._ID");
     }
 
     @Override
     public boolean onCreate() {
-        m_database = getContext().openOrCreateDatabase("eu.e43.impeller.content", 0, null);
-        if(m_database == null) return false;
-
-        m_database.beginTransaction();
-        try {
-            int version = m_database.getVersion();
-            Log.i(TAG, "Database opened - version is " + version);
-            switch(version) {
-                case 0:
-                    Log.i(TAG, "Initializing database");
-                    String sql;
-                    try {
-                        sql = Utils.readAll(getContext().getResources().openRawResource(R.raw.init_content));
-
-                    } catch(IOException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    String[] queries = sql.split(";(\\\\s)*[\\n\\r]");
-                    for(int i = 0; i < queries.length; i++) {
-                        m_database.execSQL(queries[i]);
-                    }
-
-                    m_database.setVersion(1);
-                case 1:
-                    Log.i(TAG, "Performing database migration to v2");
-                    m_database.execSQL(
-                        "UPDATE activities SET verb=LOWER(verb)");
-                    m_database.setVersion(2);
-
-                case 2:
-                    Log.i(TAG, "Performing database migration to v3");
-                    m_database.execSQL(
-                        "CREATE INDEX ix_activities_related ON activities (object, verb)");
-                    m_database.execSQL(
-                        "CREATE INDEX ix_objects_inReplyTo ON objects (inReplyTo)");
-                    m_database.setVersion(3);
-                case 3:
-                    break;
-                default:
-                    throw new RuntimeException("Unsupported database version");
-            }
-
-            m_database.setTransactionSuccessful();
-
-            Cursor c = m_database.rawQuery("SELECT name, sql FROM sqlite_master WHERE type='table';", null);
-            while(c.moveToNext()) {
-                Log.i(TAG, "Have table " + c.getString(0) + " with SQL " + c.getString(1));
-            }
-
-            return true;
-        } finally {
-            m_database.endTransaction();
-        }
+        m_mgr = new PumpDatabaseManager(this);
+        return true;
     }
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
+        SQLiteDatabase db = m_mgr.getReadableDatabase();
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
             qb.setStrict(true);
 
+        List<String> uriSegments = uri.getPathSegments();
+        Uris uris;
+
+        // Placate the IDE...
+        String strId = "";
+        int id = 0;
+
+        if(uriSegments.isEmpty()) {
+            throw new IllegalArgumentException("Bad path");
+        } else {
+            Account acct = new Account(uriSegments.get(0), Authenticator.ACCOUNT_TYPE);
+            uris = Uris.get(acct);
+
+            if(uriSegments.size() >= 3) {
+                strId = uriSegments.get(2);
+                id = Integer.parseInt(strId);
+            }
+        }
+
         switch(ms_uriMatcher.match(uri)) {
             case ACTIVITY:
-                qb.appendWhere("activity.id=");
-                qb.appendWhereEscapeString(uri.getLastPathSegment());
+                qb.appendWhere("activity._ID=");
+                qb.appendWhere(strId);
+                qb.appendWhere(" AND ");
             case ACTIVITIES:
+                qb.appendWhere("activity.account=(SELECT _ID FROM accounts WHERE name=");
+                qb.appendWhereEscapeString(uris.account.name);
+                qb.appendWhere(")");
+
                 qb.setTables(
                         "activities AS activity "
-                      + "LEFT OUTER JOIN objects AS activity_object ON (activity.id=activity_object.id) "
-                      + "LEFT OUTER JOIN objects AS object          ON (activity.object=object.id) ");
+                      + "LEFT OUTER JOIN objects AS activity_object ON (activity._ID=activity_object._ID) "
+                      + "LEFT OUTER JOIN objects AS object          ON (activity.object=object._ID) ");
                 qb.setProjectionMap(ms_activityProjection);
-                return qb.query(m_database, projection, selection, selectionArgs, null, null, sortOrder);
+                return qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
 
             case OBJECT:
-                qb.appendWhere("objects.id=");
-                qb.appendWhereEscapeString(uri.getLastPathSegment());
+                qb.appendWhere("objects._ID=");
+                qb.appendWhere(strId);
+                qb.appendWhere(" AND ");
+
             case OBJECTS:
+                qb.appendWhere("objects.account=(SELECT _ID FROM accounts WHERE name=");
+                qb.appendWhereEscapeString(uris.account.name);
+                qb.appendWhere(")");
+
                 qb.setTables("objects");
                 qb.setProjectionMap(ms_objectProjection);
-                return qb.query(m_database, projection, selection, selectionArgs, null, null, sortOrder);
+                Log.i(TAG, "Query " + qb.buildQuery(projection, selection, null, null, sortOrder, null));
+                return qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+
+            case REPLIES:
+                qb.appendWhere("objects.inReplyTo=");
+                qb.appendWhere(strId);
+                qb.appendWhere(" AND ");
+                qb.appendWhere("objects.account=(SELECT _ID FROM accounts WHERE name=");
+                qb.appendWhereEscapeString(uris.account.name);
+                qb.appendWhere(")");
+
+                qb.setTables("objects");
+                qb.setProjectionMap(ms_objectProjection);
+                Log.i(TAG, "Replies " + qb.buildQuery(projection, selection, null, null, sortOrder, null));
+                return qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
 
             case FEED:
+                qb.appendWhere("feed_entries.account=(SELECT _ID FROM accounts WHERE name=");
+                qb.appendWhereEscapeString(uris.account.name);
+                qb.appendWhere(")");
+
                 qb.setTables(
                         "feed_entries "
-                      + "LEFT OUTER JOIN activities AS activity     ON (feed_entries.id=activity.id) "
-                      + "LEFT OUTER JOIN objects AS activity_object ON (feed_entries.id=activity_object.id) "
-                      + "LEFT OUTER JOIN objects AS object          ON (activity.object=object.id) ");
+                      + "LEFT OUTER JOIN activities AS activity        ON (feed_entries.activity=activity._ID) "
+                      + "LEFT OUTER JOIN objects    AS activity_object ON (feed_entries.activity=activity_object._ID) "
+                      + "LEFT OUTER JOIN objects    AS object          ON (activity.object=object._ID) ");
                 qb.setProjectionMap(ms_feedProjection);
-                qb.appendWhere("account=");
-                qb.appendWhereEscapeString(uri.getLastPathSegment());
-
-                return qb.query(m_database, projection, selection, selectionArgs, null, null, sortOrder);
+                Log.i(TAG, "Feed " + qb.buildQuery(projection, selection, null, null, sortOrder, null));
+                return qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
 
             default:
                 throw new IllegalArgumentException("Bad URI");
@@ -226,8 +275,42 @@ public class PumpContentProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
+        SQLiteDatabase db = m_mgr.getWritableDatabase();
         if(!contentValues.containsKey("_json"))
             throw new IllegalArgumentException("Must provide JSON version");
+
+        List<String> uriSegments = uri.getPathSegments();
+        Uris uris;
+
+        // Assign "default" values to placate the ID
+        String strId = null;
+        int id = 0;
+        int accountId = 0;
+
+        if(uriSegments.isEmpty()) {
+            throw new IllegalArgumentException("Bad path");
+        } else {
+            Account acct = new Account(uriSegments.get(0), Authenticator.ACCOUNT_TYPE);
+            uris = Uris.get(acct);
+
+            // Get the account ID
+            Cursor c = db.query("accounts", new String[] {"_ID"},
+                    "name=?", new String[] {acct.name}, null, null, null);
+            try {
+                c.moveToFirst();
+                accountId = c.getInt(0);
+            } catch(CursorIndexOutOfBoundsException ex) {
+                Log.e(TAG, "Missing user account " + acct.name, ex);
+                throw ex;
+            } finally {
+                c.close();
+            }
+
+            if(uriSegments.size() >= 3) {
+                strId = uriSegments.get(2);
+                id = Integer.parseInt(strId);
+            }
+        }
 
         JSONObject obj;
         try {
@@ -237,75 +320,59 @@ public class PumpContentProvider extends ContentProvider {
             throw new IllegalArgumentException("Bad JSON: " + e.getMessage());
         }
         try {
-            m_database.beginTransaction();
+            db.beginTransaction();
+            ContentResolver res = getContext().getContentResolver();
+
             Uri path;
             int match = ms_uriMatcher.match(uri);
             switch(match) {
                 case FEED:
-                    insertFeedEntry(obj, uri.getLastPathSegment());
-
-                    // FALLTHROUGH
                 case ACTIVITIES:
                     if(obj.has("objectType")) {
                         if(!"activity".equals(obj.optString("objectType")))
                             throw new IllegalArgumentException("Attempt to pass non-activity");
                     }
 
-                    String id = ensureActivity(obj);
+                    id = ensureActivity(db, obj, accountId);
 
-                    m_database.setTransactionSuccessful();
-                    path = new Uri.Builder()
-                            .scheme("content")
-                            .authority(AUTHORITY)
-                            .appendPath("activity")
-                            .appendPath(id)
-                            .build();
+                    db.setTransactionSuccessful();
+                    path = uris.activityUri(id);
+                    res.notifyChange(path, null);
+                    res.notifyChange(uris.objectUri(id), null);
 
+                    if(match == FEED) {
+                        insertFeedEntry(db, id, accountId);
+                    }
                     break;
 
                 case OBJECTS:
-                    id = ensureObject(obj);
+                    id = ensureObject(db, obj, accountId);
 
-                    m_database.setTransactionSuccessful();
-                    path = new Uri.Builder()
-                            .scheme("content")
-                            .authority(AUTHORITY)
-                            .appendPath("object")
-                            .appendPath(id)
-                            .build();
+                    db.setTransactionSuccessful();
+                    path = uris.objectUri(id);
+                    res.notifyChange(path, null);
 
                     break;
 
                 default: throw new IllegalArgumentException("Bad URI");
             }
 
-            ContentResolver res = getContext().getContentResolver();
-            res.notifyChange(path, null);
             res.notifyChange(uri, null);
-            res.notifyChange(Uri.parse(ACTIVITY_URL), null);
-            res.notifyChange(Uri.parse(OBJECT_URL), null);
-            res.notifyChange(Uri.parse(FEED_URL), null);
+            res.notifyChange(uris.activitiesUri, null);
+            res.notifyChange(uris.objectsUri, null);
+            res.notifyChange(uris.feedUri, null);
             return path;
         } finally {
-            m_database.endTransaction();
+            db.endTransaction();
         }
     }
 
-    private void insertFeedEntry(JSONObject obj, String account) {
-        try {
-            String id           = obj.getString("id");
-            long published      = Utils.parseDate(obj.optString("published"));
+    private void insertFeedEntry(SQLiteDatabase db, int id, int account) {
+        ContentValues vals = new ContentValues();
+        vals.put("activity", id);
+        vals.put("account",  account);
 
-            ContentValues vals = new ContentValues();
-            vals.put("id",          id);
-            vals.put("published",   published);
-            vals.put("account",     account);
-
-            m_database.insertOrThrow("feed_entries", null, vals);
-        } catch(JSONException e) {
-            Log.e(TAG, "Bad activity", e);
-            throw new IllegalArgumentException("Bad activity");
-        }
+        db.insertOrThrow("feed_entries", null, vals);
     }
 
     private JSONObject mergeJSON(JSONObject oldObj, JSONObject newObj) throws JSONException {
@@ -328,12 +395,12 @@ public class PumpContentProvider extends ContentProvider {
         return oldObj;
     }
 
-    private JSONObject mergeEntry(JSONObject newObj) {
-        Cursor c = m_database.query(
+    private JSONObject mergeEntry(SQLiteDatabase db, JSONObject newObj, int account) {
+        Cursor c = db.query(
                 "objects",
                 new String[] { "_json" },
-                "id=?",
-                new String[] { newObj.optString("id") },
+                "account=? AND id=?",
+                new String[] { Integer.toString(account), newObj.optString("id") },
                 null, null, null, null);
 
         try {
@@ -352,18 +419,29 @@ public class PumpContentProvider extends ContentProvider {
         }
     }
 
-    private void ensureEntry(String table, ContentValues vals) {
+    private int ensureEntry(SQLiteDatabase db, String table, ContentValues vals, int account) {
+        vals.put("account", account);
+        String[] sel = new String[] { Integer.toString(account), vals.getAsString("id") };
+        Cursor c = db.query(table, new String[]{"_ID"}, "account=? AND id=?", sel,
+                null, null, null);
         try {
-            m_database.insertOrThrow(table, null, vals);
-        } catch(SQLiteConstraintException ex) {
-            // Already exists
-            m_database.update(table, vals, "id=?", new String[] { vals.getAsString("id") });
+            if(c.moveToFirst()) {
+                int id = c.getInt(0);
+                sel = new String[] { Integer.toString(id) };
+                db.update(table, vals, "_ID=?", sel);
+
+                return id;
+            } else {
+                return (int) db.insertOrThrow(table, null, vals);
+            }
+        } finally {
+            c.close();
         }
     }
 
-    private String ensureActivity(JSONObject act) {
+    private int ensureActivity(SQLiteDatabase db, JSONObject act, int account) {
         try {
-            act = mergeEntry(act);
+            act = mergeEntry(db, act, account);
 
             String id           = act.getString("id");
             String verb         = act.optString("verb", "post");
@@ -375,26 +453,46 @@ public class PumpContentProvider extends ContentProvider {
                     obj.put("author", act.optJSONObject("actor"));
             }
 
-            String actor        = ensureObject(act.optJSONObject("actor"));
-            String object       = ensureObject(obj);
-            String target       = ensureObject(act.optJSONObject("target"));
+            Integer actor        = ensureObject(db, act.optJSONObject("actor"), account);
+            Integer object       = ensureObject(db, obj, account);
+            Integer target       = ensureObject(db, act.optJSONObject("target"), account);
+
+            act.put("objectType", "activity");
+            if(!act.has("author"))
+                act.put("author", act.opt("actor"));
+
+            int _id = ensureObject(db, act, account);
+
+            db.delete("recipients", "activity=?", new String[] { Integer.toString(_id) });
+            String[] keys = PumpContentProvider.RECIPIENT_KEYS;
+            for(int i = 0; i < keys.length; i++) {
+                JSONArray list = act.optJSONArray(keys[i]);
+                if(list != null) for(int j = 0; j < list.length(); j++) {
+                    JSONObject person = list.getJSONObject(j);
+                    int recipient = ensureObject(db, person, account);
+
+                    ContentValues cv = new ContentValues();
+                    cv.put("recipient", recipient);
+                    cv.put("activity",  _id);
+                    cv.put("type", i);
+                    db.insert("recipients", null, cv);
+                }
+            }
 
             ContentValues vals = new ContentValues();
+            vals.put("_ID",         _id);
             vals.put("id",          id);
+            vals.put("account",     account);
             vals.put("verb",        verb.toLowerCase());
             vals.put("published",   published);
             if(actor  != null) vals.put("actor",       actor);
             if(object != null) vals.put("object",      object);
             if(target != null) vals.put("target",      target);
 
-            ensureEntry("activities", vals);
+            db.insertWithOnConflict("activities", null, vals,
+                    SQLiteDatabase.CONFLICT_REPLACE);
 
-            act.put("objectType", "activity");
-            if(!act.has("author"))
-                act.put("author", act.opt("actor"));
-            ensureObject(act);
-
-            return id;
+            return _id;
         } catch(JSONException e) {
             Log.e(TAG, "Bad activity", e);
             throw new IllegalArgumentException("Bad activity");
@@ -402,13 +500,13 @@ public class PumpContentProvider extends ContentProvider {
     }
 
     /** Ensure the object is in the database */
-    private String ensureObject(JSONObject obj) {
+    Integer ensureObject(SQLiteDatabase db, JSONObject obj, int account) {
         if(obj == null)
             return null;
 
         try {
-            String author       = ensureObject(obj.optJSONObject("author"));
-            String inReplyTo    = ensureObject(obj.optJSONObject("inReplyTo"));
+            Integer author    = ensureObject(db, obj.optJSONObject("author"), account);
+            Integer inReplyTo = ensureObject(db, obj.optJSONObject("inReplyTo"), account);
 
             if(obj.has("replies")) {
                 JSONObject replies = obj.getJSONObject("replies");
@@ -419,12 +517,12 @@ public class PumpContentProvider extends ContentProvider {
                     for(int i = 0; i < items.length(); i++) {
                         JSONObject reply = items.getJSONObject(i);
                         reply.put("inReplyTo", obj);
-                        ensureObject(reply);
+                        ensureObject(db, reply, account);
                     }
                 }
             }
 
-            obj = mergeEntry(obj);
+            obj = mergeEntry(db, obj, account);
 
             String id           = obj.getString("id");
             String objectType   = obj.optString("objectType", "note");
@@ -441,12 +539,62 @@ public class PumpContentProvider extends ContentProvider {
             if(author    != null) vals.put("author",      author);
             if(inReplyTo != null) vals.put("inReplyTo",   inReplyTo);
 
-            ensureEntry("objects", vals);
-
-            return id;
+            int nid = ensureEntry(db, "objects", vals, account);
+            Log.i(TAG, "Insert object " + id + " " + nid + " inReplyTo " + inReplyTo);
+            return nid;
         } catch(JSONException e) {
             Log.e(TAG, "Bad object", e);
             throw new IllegalArgumentException("Bad object");
+        }
+    }
+
+    @Override
+    public Bundle call(String method, String arg, Bundle extras) {
+        if(method.equals("updateAccounts")) {
+            SQLiteDatabase db = m_mgr.getWritableDatabase();
+            AccountManager am = AccountManager.get(getContext());
+            Account[] accts = am.getAccountsByType(Authenticator.ACCOUNT_TYPE);
+            Set<String> accounts = new HashSet<String>();
+            for(Account acct : accts)
+                accounts.add(acct.name);
+
+            Cursor c = db.query("accounts", new String[] {"_ID", "name"},
+                    null, null, null, null, null);
+            try {
+                while(c.moveToNext()) {
+                    if(accounts.contains(c.getString(1))) {
+                        accounts.remove(c.getString(1));
+                    } else {
+                        removeAccount(db, c.getInt(0));
+                    }
+                }
+            } finally {
+                c.close();
+            }
+
+            for(String acct : accounts) {
+                ContentValues cv = new ContentValues();
+                cv.put("name", acct);
+                db.insertOrThrow("accounts", null, cv);
+            }
+        }
+        return null;
+    }
+
+    private void removeAccount(SQLiteDatabase db, int account) {
+        db.beginTransaction();
+        try {
+            String[] args = new String[]{Integer.toString(account)};
+            db.delete("recipients",
+                    "(SELECT account FROM objects WHERE objects._ID=recipients.activity) = ?", args);
+
+            db.delete("feed_entries", "account=?", args);
+            db.delete("activities", "account=?", args);
+            db.delete("objects", "account=?", args);
+            db.delete("accounts", "_ID=?", args);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
         }
     }
 

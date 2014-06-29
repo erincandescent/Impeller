@@ -26,13 +26,15 @@ import eu.e43.impeller.activity.ActivityWithAccount;
 public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final String TAG = "CommentAdapter";
 	private Fragment            m_ctx;
-    private String              m_objectId;
+    private int                 m_objectId;
     private Cursor              m_cursor;
 	
-	public CommentAdapter(Fragment ctx, int loaderId, String objectId) {
+	public CommentAdapter(Fragment ctx, int loaderId, int objectId) {
 		m_ctx       = ctx;
         m_objectId  = objectId;
         m_cursor    = null;
+
+        Log.i(TAG, "Loading comments for " + m_objectId);
 
         LoaderManager lm = m_ctx.getLoaderManager();
         lm.initLoader(loaderId, null, this);
@@ -112,17 +114,20 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        ActivityWithAccount awa = (ActivityWithAccount) m_ctx.getActivity();
+
         return new CursorLoader(m_ctx.getActivity(),
-                Uri.parse(PumpContentProvider.OBJECT_URL),
+                awa.getContentUris().repliesUri(m_objectId),
                 new String[] { "_json", "replies", "likes", "shares" },
-                "inReplyTo=?",
-                new String[] { m_objectId },
-                "published ASC");
+                null, null, "published ASC");
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        data.setNotificationUri(m_ctx.getActivity().getContentResolver(), Uri.parse(PumpContentProvider.OBJECT_URL));
+        ActivityWithAccount awa = (ActivityWithAccount) m_ctx.getActivity();
+
+        data.setNotificationUri(m_ctx.getActivity().getContentResolver(),
+                awa.getContentUris().objectsUri);
         m_cursor = data;
         notifyDataSetChanged();
     }

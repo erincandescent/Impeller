@@ -97,7 +97,7 @@ public class CheckinActivity extends ActivityWithAccount {
             } else {
                 ContentValues cv = new ContentValues();
                 cv.put("_json", obj.toString());
-                getContentResolver().insert(Uri.parse(PumpContentProvider.ACTIVITY_URL), cv);
+                getContentResolver().insert(getContentUris().activitiesUri, cv);
                 getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
 
                 finish();

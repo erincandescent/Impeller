@@ -178,7 +178,7 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
                 cv.put("_json", act.toString());
 
                 MainActivity activity = getMainActivity();
-                activity.getContentResolver().insert(Uri.parse(PumpContentProvider.ACTIVITY_URL), cv);
+                activity.getContentResolver().insert(activity.getContentUris().activitiesUri, cv);
 
                 activity.getContentResolver().requestSync(
                         activity.getAccount(), PumpContentProvider.AUTHORITY, new Bundle());
@@ -193,7 +193,7 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
     // ================
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Uri uri = Uri.parse(PumpContentProvider.ACTIVITY_URL);
+        Uri uri = getMainActivity().getContentUris().activitiesUri;
 
         return new CursorLoader(getActivity(), uri,
            new String[] { "_ID", "object.id", "_json", "replies", "likes", "shares" },

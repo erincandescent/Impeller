@@ -243,7 +243,7 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
 
             JSONObject post = null;
             try {
-                post = Utils.findPost(this, m_inReplyTo);
+                post = Utils.findPost(this, getContentUris(), m_inReplyTo);
             } catch(JSONException e) {
                 Log.e(TAG, "Fidning post for object", e);
             }
@@ -324,7 +324,7 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         if(id == LOADER_PEOPLE) {
-            Uri uri = Uri.parse(PumpContentProvider.OBJECT_URL);
+            Uri uri = getContentUris().objectsUri;
 
             return new CursorLoader(this, uri,
                     new String[] { "_ID", "_json" },
@@ -797,7 +797,7 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
 			if(obj != null) {
                 ContentValues cv = new ContentValues();
                 cv.put("_json", obj.toString());
-                getContentResolver().insert(Uri.parse(PumpContentProvider.ACTIVITY_URL), cv);
+                getContentResolver().insert(getContentUris().activitiesUri, cv);
                 getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
 
 				setResult(RESULT_OK);

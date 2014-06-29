@@ -80,8 +80,9 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
 
     private ResultData updateObject(Context context, Account acct, Uri uri) {
         Log.i(TAG, "updateObject: Starting update for object " + uri);
+        PumpContentProvider.Uris uris = PumpContentProvider.Uris.get(acct);
         ContentResolver res = context.getContentResolver();
-        Cursor c = res.query(Uri.parse(PumpContentProvider.OBJECT_URL),
+        Cursor c = res.query(uris.objectsUri,
                 new String[] { "_json" },
                 "id=?", new String[] { uri.toString() },
                 null);
@@ -112,7 +113,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
 
             ContentValues vals = new ContentValues();
             vals.put("_json", objJSON);
-            res.insert(Uri.parse(PumpContentProvider.OBJECT_URL), vals);
+            res.insert(uris.objectsUri, vals);
 
             Log.i(TAG, "updateObject: Finished for object " + uri);
 
@@ -132,8 +133,9 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
 
     private ResultData updateReplies(Context context, Account acct, Uri uri) {
         Log.i(TAG, "updateReplies: Starting update for object " + uri);
+        PumpContentProvider.Uris uris = PumpContentProvider.Uris.get(acct);
         ContentResolver res = context.getContentResolver();
-        Cursor c = res.query(Uri.parse(PumpContentProvider.OBJECT_URL),
+        Cursor c = res.query(uris.objectsUri,
                 new String[] { "_json" },
                 "id=?", new String[] { uri.toString() },
                 null);
@@ -179,12 +181,12 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
                 JSONObject reply = items.getJSONObject(i);
                 reply.put("inReplyTo", obj);
                 operations.add(
-                        ContentProviderOperation.newInsert(Uri.parse(PumpContentProvider.OBJECT_URL))
+                        ContentProviderOperation.newInsert(uris.objectsUri)
                         .withValue("_json", reply.toString())
                         .build());
             }
             res.applyBatch(PumpContentProvider.AUTHORITY, operations);
-            Log.i(TAG, "updateReplies: Finished for object " + uri);
+            Log.i(TAG, "updateReplies: Finished for object " + uri + " with " + items.length());
 
             return new ResultData(Activity.RESULT_OK);
         } catch(Exception ex) {
@@ -198,8 +200,9 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
 
     private ResultData fetchUserFeed(Context context, Account acct, Uri uri) {
         Log.i(TAG, "fetchUserFeed: Fetch feed for user " + uri);
+        PumpContentProvider.Uris uris = PumpContentProvider.Uris.get(acct);
         ContentResolver res = context.getContentResolver();
-        Cursor c = res.query(Uri.parse(PumpContentProvider.OBJECT_URL),
+        Cursor c = res.query(uris.objectsUri,
                 new String[] { "_json" },
                 "id=?", new String[] { uri.toString() },
                 null);
@@ -243,7 +246,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
             for(int i = 0; i < items.length(); i++) {
                 JSONObject activity = items.getJSONObject(i);
                 operations.add(
-                        ContentProviderOperation.newInsert(Uri.parse(PumpContentProvider.ACTIVITY_URL))
+                        ContentProviderOperation.newInsert(uris.activitiesUri)
                                 .withValue("_json", activity.toString())
                                 .build());
             }

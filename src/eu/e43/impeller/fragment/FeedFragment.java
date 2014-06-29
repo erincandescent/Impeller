@@ -158,10 +158,7 @@ public class FeedFragment
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        Uri uri =
-                Uri.parse(PumpContentProvider.FEED_URL).buildUpon()
-                        .appendPath(m_account.name)
-                        .build();
+        Uri uri = getMainActivity().getContentUris().feedUri;
 
         switch(m_feedId) {
             case MAJOR_FEED:

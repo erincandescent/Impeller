@@ -287,9 +287,12 @@ public class Utils {
         return stub;
     }
 
-    public static JSONObject findPost(Context ctx, JSONObject object) throws JSONException {
+    public static JSONObject findPost(
+            Context ctx,
+            PumpContentProvider.Uris uris,
+            JSONObject object) throws JSONException {
         Cursor res = ctx.getContentResolver().query(
-                Uri.parse(PumpContentProvider.ACTIVITY_URL),
+                uris.activitiesUri,
                 new String[] { "_json" },
                 "actor=? AND verb='post' AND object.id=?",
                 new String[] {

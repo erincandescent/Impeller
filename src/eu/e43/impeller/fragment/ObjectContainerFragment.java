@@ -30,6 +30,7 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
     public static final String PARAM_ID   = "eu.e43.impeller.ObjectContainerFragment.ID";
     public static final String PARAM_MODE = "eu.e43.impeller.ObjectContainerFragment.MODE";
     String              m_id;
+    int                 m_intId;
     JSONObject          m_object;
     ObjectFragment      m_child;
     MainActivity.Mode   m_mode;
@@ -69,6 +70,7 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
         if(savedInstanceState != null) {
             try {
                 m_object = new JSONObject(savedInstanceState.getString("object"));
+                m_intId  = savedInstanceState.getInt("intId");
             } catch (JSONException e) {
                 // We encoded the damn object!
                 throw new RuntimeException(e);
@@ -103,7 +105,7 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
-                m_child = ObjectFragment.prepare(m_child, m_id);
+                m_child = ObjectFragment.prepare(m_child, m_id, m_intId);
                 m_child.setInitialSavedState((SavedState) savedInstanceState.getParcelable("child"));
                 getChildFragmentManager().beginTransaction()
                         .add(R.id.objectDisplayFragment, m_child)
@@ -123,6 +125,7 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
+        outState.putInt("intId", m_intId);
         if(m_object != null) {
             outState.putString("object", m_object.toString());
         }
@@ -159,7 +162,7 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
             }
 
             FragmentManager mgr = getChildFragmentManager();
-            m_child = ObjectFragment.prepare(frag, m_id);
+            m_child = ObjectFragment.prepare(frag, m_id, m_intId);
 
             mgr.beginTransaction()
                     .add(R.id.objectDisplayFragment, m_child)
@@ -202,14 +205,11 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
     // ================
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Uri uri = Uri.parse(PumpContentProvider.OBJECT_URL)
-                .buildUpon()
-                .appendPath(m_id)
-                .build();
+        Uri uri = getMainActivity().getContentUris().objectsUri;
 
         return new CursorLoader(getActivity(), uri,
-                new String[] { "_json" },
-                null, null, null);
+                new String[] { "_ID", "_json" },
+                "id=?",new String[] {m_id}, null);
     }
 
     @Override
@@ -226,7 +226,8 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
             }
         } else {
             data.moveToFirst();
-            String objJSON = data.getString(0);
+            m_intId = data.getInt(0);
+            String objJSON = data.getString(1);
             JSONObject obj = null;
             try {
                 obj = new JSONObject(objJSON);

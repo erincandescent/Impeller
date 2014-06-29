@@ -10,12 +10,15 @@ import org.json.JSONObject;
  */
 public abstract class ObjectFragment extends Fragment {
     public static final String PARAM_ID     = "eu.e43.impeller.ObjectFragment.ID";
+    public static final String PARAM_INT_ID = "eu.e43.impeller.ObjectFragment.INT_ID";
 
     protected String m_id;
+    protected int    m_intId;
 
-    public static ObjectFragment prepare(ObjectFragment frag, String id) {
+    public static ObjectFragment prepare(ObjectFragment frag, String id, int intId) {
         Bundle args = new Bundle();
         args.putString(PARAM_ID, id);
+        args.putInt(PARAM_INT_ID, intId);
         frag.setArguments(args);
         return frag;
     }
@@ -28,7 +31,8 @@ public abstract class ObjectFragment extends Fragment {
         if(args == null)
             throw new RuntimeException("Missing parameters");
 
-        m_id = args.getString(PARAM_ID);
+        m_id    = args.getString(PARAM_ID);
+        m_intId = args.getInt(PARAM_INT_ID);
     }
 
     public JSONObject getObject()

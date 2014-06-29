@@ -178,22 +178,29 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
         </activity>
-
         <activity
             android:name=".activity.AccountPickerActivity"
             android:label="@string/title_activity_login"
-            android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge"/>
+            android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge" />
 
         <activity
             android:name=".activity.ShareActivity"
             android:label="@string/title_activity_share"
             android:parentActivityName=".activity.MainActivity"
-            android:theme="@style/Theme.Base.AppCompat.Dialog.Light.FixedSize">
-
+            android:theme="@style/Theme.Base.AppCompat.Dialog.Light.FixedSize" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
         </activity>
+
+        <receiver
+            android:name=".content.AccountNotificationReceiver"
+            android:enabled="true"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.accounts.LOGIN_ACCOUNTS_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

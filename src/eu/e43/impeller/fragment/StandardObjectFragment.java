@@ -226,7 +226,7 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
             }
         }
 
-        m_commentAdapter = new CommentAdapter(this, 0, m_id);
+        m_commentAdapter = new CommentAdapter(this, 0, m_intId);
         lv.setAdapter(m_commentAdapter);
         lv.setOnItemClickListener(this);
         registerForContextMenu(lv);
@@ -604,7 +604,7 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
             ContentValues cv = new ContentValues();
             cv.put("_json", act.toString());
 
-            m_appContext.getContentResolver().insert(Uri.parse(PumpContentProvider.ACTIVITY_URL), cv);
+            m_appContext.getContentResolver().insert(getMainActivity().getContentUris().activitiesUri, cv);
 		}
 	}
 
@@ -647,7 +647,7 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
             if(obj != null) {
                 ContentValues cv = new ContentValues();
                 cv.put("_json", obj.toString());
-                m_appContext.getContentResolver().insert(Uri.parse(PumpContentProvider.OBJECT_URL), cv);
+                m_appContext.getContentResolver().insert(getMainActivity().getContentUris().objectsUri, cv);
 
                 m_appContext.getContentResolver().requestSync(
                     m_account, PumpContentProvider.AUTHORITY, new Bundle());

@@ -14,6 +14,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
+import eu.e43.impeller.content.PumpContentProvider;
 import eu.e43.impeller.uikit.ImageLoader;
 import eu.e43.impeller.account.Authenticator;
 
@@ -173,6 +174,14 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
         if (cache != null) {
             cache.flush();
         }
+    }
+
+    private PumpContentProvider.Uris m_cachedUris;
+    public PumpContentProvider.Uris getContentUris() {
+        if(m_cachedUris == null || m_cachedUris.account != m_account) {
+            m_cachedUris = PumpContentProvider.Uris.get(m_account);
+        }
+        return m_cachedUris;
     }
 
 }
