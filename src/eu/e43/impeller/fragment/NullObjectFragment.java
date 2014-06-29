@@ -29,7 +29,7 @@ public class NullObjectFragment extends ObjectFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(fragment_object_null, container);
+        return inflater.inflate(fragment_object_null, null);
     }
 
 
