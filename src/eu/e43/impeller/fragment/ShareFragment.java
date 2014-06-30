@@ -19,6 +19,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.R;
 import eu.e43.impeller.activity.ActivityWithAccount;
 import eu.e43.impeller.activity.ShareActivity;
@@ -93,7 +94,7 @@ class ShareFragment extends DialogFragment implements AdapterView.OnItemClickLis
         shareIntent.setClass(getActivity(), ShareActivity.class);
 
         ActivityWithAccount awa = (ActivityWithAccount) getActivity();
-        shareIntent.putExtra("account", awa.getAccount());
+        shareIntent.putExtra(Constants.EXTRA_ACCOUNT, awa.getAccount());
 
         Intent[] specifics = new Intent[] {
                 shareIntent

@@ -229,7 +229,7 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
             //m_title.setText("");
 
             try {
-                m_inReplyTo = new JSONObject(getIntent().getStringExtra("inReplyTo"));
+                m_inReplyTo = new JSONObject(getIntent().getStringExtra(Constants.EXTRA_IN_REPLY_TO));
             } catch (JSONException e) {
                 Log.e(TAG, "Error parsing inReplyTo", e);
                 setResult(RESULT_CANCELED);

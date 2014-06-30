@@ -1,8 +1,8 @@
 package eu.e43.impeller.fragment;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
-import android.content.Context;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SyncStatusObserver;
@@ -24,6 +24,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 
 import org.json.JSONObject;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.activity.CheckinActivity;
 import eu.e43.impeller.uikit.ActivityAdapter;
 import eu.e43.impeller.R;
@@ -44,7 +45,7 @@ public class FeedFragment
     boolean             m_jumpToSelection   = false;
     int                 m_selection         = -1;
     Object              m_statusHandle      = null;
-    FeedID              m_feedId            = null;
+    Constants.FeedID m_feedId            = null;
     SwipeRefreshLayout  m_swipeRefreshView  = null;
 
     // Activity IDs
@@ -61,9 +62,9 @@ public class FeedFragment
         setHasOptionsMenu(true);
 
         if(getArguments() != null && getArguments().containsKey("feed")) {
-            m_feedId = (FeedID) getArguments().getSerializable("feed");
+            m_feedId = (Constants.FeedID) getArguments().getSerializable("feed");
         } else {
-            m_feedId = FeedID.MAJOR_FEED;
+            m_feedId = Constants.FeedID.MAJOR_FEED;
         }
     }
 
@@ -106,7 +107,7 @@ public class FeedFragment
         return root;
     }
 
-    public FeedID getFeedId() {
+    public Constants.FeedID getFeedId() {
         return m_feedId;
     }
 
@@ -158,23 +159,30 @@ public class FeedFragment
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        Uri uri = getMainActivity().getContentUris().feedUri;
+        MainActivity context = getMainActivity();
+        Uri uri = context.getContentUris().feedUri;
 
         switch(m_feedId) {
             case MAJOR_FEED:
-                return new CursorLoader(getActivity(), uri,
+                return new CursorLoader(context, uri,
                         new String[] { "_ID", "object.id", "_json", "replies", "likes", "shares" },
                         "verb='share' OR (verb='post' AND object.objectType<>'comment')", null,
                         "feed_entries._ID DESC");
 
             case MINOR_FEED:
-                return new CursorLoader(getActivity(), uri,
+                return new CursorLoader(context, uri,
                         new String[] { "_ID", "object.id", "_json", "replies", "likes", "shares" },
                         "NOT (verb='share' OR (verb='post' AND object.objectType<>'comment'))", null,
                         "feed_entries._ID DESC");
 
             case DIRECT_FEED:
-                throw new RuntimeException("Not yet implemented");
+                AccountManager am = AccountManager.get(context);
+                String id = am.getUserData(m_account, "id");
+                return new CursorLoader(context, uri,
+                        new String[] { "_ID", "object.id", "_json", "replies", "likes", "shares" },
+                        "(SELECT COUNT(*) FROM recipients WHERE recipients.activity=activity._ID " +
+                        "AND recipients.recipient=(SELECT _ID FROM objects WHERE id=?))",
+                        new String[] { id }, "feed_entries._ID DESC");
 
             default:
                 throw new RuntimeException("Bad ID");
@@ -188,6 +196,16 @@ public class FeedFragment
                     getActivity().getContentResolver(),
                     ((CursorLoader) objectLoader).getUri());
         }
+
+        if(m_feedId == Constants.FeedID.DIRECT_FEED) {
+            if(o.moveToFirst()) {
+                Intent notice = new Intent(Constants.ACTION_DIRECT_INBOX_OPENED);
+                notice.putExtra(Constants.EXTRA_ACCOUNT, m_account);
+                notice.putExtra(Constants.EXTRA_FEED_ENTRY_ID, o.getInt(0));
+                getActivity().sendBroadcast(notice);
+            }
+        }
+
         m_adapter.updateCursor(o);
 
         if(m_jumpToSelection) {
@@ -213,13 +231,13 @@ public class FeedFragment
         switch (item.getItemId()) {
             case R.id.action_post:
                 Intent postIntent = new Intent(getActivity(), PostActivity.class);
-                postIntent.putExtra("account", m_account);
+                postIntent.putExtra(Constants.EXTRA_ACCOUNT, m_account);
                 startActivity(postIntent);
                 return true;
 
             case R.id.action_checkin:
                 Intent checkinIntent = new Intent(getActivity(), CheckinActivity.class);
-                checkinIntent.putExtra("account", m_account);
+                checkinIntent.putExtra(Constants.EXTRA_ACCOUNT, m_account);
                 startActivity(checkinIntent);
                 return true;
 
@@ -243,7 +261,7 @@ public class FeedFragment
                     Intent postIntent = new Intent(getActivity(), PostActivity.class);
                     postIntent.setType("image/*");
                     postIntent.putExtra(Intent.EXTRA_STREAM, selectedImage);
-                    postIntent.putExtra("account", m_account);
+                    postIntent.putExtra(Constants.EXTRA_ACCOUNT, m_account);
                     startActivity(postIntent);
                 }
                 return;
@@ -281,20 +299,4 @@ public class FeedFragment
         return m_account;
     }
 
-    /** Tabs */
-    public enum FeedID {
-        MAJOR_FEED(R.string.feed_major),
-        MINOR_FEED(R.string.feed_minor),
-        DIRECT_FEED(R.string.feed_direct);
-
-        private int nameString = 0;
-
-        private FeedID(int ns) {
-            nameString = ns;
-        }
-
-        public int getNameString() {
-            return nameString;
-        }
-    }
 }

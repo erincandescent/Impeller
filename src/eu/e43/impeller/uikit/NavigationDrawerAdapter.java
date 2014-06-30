@@ -3,22 +3,18 @@ package eu.e43.impeller.uikit;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
-import android.app.Activity;
 import android.database.DataSetObserver;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckedTextView;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import org.apache.http.auth.AUTH;
-
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.R;
 import eu.e43.impeller.account.Authenticator;
 import eu.e43.impeller.activity.ActivityWithAccount;
-import eu.e43.impeller.fragment.FeedFragment;
 
 /**
  * Created by oshepherd on 28/02/14.
@@ -27,9 +23,10 @@ public class NavigationDrawerAdapter extends BaseAdapter implements OnAccountsUp
     ActivityWithAccount     m_activity;
     AccountManager          m_accountManager;
     int                     m_observerCount = 0;
-    FeedFragment.FeedID[]   m_feeds = {
-            FeedFragment.FeedID.MAJOR_FEED,
-            FeedFragment.FeedID.MINOR_FEED
+    Constants.FeedID[]   m_feeds = {
+            Constants.FeedID.MAJOR_FEED,
+            Constants.FeedID.MINOR_FEED,
+            Constants.FeedID.DIRECT_FEED,
     };
     Account[]               m_accounts = null;
 
@@ -120,7 +117,7 @@ public class NavigationDrawerAdapter extends BaseAdapter implements OnAccountsUp
                 if (view == null) {
                     view = vi.inflate(android.R.layout.simple_list_item_1, null);
                 }
-                ((TextView)view).setText(((FeedFragment.FeedID)getItem(i)).getNameString());
+                ((TextView)view).setText(((Constants.FeedID)getItem(i)).getNameString());
         }
         return view;
     }

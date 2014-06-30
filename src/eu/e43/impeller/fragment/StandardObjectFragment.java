@@ -25,7 +25,6 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,13 +35,11 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.support.v7.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 
@@ -236,7 +233,7 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
         getActivity().sendOrderedBroadcast(new Intent(
                 ContentUpdateReceiver.UPDATE_REPLIES, Uri.parse(m_id),
                 getActivity(), ContentUpdateReceiver.class
-        ).putExtra("account", getMainActivity().getAccount()), null);
+        ).putExtra(Constants.EXTRA_ACCOUNT, getMainActivity().getAccount()), null);
 
         return lv;
     }
@@ -301,8 +298,8 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
                     postIntent.setAction(PostActivity.ACTION_REPLY);
                     postIntent.setType("image/*");
                     postIntent.putExtra(Intent.EXTRA_STREAM, selectedImage);
-                    postIntent.putExtra("account", m_account);
-                    postIntent.putExtra("inReplyTo", getObject().toString());
+                    postIntent.putExtra(Constants.EXTRA_ACCOUNT, m_account);
+                    postIntent.putExtra(Constants.EXTRA_IN_REPLY_TO, getObject().toString());
                     startActivity(postIntent);
                 }
                 return;
@@ -363,8 +360,7 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
 			//Intent authorIntent = new Intent(
             //        StandardObjectFragment.ACTION,  Uri.parse(author.optString("id")),
             //        getActivity(), StandardObjectFragment.class);
-			//authorIntent.putExtra("account", m_account);
-			//authorIntent.putExtra("proxyURL", Utils.getProxyUrl(author));
+			//authorIntent.putExtra(Constants.EXTRA_ACCOUNT, m_account);
 			//startActivity(authorIntent);
 			return true;
 		
@@ -490,8 +486,8 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
             case R.id.action_replyNote: {
                 Intent noteIntent = new Intent(getActivity(), PostActivity.class);
                 noteIntent.setAction(PostActivity.ACTION_REPLY);
-                noteIntent.putExtra("account", m_account);
-                noteIntent.putExtra("inReplyTo", getObject().toString());
+                noteIntent.putExtra(Constants.EXTRA_ACCOUNT, m_account);
+                noteIntent.putExtra(Constants.EXTRA_IN_REPLY_TO, getObject().toString());
                 startActivity(noteIntent);
                 return true;
             }

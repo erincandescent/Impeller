@@ -14,7 +14,6 @@ import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -24,8 +23,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.Utils;
-import eu.e43.impeller.account.Authenticator;
 import eu.e43.impeller.account.OAuth;
 
 /**
@@ -109,9 +108,9 @@ public class FeedSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 ContentProviderResult[] results = res.applyBatch(PumpContentProvider.AUTHORITY, actions);
                 for(ContentProviderResult result : results) {
-                    Intent noticeIntent = new Intent(PumpContentProvider.ACTION_NEW_FEED_ENTRY);
-                    noticeIntent.putExtra("account", account);
-                    noticeIntent.putExtra("contentUri", result.uri);
+                    Intent noticeIntent = new Intent(Constants.ACTION_NEW_FEED_ENTRY);
+                    noticeIntent.putExtra(Constants.EXTRA_ACCOUNT, account);
+                    noticeIntent.putExtra(Constants.EXTRA_CONTENT_URI, result.uri);
 
                     Log.i(TAG, "Sending notification " + noticeIntent);
                     getContext().sendBroadcast(noticeIntent);

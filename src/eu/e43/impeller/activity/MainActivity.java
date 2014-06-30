@@ -39,10 +39,10 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ViewFlipper;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.account.Authenticator;
 import eu.e43.impeller.fragment.FeedFragment;
 import eu.e43.impeller.fragment.ObjectContainerFragment;
-import eu.e43.impeller.fragment.StandardObjectFragment;
 import eu.e43.impeller.R;
 import eu.e43.impeller.fragment.SplashFragment;
 import eu.e43.impeller.content.PumpContentProvider;
@@ -72,18 +72,6 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
 
     /** Pointer to the active object fragment (if any) */
     private ObjectContainerFragment m_objectFragment = null;
-
-    /** Display mode */
-    public enum Mode {
-        /** Showing feed */
-        FEED,
-
-        /** Showing an object from the feed */
-        FEED_OBJECT,
-
-        /** Showing an object */
-        OBJECT
-    };
 
     Mode m_displayMode = Mode.FEED;
 
@@ -226,19 +214,20 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        Log.i(TAG, "New intent " + intent);
 
-        if(intent.hasExtra("account")) {
-            haveGotAccount((Account) intent.getParcelableExtra("account"));
+        if(intent.hasExtra(Constants.EXTRA_ACCOUNT)) {
+            haveGotAccount((Account) intent.getParcelableExtra(Constants.EXTRA_ACCOUNT));
         }
 
         String action = intent.getAction();
         if(Intent.ACTION_VIEW.equals(action)) {
             Uri uri = intent.getData();
-            if(uri == null)
+            if (uri == null)
                 return;
 
             Uri id = null;
-            if(uri.getScheme().equals("content") && uri.getHost().equals("eu.e43.impeller.content")) {
+            if (uri.getScheme().equals("content") && uri.getHost().equals("eu.e43.impeller.content")) {
                 id = Uri.parse(uri.getLastPathSegment());
             } else {
                 id = uri;
@@ -246,6 +235,8 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
 
             setIntent(intent);
             showObjectInMode(Mode.OBJECT, id);
+        } else if(Constants.ACTION_SHOW_FEED.equals(action)) {
+            showFeed((Constants.FeedID) intent.getSerializableExtra(Constants.EXTRA_FEED_ID));
         } else {
             Log.d(TAG, "Unknown new intent " + intent);
         }
@@ -389,25 +380,29 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
             m_drawerLayout.closeDrawer(m_navigationDrawer);
         } else if(l > 0) {
             // Feed
-            FeedFragment.FeedID id = (FeedFragment.FeedID) m_navigationDrawer.getItemAtPosition(i);
-            FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
-
-            if(m_feedFragment.getFeedId() != id) {
-                FeedFragment ff = new FeedFragment();
-                Bundle args = new Bundle();
-                args.putSerializable("feed", id);
-                ff.setArguments(args);
-                trans.replace(R.id.feed_fragment, ff);
-            }
-
-            if(m_objectFragment != null) {
-                trans.remove(m_objectFragment);
-            }
-
-            setDisplayMode(Mode.FEED);
-            trans.commit();
-            m_drawerLayout.closeDrawer(m_navigationDrawer);
+            Constants.FeedID id = (Constants.FeedID) m_navigationDrawer.getItemAtPosition(i);
+            showFeed(id);
         } // else separator
+    }
+
+    private void showFeed(Constants.FeedID id) {
+        FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
+
+        if(m_feedFragment.getFeedId() != id) {
+            FeedFragment ff = new FeedFragment();
+            Bundle args = new Bundle();
+            args.putSerializable("feed", id);
+            ff.setArguments(args);
+            trans.replace(R.id.feed_fragment, ff);
+        }
+
+        if(m_objectFragment != null) {
+            trans.remove(m_objectFragment);
+        }
+
+        setDisplayMode(Mode.FEED);
+        trans.commit();
+        m_drawerLayout.closeDrawer(m_navigationDrawer);
     }
 
     // Overlays
@@ -483,5 +478,17 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if(hasFocus) setUiFlags();
+    }
+
+    /** Display mode */
+    public enum Mode {
+        /** Showing feed */
+        FEED,
+
+        /** Showing an object from the feed */
+        FEED_OBJECT,
+
+        /** Showing an object */
+        OBJECT
     }
 }

@@ -22,6 +22,7 @@ import android.widget.ToggleButton;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.ImpellerApplication;
 import eu.e43.impeller.PostTask;
 import eu.e43.impeller.R;
@@ -54,7 +55,7 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
         getActivity().sendOrderedBroadcast(new Intent(
                 ContentUpdateReceiver.FETCH_USER_FEED, Uri.parse(m_id),
                 getActivity(), ContentUpdateReceiver.class
-        ).putExtra("account", getMainActivity().getAccount()), null,
+        ).putExtra(Constants.EXTRA_ACCOUNT, getMainActivity().getAccount()), null,
                 null, null, Activity.RESULT_OK, null, null);
     }
 

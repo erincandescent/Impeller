@@ -57,9 +57,8 @@
             android:exported="false"
             android:process=":sync" >
             <intent-filter>
-                <action android:name="eu.e43.impeller.content.NEW_FEED_ENTRY" />
-
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="eu.e43.impeller.action.NEW_FEED_ENTRY" />
+                <action android:name="eu.e43.impeller.action.DIRECT_INBOX_DISPLAYED" />
             </intent-filter>
         </receiver>
 
@@ -116,23 +115,32 @@
             android:name=".activity.MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask" >
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
 
                 <data
                     android:host="eu.e43.impeller.content"
                     android:scheme="content" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="eu.e43.impeller.action.SHOW_FEED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
+
         <activity
             android:name=".account.LoginActivity"
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateVisible" />
+
         <activity
             android:name=".activity.PostActivity"
             android:label="@string/title_activity_post"

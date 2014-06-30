@@ -89,8 +89,6 @@ public class PumpContentProvider extends ContentProvider {
         }
     }
 
-    public static final String ACTION_NEW_FEED_ENTRY = "eu.e43.impeller.content.NEW_FEED_ENTRY";
-
     private static final String TAG = "PumpContentProvider";
     private static final UriMatcher ms_uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     private static final Map<String,String>  ms_objectProjection

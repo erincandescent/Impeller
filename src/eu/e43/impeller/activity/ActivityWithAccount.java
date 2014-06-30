@@ -14,6 +14,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.content.PumpContentProvider;
 import eu.e43.impeller.uikit.ImageLoader;
 import eu.e43.impeller.account.Authenticator;
@@ -55,8 +56,8 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
         Intent startIntent = getIntent();
         if(savedInstanceState != null && savedInstanceState.containsKey("account")) {
             m_account = savedInstanceState.getParcelable("account");
-        } else if(startIntent.hasExtra("account")) {
-            Account a = (Account) startIntent.getParcelableExtra("account");
+        } else if(startIntent.hasExtra(Constants.EXTRA_ACCOUNT)) {
+            Account a = (Account) startIntent.getParcelableExtra(Constants.EXTRA_ACCOUNT);
             if(a.type.equals(Authenticator.ACCOUNT_TYPE)) {
                 m_account = a;
             }

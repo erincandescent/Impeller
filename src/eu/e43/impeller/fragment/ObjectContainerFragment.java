@@ -1,9 +1,9 @@
 package eu.e43.impeller.fragment;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.R;
 import eu.e43.impeller.activity.MainActivity;
 import eu.e43.impeller.content.ContentUpdateReceiver;
-import eu.e43.impeller.content.PumpContentProvider;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import android.widget.ViewSwitcher;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -33,7 +32,7 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
     int                 m_intId;
     JSONObject          m_object;
     ObjectFragment      m_child;
-    MainActivity.Mode   m_mode;
+    MainActivity.Mode m_mode;
 
     public static ObjectContainerFragment newInstance(String id, MainActivity.Mode mode) {
         ObjectContainerFragment fragment = new ObjectContainerFragment();
@@ -180,7 +179,7 @@ public class ObjectContainerFragment extends Fragment implements LoaderManager.L
         getActivity().sendOrderedBroadcast(new Intent(
                 ContentUpdateReceiver.UPDATE_OBJECT, Uri.parse(m_id),
                 getActivity(), ContentUpdateReceiver.class
-        ).putExtra("account", getMainActivity().getAccount()), null,
+        ).putExtra(Constants.EXTRA_ACCOUNT, getMainActivity().getAccount()), null,
                 null/*updateRX*/, null, Activity.RESULT_OK, null, null);
     }
 

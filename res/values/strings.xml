@@ -113,5 +113,6 @@
     <string name="action_share">Share</string>
     <string name="title_activity_share">Share</string>
     <string name="hello_world">Hello world!</string>
+    <string name="message_group_notification_header">%d new messages</string>
 
 </resources>

@@ -26,7 +26,7 @@ public class PumpDatabaseManager extends SQLiteOpenHelper {
     private static final String TAG = "PumpDatabaseManager";
 
     PumpContentProvider m_context;
-    static final int CURRENT_VERSION = 5;
+    static final int CURRENT_VERSION = 6;
 
     protected PumpDatabaseManager(PumpContentProvider context) {
         super(context.getContext(), "eu.e43.impeller.content", null, CURRENT_VERSION);
@@ -122,6 +122,10 @@ public class PumpDatabaseManager extends SQLiteOpenHelper {
                 } finally {
                     c.close();
                 }
+
+            case 5:
+                runQueryFile(db, R.raw.migrate_v6);
+
                 break;
             default:
                 throw new RuntimeException("Request to upgrade from " + oldVersion);

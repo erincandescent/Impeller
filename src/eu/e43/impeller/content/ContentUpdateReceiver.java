@@ -23,6 +23,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
+import eu.e43.impeller.Constants;
 import eu.e43.impeller.Utils;
 import eu.e43.impeller.account.OAuth;
 
@@ -70,11 +71,11 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
 
     private ResultData handleIntent(Context context, final Intent intent) {
         if(UPDATE_OBJECT.equals(intent.getAction())) {
-            return updateObject(context, (Account) intent.getParcelableExtra("account"), intent.getData());
+            return updateObject(context, (Account) intent.getParcelableExtra(Constants.EXTRA_ACCOUNT), intent.getData());
         } else if(UPDATE_REPLIES.equals(intent.getAction())) {
-            return updateReplies(context, (Account) intent.getParcelableExtra("account"), intent.getData());
+            return updateReplies(context, (Account) intent.getParcelableExtra(Constants.EXTRA_ACCOUNT), intent.getData());
         } else if(FETCH_USER_FEED.equals(intent.getAction())) {
-            return fetchUserFeed(context, (Account) intent.getParcelableExtra("account"), intent.getData());
+            return fetchUserFeed(context, (Account) intent.getParcelableExtra(Constants.EXTRA_ACCOUNT), intent.getData());
         } else return new ResultData(Activity.RESULT_CANCELED);
     }
 
