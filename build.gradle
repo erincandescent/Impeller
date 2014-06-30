@@ -60,8 +60,8 @@ repositories {
 dependencies {
     compile project(':jiraconnect-android-main')
     compile project(':tokenautocomplete:library')
-    compile 'com.android.support:support-v4:19.1.+'
-    compile 'com.android.support:appcompat-v7:19.1.+'
+    compile 'com.android.support:support-v4:20.+'
+    compile 'com.android.support:appcompat-v7:20.+'
     compile 'oauth.signpost:signpost-core:1.2'
     compile 'com.google.guava:guava:16.0.1'
     compile 'net.sourceforge.htmlcleaner:htmlcleaner:2.7'
