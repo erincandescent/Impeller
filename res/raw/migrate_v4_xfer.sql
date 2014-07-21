@@ -4,6 +4,9 @@ INSERT
             1, id, objectType, published, updated, _json
         FROM objects_old;
 
+CREATE INDEX ix_objects_by_just_id ON objects (id, _ID);
+CREATE INDEX ix_objects_old_by_id ON objects_old (id, author, inReplyTo);
+
 UPDATE objects SET
     author    = (
         SELECT _ID FROM objects AS a_n WHERE a_n.id=(
@@ -11,6 +14,8 @@ UPDATE objects SET
     inReplyTo = (
         SELECT _ID from objects AS a_n WHERE a_n.id = (
             SELECT inReplyTo from objects_old where objects_old.id=objects.id));
+
+DROP INDEX ix_objects_by_just_id;
 
 INSERT
     INTO activities (_ID, account, id, verb, actor, object, target, published)
