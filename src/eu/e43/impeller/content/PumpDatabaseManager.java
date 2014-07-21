@@ -7,6 +7,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -24,6 +26,7 @@ import eu.e43.impeller.account.Authenticator;
  */
 public class PumpDatabaseManager extends SQLiteOpenHelper {
     private static final String TAG = "PumpDatabaseManager";
+    private static final String NOTIFICATION_TAG = "eu.e43.impeller.content.DatabaseUpgrade";
 
     PumpContentProvider m_context;
     static final int CURRENT_VERSION = 6;
@@ -44,6 +47,7 @@ public class PumpDatabaseManager extends SQLiteOpenHelper {
 
         String[] queries = sql.split(";(\\\\s)*[\\n\\r]");
         for(int i = 0; i < queries.length; i++) {
+            Log.d(TAG, "Executing query: " + queries[i]);
             db.execSQL(queries[i]);
         }
     }
@@ -59,6 +63,16 @@ public class PumpDatabaseManager extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Context ctx = m_context.getContext();
+        NotificationManagerCompat nm = NotificationManagerCompat.from(ctx);
+        NotificationCompat.Builder bld = new NotificationCompat.Builder(ctx)
+                .setOngoing(true)
+                .setContentTitle(ctx.getString(R.string.database_upgrade_title))
+                .setContentText(ctx.getString(R.string.database_upgrade_text))
+                .setSmallIcon(R.drawable.ic_impeller_wb)
+                .setProgress(0, 0, true);
+        nm.notify(NOTIFICATION_TAG, 0, bld.build());
+
         switch(oldVersion) {
             case 1:
                 Log.i(TAG, "Performing database migration to v2");
@@ -89,6 +103,7 @@ public class PumpDatabaseManager extends SQLiteOpenHelper {
                 runQueryFile(db, R.raw.migrate_v4_fini);
 
             case 4:
+                Log.i(TAG, "Performing database migration to v5");
                 db.execSQL("ALTER TABLE recipients ADD COLUMN type SHORT INT");
 
                 // Link up recipients
@@ -97,6 +112,11 @@ public class PumpDatabaseManager extends SQLiteOpenHelper {
                         null, null, null, null, null);
                 try {
                     while(c.moveToNext()) {
+                        if(c.getPosition() % 100 == 0) {
+                            bld.setProgress(c.getCount(), c.getPosition(), false);
+                            nm.notify(NOTIFICATION_TAG, 0, bld.build());
+                        }
+
                         int _id = c.getInt(0);
                         int account = c.getInt(1);
                         String actJSON = c.getString(2);
@@ -123,12 +143,18 @@ public class PumpDatabaseManager extends SQLiteOpenHelper {
                     c.close();
                 }
 
+                nm.notify(NOTIFICATION_TAG, 0, bld.setProgress(0, 0, true).build());
+
+
             case 5:
+                Log.i(TAG, "Performing database migration to v6");
                 runQueryFile(db, R.raw.migrate_v6);
 
                 break;
             default:
                 throw new RuntimeException("Request to upgrade from " + oldVersion);
         }
+
+        nm.cancel(NOTIFICATION_TAG, 0);
     }
 }

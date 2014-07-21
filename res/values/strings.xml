@@ -114,5 +114,7 @@
     <string name="title_activity_share">Share</string>
     <string name="hello_world">Hello world!</string>
     <string name="message_group_notification_header">%d new messages</string>
+    <string name="database_upgrade_title">Database upgrade in progress</string>
+    <string name="database_upgrade_text">Impeller is upgrading your database; this may take a while. You will not be able to access your feed during this time.</string>
 
 </resources>
