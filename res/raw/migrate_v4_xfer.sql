@@ -22,7 +22,7 @@ INSERT
     SELECT
             (SELECT _ID FROM objects WHERE id=activities_old.id),       -- ID
             1,                                                          -- account
-            activities.id,                                              -- id
+            id,                                                         -- id
             verb,                                                       -- verb
             (SELECT _ID FROM objects WHERE id=activities_old.actor),    -- actor
             (SELECT _ID FROM objects WHERE id=activities_old.object),   -- object
