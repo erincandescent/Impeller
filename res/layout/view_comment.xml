@@ -23,14 +23,14 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_height="wrap_content"
-        android:layout_width="fill_parent">
+        android:layout_width="fill_parent"
+        android:layout_marginLeft="8dp">
         <TextView
             android:id="@+id/commentBody"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
-            android:layout_marginLeft="8dp"
             android:layout_toRightOf="@+id/commentAuthorImage"
             android:text="Medium Text"
             android:textAppearance="?android:attr/textAppearanceMedium" />
