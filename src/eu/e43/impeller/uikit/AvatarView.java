@@ -85,4 +85,8 @@ public class AvatarView extends View {
             canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), m_paint);
         }
     }
+
+    public void resetAvatar() {
+        setAvatar(null);
+    }
 }

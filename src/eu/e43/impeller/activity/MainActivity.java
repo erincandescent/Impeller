@@ -41,6 +41,7 @@ import android.widget.ViewFlipper;
 
 import eu.e43.impeller.Constants;
 import eu.e43.impeller.account.Authenticator;
+import eu.e43.impeller.fragment.DrawerFragment;
 import eu.e43.impeller.fragment.FeedFragment;
 import eu.e43.impeller.fragment.ObjectContainerFragment;
 import eu.e43.impeller.R;
@@ -49,7 +50,7 @@ import eu.e43.impeller.content.PumpContentProvider;
 import eu.e43.impeller.uikit.NavigationDrawerAdapter;
 import eu.e43.impeller.uikit.OverlayController;
 
-public class MainActivity extends ActivityWithAccount implements AdapterView.OnItemClickListener {
+public class MainActivity extends ActivityWithAccount implements DrawerFragment.DrawerActionListener {
 	static final String TAG = "MainActivity";
 
     /** Time to do next feed fetch */
@@ -64,8 +65,8 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     /** Drawer layout */
     private DrawerLayout m_drawerLayout = null;
 
-    /** Navigation drawer */
-    private ListView m_navigationDrawer = null;
+    /** Drawer fragment */
+    private DrawerFragment m_drawerFragment = null;
 
     /** Pointer to the active feed fragment (if any) */
     private FeedFragment m_feedFragment     = null;
@@ -82,8 +83,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
         setContentView(R.layout.activity_main);
 
         m_drawerLayout     = (DrawerLayout) findViewById(R.id.drawer_layout);
-        m_navigationDrawer = (ListView) findViewById(R.id.navigation_drawer);
-        m_navigationDrawer.setAdapter(new NavigationDrawerAdapter(this));
+        m_drawerFragment   = (DrawerFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         m_drawerToggle = new ActionBarDrawerToggle(
                 this,
                 m_drawerLayout,
@@ -92,7 +92,6 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
                 R.string.drawer_close
         );
         m_drawerLayout.setDrawerListener(m_drawerToggle);
-        m_navigationDrawer.setOnItemClickListener(this);
 
         m_isTablet = "two_pane".equals(findViewById(R.id.main_activity).getTag());
 
@@ -112,31 +111,35 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
 	}
 
     @Override
-    protected void queryForAccount() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Account[] accts = m_accountManager.getAccountsByType(Authenticator.ACCOUNT_TYPE);
+    protected void queryForAccount(QueryReason reason) {
+        if(reason == QueryReason.Startup) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            Account[] accts = m_accountManager.getAccountsByType(Authenticator.ACCOUNT_TYPE);
 
-        Account theAccount = null;
-        String lastAccount = prefs.getString("lastAccount", null);
-        if(lastAccount != null) {
-            for(Account act : accts) {
-                if(lastAccount.equals(act.name)) {
-                    theAccount = act;
-                    break;
+            Account theAccount = null;
+            String lastAccount = prefs.getString("lastAccount", null);
+            if (lastAccount != null) {
+                for (Account act : accts) {
+                    if (lastAccount.equals(act.name)) {
+                        theAccount = act;
+                        break;
+                    }
                 }
             }
-        }
 
-        if(theAccount == null) {
-            if(accts.length > 0) {
-                theAccount = accts[0];
-            } else {
-                super.queryForAccount();
-                return;
+            if (theAccount == null) {
+                if (accts.length > 0) {
+                    theAccount = accts[0];
+                } else {
+                    super.queryForAccount(reason);
+                    return;
+                }
             }
-        }
 
-        haveGotAccount(theAccount);
+            haveGotAccount(theAccount);
+        } else {
+            super.queryForAccount(reason);
+        }
     }
 
     @Override
@@ -203,7 +206,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
             setDisplayMode(Mode.FEED);
         } else setDisplayMode(m_displayMode);
 
-        ((NavigationDrawerAdapter)m_navigationDrawer.getAdapter()).notifyDataSetChanged();
+        m_drawerFragment.onAccountChanged(acct);
 	}
 
     @Override
@@ -370,19 +373,15 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
     /* Navigation listener */
 
     @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        assert(adapterView == m_navigationDrawer);
+    public void onSelectFeed(Constants.FeedID feed) {
+        m_drawerLayout.closeDrawers();
+        showFeed(feed);
+    }
 
-        if(l < 0) {
-            // Account
-            Account acct = (Account) m_navigationDrawer.getItemAtPosition(i);
-            haveGotAccount(acct);
-            m_drawerLayout.closeDrawer(m_navigationDrawer);
-        } else if(l > 0) {
-            // Feed
-            Constants.FeedID id = (Constants.FeedID) m_navigationDrawer.getItemAtPosition(i);
-            showFeed(id);
-        } // else separator
+    @Override
+    public void doChangeAccount() {
+        m_drawerLayout.closeDrawers();
+        super.queryForAccount(QueryReason.User);
     }
 
     private void showFeed(Constants.FeedID id) {
@@ -402,7 +401,7 @@ public class MainActivity extends ActivityWithAccount implements AdapterView.OnI
 
         setDisplayMode(Mode.FEED);
         trans.commit();
-        m_drawerLayout.closeDrawer(m_navigationDrawer);
+        m_drawerLayout.closeDrawers();
     }
 
     // Overlays

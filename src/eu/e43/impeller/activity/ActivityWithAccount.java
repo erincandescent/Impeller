@@ -23,8 +23,10 @@ import static android.os.Build.*;
 
 public abstract class ActivityWithAccount extends ActionBarActivity {
 	public static final int LOGIN_REQUEST_CODE = 65535;
+    private static final int LOGIN_REQUEST_CODE_STARTUP = 65534;
 	private static final String TAG = "ActivityWithAccount";
-	public    AccountManager 	m_accountManager 	= null;
+
+    public    AccountManager 	m_accountManager 	= null;
     private   Account           m_newAccount        = null; // For resume dance
 	public    Account           m_account           = null;
 	private   ImageLoader       m_imageLoader		= null;
@@ -71,16 +73,21 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
         if(m_account != null) {
             haveGotAccount(m_account);
             return;
-        } else queryForAccount();
+        } else queryForAccount(QueryReason.Startup);
+    }
+
+    public enum QueryReason {
+        Startup,
+        User
     }
 
     /** Query the user for an account (asynchronously). Default implementation uses a chooser. Call
      *  haveGotAccount when you are successful (else finish)
      */
-    protected void queryForAccount() {
+    protected void queryForAccount(QueryReason reason) {
 	    // No account passed or account is invalid
         Intent chooseIntent = new Intent(this, AccountPickerActivity.class);
-        this.startActivityForResult(chooseIntent, LOGIN_REQUEST_CODE);
+        this.startActivityForResult(chooseIntent, reason == QueryReason.Startup ? LOGIN_REQUEST_CODE_STARTUP : LOGIN_REQUEST_CODE);
 	}
 
     /** Save the account */
@@ -105,15 +112,22 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
     /** Looks at the response of the account chooser intent */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(requestCode == LOGIN_REQUEST_CODE) {
+		if(requestCode == LOGIN_REQUEST_CODE || requestCode == LOGIN_REQUEST_CODE_STARTUP) {
 			if(resultCode == RESULT_OK) {
 				String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
 				String accountType = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
 				Log.i(TAG, "Logged in " + accountName);
-			
-				m_newAccount = new Account(accountName, accountType);
+
+                Account acct = new Account(accountName, accountType);
+                if(requestCode != LOGIN_REQUEST_CODE_STARTUP) {
+                    haveGotAccount(acct);
+                } else {
+                    m_newAccount = acct;
+                }
 			} else {
-				finish();
+                if(requestCode == LOGIN_REQUEST_CODE_STARTUP) {
+                    finish();
+                }
 			}
 		} else {
 			super.onActivityResult(requestCode, resultCode, data);
