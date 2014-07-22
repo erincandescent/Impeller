@@ -91,7 +91,7 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
 		if(author != null) {
 			JSONObject imageObj = author.optJSONObject("image");
 			if(imageObj != null)
-				activity.getImageLoader().setImage(authorAvatar, Utils.getImageUrl(imageObj));
+				activity.getImageLoader().setImage(authorAvatar, Utils.getImageUrl(activity, imageObj));
 
             commentMeta.setText(m_ctx.getResources().getString(R.string.comment_meta_by) + " "
 				+ author.optString("displayName") + ", "
@@ -101,7 +101,7 @@ public class CommentAdapter extends BaseAdapter implements LoaderManager.LoaderC
         JSONObject imageObj = comment.optJSONObject("image");
         if(imageObj != null) {
             image.setVisibility(View.VISIBLE);
-            activity.getImageLoader().setImage(image, Utils.getImageUrl(imageObj));
+            activity.getImageLoader().setImage(image, Utils.getImageUrl(activity, imageObj));
         } else {
             image.setVisibility(View.GONE);
         }

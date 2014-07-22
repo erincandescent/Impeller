@@ -103,7 +103,7 @@ public class PeopleAdapter extends BaseAdapter implements Filterable {
 
             JSONObject img = obj.optJSONObject("image");
             if(img != null) {
-                m_context.getImageLoader().setImage(ava, Utils.getImageUrl(img));
+                m_context.getImageLoader().setImage(ava, Utils.getImageUrl(m_context, img));
             } else {
                 m_context.getImageLoader().setImage(ava, (URI) null);
             }

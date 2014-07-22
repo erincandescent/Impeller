@@ -202,7 +202,8 @@ public class FeedNotificationService extends Service {
             m_builder.setContentTitle(String.format(getString(R.string.direct_notification_title), actorName));
             m_builder.setContentText(Html.fromHtml(m_activity.optString("content", "(No activity string)")));
 
-            m_imageLoader.load(new AvatarListener(), Utils.getImageUrl(actor.optJSONObject("image")));
+            m_imageLoader.load(new AvatarListener(),
+                    Utils.getImageUrl(FeedNotificationService.this, acct, actor.optJSONObject("image")));
         }
 
         private class AvatarListener implements ImageLoader.Listener {
@@ -238,7 +239,8 @@ public class FeedNotificationService extends Service {
                 JSONObject obj = m_activity.getJSONObject("object");
                 JSONObject img = obj.optJSONObject("image");
                 if (img != null) {
-                    m_imageLoader.load(new ImageListener(), Utils.getImageUrl(img));
+                    m_imageLoader.load(new ImageListener(), Utils.getImageUrl(
+                            FeedNotificationService.this, m_acct, img));
                 } else {
                     NotificationCompat.BigTextStyle style = new NotificationCompat.BigTextStyle();
                     if (obj.has("displayName"))

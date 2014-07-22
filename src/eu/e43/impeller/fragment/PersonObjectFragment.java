@@ -102,7 +102,7 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
         JSONObject img = obj.optJSONObject("image");
         if(img != null) {
             ImageLoader ldr = getMainActivity().getImageLoader();
-            ldr.setImage(personAvatar, Utils.getImageUrl(img));
+            ldr.setImage(personAvatar, Utils.getImageUrl(getMainActivity(), img));
         }
 
         personName.setText(obj.optString("displayName"));

@@ -157,11 +157,11 @@ public class ActivityAdapter extends BaseAdapter {
         }
 	}
 
-	private static String getImage(JSONObject obj) {
+	private static String getImage(ActivityWithAccount awa, JSONObject obj) {
 		JSONObject mediaLink = obj.optJSONObject("image");
 		if(mediaLink == null) return null;
 		
-		return Utils.getImageUrl(mediaLink);
+		return Utils.getImageUrl(awa, mediaLink);
 	}
 	
 	@Override
@@ -217,12 +217,12 @@ public class ActivityAdapter extends BaseAdapter {
                 PumpHtml.setFromHtml(m_ctx, description, ActivityUtils.localizedDescription(m_ctx, json));
                 ImageLoader ldr = m_ctx.getImageLoader();
                 try {
-                    ldr.setImage(actorAvatar, getImage(json.getJSONObject("actor")));
+                    ldr.setImage(actorAvatar, getImage(m_ctx, json.getJSONObject("actor")));
 
                     JSONObject obj = json.optJSONObject("object");
                     if(obj != null) {
                         if(obj.optString("objectType", "note").equals("person")) {
-                            ldr.setImage(targetUserAvatar, getImage(obj));
+                            ldr.setImage(targetUserAvatar, getImage(m_ctx, obj));
                             targetUserAvatar.setVisibility(View.VISIBLE);
                         }
                     }
@@ -256,7 +256,7 @@ public class ActivityAdapter extends BaseAdapter {
 
                     PumpHtml.setFromHtml(m_ctx, description, ActivityUtils.localizedDescription(m_ctx, json));
 
-                    m_ctx.getImageLoader().setImage(actorAvatar, getImage(json.getJSONObject("actor")));
+                    m_ctx.getImageLoader().setImage(actorAvatar, getImage(m_ctx, json.getJSONObject("actor")));
 
                     String actorId  = json.getJSONObject("actor").getString("id");
                     String authorId = json.getJSONObject("object").getJSONObject("author").getString("id");
@@ -265,7 +265,7 @@ public class ActivityAdapter extends BaseAdapter {
                     } else {
                         authorAvatar.setVisibility(View.VISIBLE);
                         m_ctx.getImageLoader().setImage(authorAvatar,
-                                getImage(json.getJSONObject("object").getJSONObject("author")));
+                                getImage(m_ctx, json.getJSONObject("object").getJSONObject("author")));
                     }
                 } catch (JSONException e) {
                     caption.setVisibility(View.VISIBLE);
@@ -286,7 +286,7 @@ public class ActivityAdapter extends BaseAdapter {
 
                 try {
                     PumpHtml.setFromHtml(m_ctx, description, ActivityUtils.localizedDescription(m_ctx, json));
-                    m_ctx.getImageLoader().setImage(img, getImage(json.getJSONObject("object")));
+                    m_ctx.getImageLoader().setImage(img, getImage(m_ctx, json.getJSONObject("object")));
                 } catch(JSONException e) {
                     description.setText(e.getMessage());
                 }

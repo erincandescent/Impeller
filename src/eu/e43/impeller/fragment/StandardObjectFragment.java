@@ -168,7 +168,7 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
                 FrameLayout ly = (FrameLayout) inflater.inflate(R.layout.view_object_video_preview, null);
                 ImageView thumb = (ImageView) ly.findViewById(R.id.video_thumb);
                 if(image != null) {
-                    getImageLoader().setImage(thumb, Utils.getImageUrl(image));
+                    getImageLoader().setImage(thumb, Utils.getImageUrl(getMainActivity(), image));
                 }
                 ly.setOnClickListener(this);
                 lv.addHeaderView(ly);
@@ -199,7 +199,7 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
             iv.setBackgroundResource(R.drawable.card_middle_bg);
             iv.setAdjustViewBounds(true);
             iv.setMaxHeight(Utils.dip(getActivity(), 256));
-            getImageLoader().setImage(iv, Utils.getImageUrl(image));
+            getImageLoader().setImage(iv, Utils.getImageUrl(getMainActivity(), image));
             iv.setOnClickListener(this);
             lv.addHeaderView(iv);
         }
@@ -274,7 +274,7 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
             caption.append(" ");
             JSONObject img = author.optJSONObject("image");
             if(img != null) {
-                getImageLoader().setImage(authorIcon, Utils.getImageUrl(img));
+                getImageLoader().setImage(authorIcon, Utils.getImageUrl(getMainActivity(), img));
             }
         }
 

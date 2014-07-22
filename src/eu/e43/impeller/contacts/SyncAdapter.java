@@ -71,7 +71,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     image = fullImage;
                 } else Log.v(TAG, "No fullImage");
             } else Log.v(TAG, "No pump_io");
-            op.setPhotoUri(Utils.getImageUrl(image));
+            op.setPhotoUri(Utils.getImageUrl(m_context, account, image));
         }
     }
 

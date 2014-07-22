@@ -35,7 +35,7 @@ public class PersonTokenViewAdapter implements TokenCompleteTextView.ViewAdapter
         TextView   name = (TextView)   tokView.findViewById(R.id.personName);
 
         JSONObject img = person.optJSONObject("image");
-        if(img != null) m_ctx.getImageLoader().setImage(pic, Utils.getImageUrl(img));
+        if(img != null) m_ctx.getImageLoader().setImage(pic, Utils.getImageUrl(m_ctx, img));
 
         name.setText(person.optString("displayName", person.optString("id")));
 

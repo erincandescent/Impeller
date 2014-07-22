@@ -20,6 +20,7 @@ import android.accounts.AccountManager;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -48,6 +49,7 @@ import java.util.TimeZone;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import eu.e43.impeller.activity.ActivityWithAccount;
 import eu.e43.impeller.content.PumpContentProvider;
 
 public class Utils {
@@ -173,23 +175,37 @@ public class Utils {
 		return new String(hex);
 	}
 	
-	public static String getProxyUrl(JSONObject obj) {
+	public static String getProxyUrl(Context ctx, Account acct, JSONObject obj) {
 		if(obj.has("pump_io")) {
 			JSONObject pump_io = obj.optJSONObject("pump_io");
 			String url = pump_io.optString("proxyURL", null);
+
+            // If the hosts mismatch between the proxyURL and the Account ID, assume we have a
+            // "leakage" issue
+            Uri uri = Uri.parse(url);
+            Uri userUri = Uri.parse(AccountManager.get(ctx).getUserData(acct, "id"));
+            if(!uri.getHost().equalsIgnoreCase(userUri.getHost())) {
+                Log.w("Utils.getProxyUrl", "Discarding proxyURL " + url + " due to host mismatch with user " + userUri.toString());
+                return null;
+            }
+
 			if(url == null || url.length() == 0) return null;
 			return url;
 		} else return null;
 	}
-	
-	public static String getImageUrl(JSONObject img) {
+
+    public static String getImageUrl(Context context, Account account, JSONObject img) {
         if(img == null)
             return null;
 
-		String url = getProxyUrl(img);
-		if(url == null)
-			url = img.optString("url");
-		return url;
+        String url = getProxyUrl(context, account, img);
+        if(url == null)
+            url = img.optString("url");
+        return url;
+    }
+	
+	public static String getImageUrl(ActivityWithAccount awa, JSONObject img) {
+        return getImageUrl(awa, awa.getAccount(), img);
 	}
 
     public static int getCollectionItemCount(JSONObject obj, String collection) {

@@ -37,7 +37,7 @@ public class InReplyToView extends RelativeLayout implements View.OnClickListene
             parentAuthor.setText(author.optString("displayName"));
             JSONObject img = author.optJSONObject("image");
             if(img != null) {
-                m_activity.getImageLoader().setImage(parentAvatar, Utils.getImageUrl(img));
+                m_activity.getImageLoader().setImage(parentAvatar, Utils.getImageUrl(m_activity, img));
             }
         }
 
