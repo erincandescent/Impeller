@@ -45,9 +45,6 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
 
 	@Override
 	protected final void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		m_accountManager = AccountManager.get(this);
-
         Intent startIntent = getIntent();
         if(savedInstanceState != null && savedInstanceState.containsKey("account")) {
             m_account = savedInstanceState.getParcelable("account");
@@ -57,6 +54,9 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
                 m_account = a;
             }
         }
+
+		super.onCreate(savedInstanceState);
+		m_accountManager = AccountManager.get(this);
 
         if(savedInstanceState == null)
             m_startIntent = startIntent;
