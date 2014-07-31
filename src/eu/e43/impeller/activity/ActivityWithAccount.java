@@ -48,13 +48,6 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		m_accountManager = AccountManager.get(this);
 
-        try {
-            Class.forName("android.net.http.HttpResponseCache");
-            tryInstallResponseCache();
-        } catch(ClassNotFoundException ex) {
-            Log.v(TAG, "Device doesn't support HttpResponseCache. Disabled.");
-        }
-
         Intent startIntent = getIntent();
         if(savedInstanceState != null && savedInstanceState.containsKey("account")) {
             m_account = savedInstanceState.getParcelable("account");
@@ -96,18 +89,6 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
         super.onSaveInstanceState(outState);
         if(m_account != null) outState.putParcelable("account", m_account);
     }
-
-    protected void onStop() {
-		super.onStop();
-
-        try {
-            Class.forName("android.net.http.HttpResponseCache");
-
-            uninstallResponseCache();
-        } catch(ClassNotFoundException ex) {
-            Log.v(TAG, "Device doesn't support HttpResponseCache. Disabled.");
-        }
-	}
 
     /** Looks at the response of the account chooser intent */
 	@Override
@@ -172,24 +153,6 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
 		}
 		return m_imageLoader;
 	}
-
-    private void tryInstallResponseCache() {
-        if(HttpResponseCache.getInstalled() == null) {
-            File cacheDir = new File(getCacheDir(), "http");
-            try {
-                HttpResponseCache.install(cacheDir, 10 * 1024 * 1024);
-            } catch (IOException e) {
-                Log.w(TAG, "Creating response cache", e);
-            }
-        }
-    }
-
-    private void uninstallResponseCache() {
-        HttpResponseCache cache = HttpResponseCache.getInstalled();
-        if (cache != null) {
-            cache.flush();
-        }
-    }
 
     private PumpContentProvider.Uris m_cachedUris;
     public PumpContentProvider.Uris getContentUris() {

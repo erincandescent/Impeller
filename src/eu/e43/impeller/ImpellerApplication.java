@@ -6,14 +6,19 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.net.http.HttpResponseCache;
 import android.os.Build;
 import android.os.Debug;
 import android.os.StrictMode;
+import android.util.Log;
 
 import com.atlassian.jconnect.droid.Api;
 
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
+
+import java.io.File;
+import java.io.IOException;
 
 import eu.e43.impeller.account.Authenticator;
 import eu.e43.impeller.content.PumpContentProvider;
@@ -44,6 +49,15 @@ public class ImpellerApplication extends Application {
 
         super.onCreate();
 
+        // Initialize request cache
+        try {
+            Class.forName("android.net.http.HttpResponseCache");
+            tryInstallResponseCache();
+        } catch(ClassNotFoundException ex) {
+            Log.v(TAG, "Device doesn't support HttpResponseCache. Disabled.");
+        }
+
+        // Version check
         try {
             PackageInfo packageInfo = null;
             packageInfo = getPackageManager()
@@ -68,5 +82,16 @@ public class ImpellerApplication extends Application {
         prefs.edit().putInt("version", ms_versionCode).apply();
 
         fontAwesome = Typeface.createFromAsset(getAssets(), "FontAwesome.otf");
+    }
+
+    private void tryInstallResponseCache() {
+        if(HttpResponseCache.getInstalled() == null) {
+            File cacheDir = new File(getCacheDir(), "http");
+            try {
+                HttpResponseCache.install(cacheDir, 10 * 1024 * 1024);
+            } catch (IOException e) {
+                Log.w(TAG, "Creating response cache", e);
+            }
+        }
     }
 }
