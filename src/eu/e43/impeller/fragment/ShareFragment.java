@@ -24,7 +24,7 @@ import eu.e43.impeller.R;
 import eu.e43.impeller.activity.ActivityWithAccount;
 import eu.e43.impeller.activity.ShareActivity;
 
-class ShareFragment extends DialogFragment implements AdapterView.OnItemClickListener {
+public class ShareFragment extends DialogFragment implements AdapterView.OnItemClickListener {
     private PackageManager    m_packageManager = null;
     private Intent            m_intent         = null;
     private List<ResolveInfo> m_resolved       = null;
