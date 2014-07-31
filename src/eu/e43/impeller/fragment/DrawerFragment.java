@@ -55,6 +55,11 @@ public class DrawerFragment extends Fragment implements AdapterView.OnItemClickL
             }
         });
 
+        ActivityWithAccount awa = (ActivityWithAccount) getActivity();
+        if(awa.getAccount() != null) {
+            updateUI(v, awa.getAccount());
+        }
+
         return v;
     }
 
@@ -71,14 +76,19 @@ public class DrawerFragment extends Fragment implements AdapterView.OnItemClickL
     }
 
     public void onAccountChanged(Account acct) {
-        ActivityWithAccount awa = (ActivityWithAccount) getActivity();
-
-        if(acct == null)
+        if (acct == null || getView() == null)
             return;
 
-        AvatarView avatar = (AvatarView) getView().findViewById(R.id.avatar);
-        TextView acctId   = (TextView)   getView().findViewById(R.id.accountId);
-        TextView acctName = (TextView)   getView().findViewById(R.id.accountName);
+        updateUI(getView(), acct);
+    }
+
+
+    private void updateUI(View rootView, Account acct) {
+        ActivityWithAccount awa = (ActivityWithAccount) getActivity();
+
+        AvatarView avatar = (AvatarView) rootView.findViewById(R.id.avatar);
+        TextView acctId   = (TextView)   rootView.findViewById(R.id.accountId);
+        TextView acctName = (TextView)   rootView.findViewById(R.id.accountName);
 
         avatar.resetAvatar();
         acctId.setText(acct.name);
