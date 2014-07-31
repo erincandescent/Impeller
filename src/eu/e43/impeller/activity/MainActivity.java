@@ -206,7 +206,8 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
             setDisplayMode(Mode.FEED);
         } else setDisplayMode(m_displayMode);
 
-        m_drawerFragment.onAccountChanged(acct);
+        if(m_drawerFragment != null)
+            m_drawerFragment.onAccountChanged(acct);
 	}
 
     @Override
