@@ -41,13 +41,12 @@
             </LinearLayout>
         </LinearLayout>
     </ViewFlipper>
-    <ListView
-    android:id="@+id/navigation_drawer"
-    android:layout_width="300dp"
-    android:layout_height="match_parent"
-    android:layout_gravity="start"
-    android:choiceMode="singleChoice"
-    android:divider="@android:color/transparent"
-    android:dividerHeight="0dp"
-    android:background="#eeeeee" />
+    <fragment
+        android:name="eu.e43.impeller.fragment.DrawerFragment"
+        android:id="@+id/navigation_drawer"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#eeeeee"
+        tools:layout="@layout/fragment_drawer" />
 </android.support.v4.widget.DrawerLayout>
