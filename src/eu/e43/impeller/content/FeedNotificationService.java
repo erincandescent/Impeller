@@ -111,6 +111,8 @@ public class FeedNotificationService extends Service {
         NotificationCompat.Builder groupBuilder = null;
         NotificationCompat.InboxStyle groupInbox = null;
 
+        Log.v(TAG, "Viewed=" + viewed +", notified=" + notified + ", got=" + c.getCount());
+
         if(c.getCount() > 1) {
             String tag = "eu.e43.impeller.direct_notice:" + acct.name;
             groupBuilder = new NotificationCompat.Builder(this);
@@ -148,18 +150,18 @@ public class FeedNotificationService extends Service {
             JSONObject activity = new JSONObject(activityJSON);
             lineBuffer.add(Html.fromHtml(ActivityUtils.localizedDescription(this, activity)));
 
-            if(mostRecent > notified) {
-                Notification groupNotice = null;
-                if(c.isLast() && groupBuilder != null) {
-                    for(int i = lineBuffer.size() - 1; i >= 0; i--) {
-                        groupInbox.addLine(lineBuffer.get(i));
-                    }
-                    groupNotice = groupBuilder.build();
-                }
+            PendingNotification notice = new PendingNotification(acct, mostRecent, activity,
+                    groupBuilder != null);
+            m_pendingNotifications.add(notice);
+        }
 
-                PendingNotification notice = new PendingNotification(acct, mostRecent, activity, groupNotice);
-                m_pendingNotifications.add(notice);
+        if(groupBuilder != null) {
+            for(int i = lineBuffer.size() - 1; i >= 0; i--) {
+                groupInbox.addLine(lineBuffer.get(i));
             }
+            Notification groupNotice = groupBuilder.build();
+            NotificationManagerCompat.from(this).notify(
+                    "eu.e43.impeller.direct_notice:" + acct.name, 0, groupNotice);
         }
 
         prefs.edit().putInt(notifiedKey, mostRecent).commit();
@@ -174,7 +176,7 @@ public class FeedNotificationService extends Service {
         private final NotificationCompat.Builder m_builder;
         private final ImageLoader m_imageLoader;
         private final int m_entryId;
-        private final Notification m_groupNotice;
+        private boolean m_grouped;
         private boolean m_canceled = false;
 
         /// Cancel the activity if acct matches and shown >= m_entryId
@@ -184,14 +186,14 @@ public class FeedNotificationService extends Service {
             }
         }
 
-        public PendingNotification(Account acct, int entryId, JSONObject activity,
-                                   Notification groupNotice) throws JSONException {
+        public PendingNotification(Account acct, int entryId, JSONObject activity, boolean grouped) throws JSONException {
+            Log.d(TAG, "Pending notification for ID " + entryId);
             m_acct = acct;
             m_entryId = entryId;
             m_activity = activity;
+            m_grouped = grouped;
             m_imageLoader = new ImageLoader(FeedNotificationService.this, acct);
 
-            m_groupNotice = groupNotice;
             m_builder = new NotificationCompat.Builder(FeedNotificationService.this);
 
             JSONObject actor = m_activity.getJSONObject("actor");
@@ -219,7 +221,11 @@ public class FeedNotificationService extends Service {
         }
 
         private void setIcon(Bitmap icon) {
-            if(m_canceled) { doneNotification(this); return; }
+            if(m_canceled) {
+                Log.d(TAG, "Cancelled notification for " + m_entryId);
+                doneNotification(this);
+                return;
+            }
 
             // Set density of the icon for appropriate scaling across all displays
             // We don't rescale the image so that maximum quality can be preserved if e.g. it is
@@ -278,7 +284,11 @@ public class FeedNotificationService extends Service {
         }
 
         private void finalizeNotification() {
-            if(m_canceled) { doneNotification(this); return; }
+            if(m_canceled) {
+                Log.d(TAG, "Cancelled notification for " + m_entryId);
+                doneNotification(this);
+                return;
+            }
 
             String tag = "eu.e43.impeller.direct_notice:" + m_acct.name;
 
@@ -294,18 +304,16 @@ public class FeedNotificationService extends Service {
             m_builder.setContentIntent(PendingIntent.getActivity(FeedNotificationService.this, 0, showIntent, 0));
             m_builder.addAction(R.drawable.ic_action_reply, "Reply",
                     PendingIntent.getActivity(FeedNotificationService.this, 0, replyIntent, 0));
-            m_builder.setGroup(tag);
+            if(m_grouped)
+                m_builder.setGroup(tag);
             m_builder.setAutoCancel(true);
             Notification notice = m_builder.build();
 
             NotificationManagerCompat mgr = NotificationManagerCompat.from(FeedNotificationService.this);
 
 
+            Log.d(TAG, "Delivering notification " + m_entryId);
             mgr.notify(tag, m_entryId, notice);
-
-            if(m_groupNotice != null) {
-                mgr.notify(tag, 0, m_groupNotice);
-            }
 
             doneNotification(this);
         }
