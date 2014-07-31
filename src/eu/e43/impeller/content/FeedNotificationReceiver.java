@@ -1,12 +1,14 @@
 package eu.e43.impeller.content;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
 import eu.e43.impeller.Constants;
+import eu.e43.impeller.account.Authenticator;
 
 public class FeedNotificationReceiver extends BroadcastReceiver {
     private static final String TAG = "FeedNotificationReceiver";
@@ -18,6 +20,16 @@ public class FeedNotificationReceiver extends BroadcastReceiver {
             processEntry(context, intent);
         } else if(intent.getAction().equals(Constants.ACTION_DIRECT_INBOX_OPENED)) {
             updateInboxState(context, intent);
+        } else if(intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED) || intent.getAction().equals(Constants.ACTION_REFRESH_NOTIFICATIONS)) {
+            AccountManager mgr = AccountManager.get(context);
+            Account[] accts = mgr.getAccountsByType(Authenticator.ACCOUNT_TYPE);
+            for(Account acct : accts) {
+                Intent serviceIntent = new Intent(
+                        FeedNotificationService.ACTION_NOTIFY_DIRECT, null,
+                        context, FeedNotificationService.class);
+                serviceIntent.putExtra(Constants.EXTRA_ACCOUNT, acct);
+                context.startService(serviceIntent);
+            }
         } else {
             throw new UnsupportedOperationException("Unsupported intent");
         }

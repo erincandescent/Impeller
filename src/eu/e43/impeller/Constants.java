@@ -13,6 +13,7 @@ public class Constants {
 
     /// Notification that a new feed entry has been received
     public static final String ACTION_NEW_FEED_ENTRY = "eu.e43.impeller.action.NEW_FEED_ENTRY";
+    public static final String ACTION_REFRESH_NOTIFICATIONS = "eu.e43.impeller.ation.REFRESH_NOTIFICATIONS";
 
     public static Intent makeShowFeedIntent(Account acct, FeedID id) {
         Intent i = new Intent(ACTION_SHOW_FEED);

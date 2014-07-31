@@ -23,6 +23,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".ImpellerApplication"
@@ -59,6 +60,7 @@
             <intent-filter>
                 <action android:name="eu.e43.impeller.action.NEW_FEED_ENTRY" />
                 <action android:name="eu.e43.impeller.action.DIRECT_INBOX_DISPLAYED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 

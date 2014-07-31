@@ -41,6 +41,7 @@ import android.widget.ViewFlipper;
 
 import eu.e43.impeller.Constants;
 import eu.e43.impeller.account.Authenticator;
+import eu.e43.impeller.content.FeedNotificationReceiver;
 import eu.e43.impeller.fragment.DrawerFragment;
 import eu.e43.impeller.fragment.FeedFragment;
 import eu.e43.impeller.fragment.ObjectContainerFragment;
@@ -170,6 +171,11 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
     protected void onStart() {
 		super.onStart();
 
+        // Ensure notifications are up to date
+        Intent startIntent = new Intent(Constants.ACTION_REFRESH_NOTIFICATIONS, null, this, FeedNotificationReceiver.class);
+        sendBroadcast(startIntent);
+
+        // Refresh regularly while we are displayed
         Calendar now = GregorianCalendar.getInstance();
         if(m_nextFetch == null || m_nextFetch.before(now) && m_account != null) {
             Log.v(TAG, "onStart() - requesting sync");
