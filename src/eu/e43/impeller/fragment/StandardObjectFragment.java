@@ -94,6 +94,14 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
 
         if(savedInstanceState != null) {
             m_account = savedInstanceState.getParcelable("account");
+            String replyText = savedInstanceState.getString("replyText");
+            if(replyText!=null)
+            {
+                View root = getView();
+                ListView lv = (ListView) root.findViewById(android.R.id.list);
+                EditText editor = (EditText) lv.findViewById(R.id.replyText);
+                editor.setText(replyText);
+            }
         } else {
             m_account = getMainActivity().getAccount();
         }
@@ -236,6 +244,16 @@ public class StandardObjectFragment extends ObjectFragment implements View.OnCli
         ).putExtra(Constants.EXTRA_ACCOUNT, getMainActivity().getAccount()), null);
 
         return lv;
+    }
+
+    @Override
+    public void onSaveInstanceState (Bundle outState)
+    {
+        View root = getView();
+        if(root == null) return;
+        ListView lv = (ListView) root.findViewById(android.R.id.list);
+        EditText editor = (EditText) lv.findViewById(R.id.replyText);
+        outState.putString("replyText", editor.getText().toString());
     }
 
     @Override
