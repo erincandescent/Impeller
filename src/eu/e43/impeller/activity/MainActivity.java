@@ -77,7 +77,10 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
 
     Mode m_displayMode = Mode.FEED;
 
-	@Override
+    /** Is there an intent pending until we have an account? */
+    private boolean m_pendingIntent = false;
+
+    @Override
 	protected void onCreateEx(Bundle savedInstanceState) {
         PreferenceManager.setDefaultValues(this, R.xml.pref_general,   false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
@@ -214,6 +217,10 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
 
         if(m_drawerFragment != null)
             m_drawerFragment.onAccountChanged(acct);
+
+        if(m_pendingIntent) {
+            onNewIntent(getIntent());
+        }
 	}
 
     @Override
@@ -224,10 +231,17 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        m_pendingIntent = false;
         Log.i(TAG, "New intent " + intent);
 
         if(intent.hasExtra(Constants.EXTRA_ACCOUNT)) {
             haveGotAccount((Account) intent.getParcelableExtra(Constants.EXTRA_ACCOUNT));
+        }
+
+        if(m_account == null) {
+            setIntent(intent);
+            m_pendingIntent = true;
+            return;
         }
 
         String action = intent.getAction();
@@ -392,6 +406,8 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
     }
 
     private void showFeed(Constants.FeedID id) {
+        if(m_feedFragment == null) return;
+
         FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
 
         if(m_feedFragment.getFeedId() != id) {
