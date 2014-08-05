@@ -1,3 +1,6 @@
 [submodule "tokenautocomplete"]
 	path = tokenautocomplete
-	url = https://oshepherd@github.com/oshepherd/TokenAutoComplete.git
+	url = https://github.com/oshepherd/TokenAutoComplete.git
+[submodule "twoway-view"]
+	path = twoway-view
+	url = https://github.com/oshepherd/twoway-view
