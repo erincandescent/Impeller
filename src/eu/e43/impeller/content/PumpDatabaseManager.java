@@ -87,6 +87,7 @@ public class PumpDatabaseManager extends SQLiteOpenHelper {
                 //        "CREATE INDEX ix_objects_inReplyTo ON objects (inReplyTo)");
             case 3:
                 Log.i(TAG, "Performing database migration to v4");
+                runQueryFile(db, R.raw.migrate_v4_pre);
                 runQueryFile(db, R.raw.migrate_v4_start);
 
                 AccountManager am = AccountManager.get(m_context.getContext());
