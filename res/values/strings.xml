@@ -68,7 +68,7 @@
     <string name="direct_notification_title">Message from %s</string>
     <string name="verb_posted">posted</string>
     <string name="verb_followed">followed</string>
-    <string name="verb_stopped_following">stoped following</string>
+    <string name="verb_stopped_following">stopped following</string>
     <string name="verb_favorited">favorited</string>
     <string name="verb_unfavorited">unfavorited</string>
     <string name="verb_shared">shared</string>
