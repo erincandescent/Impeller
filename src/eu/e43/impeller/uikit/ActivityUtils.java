@@ -61,6 +61,12 @@ public class ActivityUtils {
                 .build();
     }
 
+    static public String getVerb(Context ctx, String verb)
+    {
+        if(ms_verbStrings.containsKey(verb)) {
+            return ctx.getString(ms_verbStrings.get(verb));
+        } else return verb;
+    }
 
     static public String localizedDescription(Context ctx, JSONObject activity)
     {

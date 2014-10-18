@@ -299,7 +299,7 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
 
     private void setDisplayMode(Mode m) {
         View fdFrag = findViewById(R.id.feed_fragment);
-        View ctFrag = m_isTablet ? findViewById(R.id.content_container) : findViewById(R.id.content_fragment);
+        View ctFrag = /*m_isTablet ? findViewById(R.id.content_container) :*/ findViewById(R.id.content_fragment);
 
         Log.d(TAG, "Mode " + m_displayMode.toString() + " -> " + m.toString());
         if(m != m_displayMode)
@@ -387,8 +387,8 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
 
         setDisplayMode(Mode.FEED);
 
-        if(m_feedFragment != null)
-            m_feedFragment.setSelection(-1);
+        //if(m_feedFragment != null)
+        //    m_feedFragment.setSelection(-1);
     }
 
     /* Navigation listener */

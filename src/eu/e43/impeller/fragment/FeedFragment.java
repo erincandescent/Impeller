@@ -9,6 +9,10 @@ import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,13 +20,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 
 import org.json.JSONObject;
+import org.lucasr.twowayview.TWAbsLayoutManager;
+import org.lucasr.twowayview.TWItemClickListener;
+import org.lucasr.twowayview.TWView;
+import org.lucasr.twowayview.widget.TWGridLayoutManager;
+import org.lucasr.twowayview.widget.TWStaggeredGridLayoutManager;
 
 import eu.e43.impeller.Constants;
 import eu.e43.impeller.activity.CheckinActivity;
@@ -36,17 +44,18 @@ import eu.e43.impeller.content.PumpContentProvider;
  * Created by OShepherd on 28/07/13.
  */
 public class FeedFragment
-        extends ListFragment
+        extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor>,
-        SyncStatusObserver, SwipeRefreshLayout.OnRefreshListener {
+        SyncStatusObserver, SwipeRefreshLayout.OnRefreshListener, TWItemClickListener.OnItemClickListener {
     Account             m_account;
     ActivityAdapter     m_adapter;
     Menu                m_menu              = null;
     boolean             m_jumpToSelection   = false;
     int                 m_selection         = -1;
     Object              m_statusHandle      = null;
-    Constants.FeedID m_feedId            = null;
+    Constants.FeedID    m_feedId            = null;
     SwipeRefreshLayout  m_swipeRefreshView  = null;
+    RecyclerView        m_list              = null;
 
     // Activity IDs
     private static final int ACTIVITY_SELECT_PHOTO = 1;
@@ -79,18 +88,19 @@ public class FeedFragment
 
         m_adapter = new ActivityAdapter(getMainActivity());
         getLoaderManager().initLoader(0, null, this);
-        setListAdapter(m_adapter);
+        if(m_list != null)
+            m_list.setAdapter(m_adapter);
 
         getMainActivity().onAddFeedFragment(this);
 
-        if(savedInstanceState != null && savedInstanceState.containsKey("selection")) {
-            setSelection(savedInstanceState.getInt("selection"));
-        }
+        //if(savedInstanceState != null && savedInstanceState.containsKey("selection")) {
+        //    m_list.setSelection(savedInstanceState.getInt("selection"));
+        //}
 
-        if(getMainActivity().isTwoPane()) {
-            getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-            m_jumpToSelection = true;
-        }
+        //if(getMainActivity().isTwoPane()) {
+            //getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+            //m_jumpToSelection = true;
+        //}
 
         m_statusHandle = getActivity().getContentResolver().addStatusChangeListener(
                   ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE
@@ -101,6 +111,21 @@ public class FeedFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_feed, null);
+
+        m_list = (RecyclerView) root.findViewById(android.R.id.list);
+        TWGridLayoutManager layout = new TWGridLayoutManager(getActivity(), null, 2, 2);
+        layout.setOrientation(TWAbsLayoutManager.Orientation.VERTICAL);
+        layout.setNumColumns(3);
+        m_list.setLayoutManager(layout);
+        //m_list.setLayoutManager(new LinearLayoutManager(getActivity()));
+        m_list.setHasFixedSize(false);
+        m_list.setItemAnimator(new DefaultItemAnimator());
+        if(m_adapter != null)
+            m_list.setAdapter(m_adapter);
+
+        TWItemClickListener l = TWItemClickListener.addTo(m_list);
+        l.setOnItemClickListener(this);
+
         m_swipeRefreshView = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefresh);
         m_swipeRefreshView.setOnRefreshListener(this);
         m_swipeRefreshView.setColorScheme(R.color.im_primary, R.color.im_pink, R.color.im_primary, R.color.im_pink);
@@ -124,7 +149,7 @@ public class FeedFragment
 
         int sel = m_adapter.findItemById(id.toString());
         if(sel != m_selection) {
-            getListView().setItemChecked(sel, true);
+            //getListView().setItemChecked(sel, true);
             m_selection = sel;
         }
     }
@@ -135,8 +160,9 @@ public class FeedFragment
         state.putParcelable("account", m_account);
     }
 
+
     @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
+    public void onItemClick(RecyclerView parent, View view, int position, long id) {
         showItemByPosition(position);
         m_selection = position;
     }
@@ -209,8 +235,8 @@ public class FeedFragment
         m_adapter.updateCursor(o);
 
         if(m_jumpToSelection) {
-            int pos = getSelectedItemPosition();
-            if(pos >= 0) showItemByPosition(pos);
+            //int pos = getSelectedItemPosition();
+            //if(pos >= 0) showItemByPosition(pos);
         }
     }
 
@@ -298,5 +324,4 @@ public class FeedFragment
     public Account getAccount() {
         return m_account;
     }
-
 }

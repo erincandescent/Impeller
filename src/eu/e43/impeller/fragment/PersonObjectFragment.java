@@ -21,6 +21,7 @@ import android.widget.ToggleButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.lucasr.twowayview.TWView;
 
 import eu.e43.impeller.Constants;
 import eu.e43.impeller.ImpellerApplication;
@@ -68,15 +69,15 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
 
 
 
-        ListView lv = new ListView(getActivity());
+        TWView lv = new TWView(getActivity());
         lv.setId(android.R.id.list);
         lv.setPadding(0, 0, 0, 0);
-        lv.addHeaderView(header);
-        lv.setDivider(null);
+        //lv.addHeaderView(header);
+        //lv.setDivider(null);
         m_adapter = new ActivityAdapter(getMainActivity());
         getLoaderManager().initLoader(0, null, this);
         lv.setAdapter(m_adapter);
-        lv.setOnItemClickListener(this);
+        //lv.setOnItemClickListener(this);
 
         objectUpdated(getObject(), lv);
         return lv;

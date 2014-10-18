@@ -11,8 +11,13 @@ buildscript {
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.1"
+    compileSdkVersion 20
+    buildToolsVersion "20.0.0"
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 19
+    }
 
     lintOptions {
         disable 'MissingTranslation'
@@ -64,6 +69,8 @@ repositories {
 dependencies {
     compile project(':jiraconnect-android-main')
     compile project(':tokenautocomplete:library')
+    compile project(':twoway-view:core')
+    compile project(':twoway-view:layouts')
     compile 'com.android.support:support-v4:20.0.0'
     compile 'com.android.support:appcompat-v7:20.0.0'
     compile 'oauth.signpost:signpost-core:1.2'

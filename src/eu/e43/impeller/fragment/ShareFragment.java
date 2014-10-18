@@ -62,7 +62,7 @@ public class ShareFragment extends DialogFragment implements AdapterView.OnItemC
         public View getView(int position, View view, ViewGroup parent) {
             ResolveInfo info = m_resolved.get(position);
             if(view == null) {
-                view = LayoutInflater.from(getActivity()).inflate(R.layout.view_activity_icon, null);
+                view = LayoutInflater.from(getActivity()).inflate(R.layout.view_activity_selector_icon, null);
             }
 
             ImageView icon = (ImageView) view.findViewById(R.id.icon);

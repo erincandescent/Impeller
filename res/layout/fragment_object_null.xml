@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="@string/object_null_title"
-            android:id="@+id/textView"
+            android:id="@+id/title"
             android:layout_gravity="center_horizontal" />
 
         <TextView
