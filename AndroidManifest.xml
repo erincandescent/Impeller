@@ -179,7 +179,7 @@
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleInstance"
-            android:theme="@style/Theme.Base.AppCompat.Dialog.FixedSize" />
+            android:theme="@style/Theme.AppCompat.Light.Dialog" />
         <activity
             android:name=".activity.AboutActivity"
             android:label="@string/title_activity_about"
@@ -197,7 +197,7 @@
             android:name=".activity.ShareActivity"
             android:label="@string/title_activity_share"
             android:parentActivityName=".activity.MainActivity"
-            android:theme="@style/Theme.Base.AppCompat.Dialog.Light.FixedSize" >
+            android:theme="@style/Theme.AppCompat.Light.Dialog" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
