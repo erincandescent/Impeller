@@ -64,21 +64,25 @@ android {
 
 repositories {
     mavenCentral()
+    // TwoWayView Snapshots
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 }
 
 dependencies {
     compile project(':jiraconnect-android-main')
     compile project(':tokenautocomplete:library')
-    compile project(':twoway-view:core')
-    compile project(':twoway-view:layouts')
+    compile project(':impellerapi')
     compile 'com.android.support:support-v4:21.0.0'
     compile 'com.android.support:appcompat-v7:21.0.0'
     compile 'com.android.support:cardview-v7:21.0.0'
     compile 'com.android.support:recyclerview-v7:21.0.0'
     compile 'com.android.support:palette-v7:21.0.0'
+    compile 'org.lucasr.twowayview:core:1.0.0-SNAPSHOT@aar'
+    compile 'org.lucasr.twowayview:layouts:1.0.0-SNAPSHOT@aar'
     compile 'oauth.signpost:signpost-core:1.2'
     compile 'com.google.guava:guava:17.0'
     compile 'net.sourceforge.htmlcleaner:htmlcleaner:2.7'
+    compile 'com.github.machinarius:preferencefragment:0.1.1'
 }
 
 configurations {
