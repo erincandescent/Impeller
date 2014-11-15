@@ -37,7 +37,7 @@
         android:layout_height="48dp"
         android:minWidth="48dp"
         android:id="@+id/replyIcon"
-        android:src="@drawable/ic_action_reply"
+        android:src="@drawable/ic_reply_white_36dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true" />
 

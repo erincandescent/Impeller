@@ -8,20 +8,17 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
-import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.util.LruCache;
 import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import eu.e43.impeller.R;
+import eu.e43.impeller.api.Content;
 import eu.e43.impeller.Utils;
 import eu.e43.impeller.account.Authenticator;
 
@@ -37,57 +34,6 @@ import eu.e43.impeller.account.Authenticator;
  * Created by OShepherd on 01/07/13.
  */
 public class PumpContentProvider extends ContentProvider {
-    public static final int RECIPIENT_TO  = 0;
-    public static final int RECIPIENT_CC  = 1;
-    public static final int RECIPIENT_BTO = 2;
-    public static final int RECIPIENT_BCC = 3;
-    public static final String[] RECIPIENT_KEYS = new String[] {
-            "to", "cc", "bto", "bcc"
-    };
-
-    public static final String AUTHORITY = "eu.e43.impeller.content";
-    public static final Uri PROVIDER_URI = Uri.parse("content://eu.e43.impeller.content/");
-
-    public static class Uris {
-        private static LruCache<Account, Uris> ms_uriCache = new LruCache(2);
-        public static Uris get(Account acct) {
-            Uris v = ms_uriCache.get(acct);
-            if(v == null) {
-                v = new Uris(acct);
-                ms_uriCache.put(acct, v);
-            }
-            return v;
-        }
-
-        protected Uris(Account acct) {
-            account = acct;
-            baseUri = PROVIDER_URI.buildUpon().appendPath(acct.name).build();
-            feedUri = baseUri.buildUpon().appendPath("feed").build();
-            activitiesUri = baseUri.buildUpon().appendPath("activity").build();
-            objectsUri = baseUri.buildUpon().appendPath("object").build();
-        }
-
-        public final Account account;
-        public final Uri baseUri;
-        public final Uri feedUri;
-        public final Uri activitiesUri;
-        public final Uri objectsUri;
-
-        public Uri activityUri(int id) {
-            return activitiesUri.buildUpon().appendPath(Integer.toString(id)).build();
-        }
-
-        public Uri objectUri(int id) {
-            return objectsUri.buildUpon().appendPath(Integer.toString(id)).build();
-        }
-
-        public Uri repliesUri(int id) {
-            return objectsUri.buildUpon()
-                    .appendPath(Integer.toString(id))
-                    .appendPath("replies")
-                    .build();
-        }
-    }
 
     private static final String TAG = "PumpContentProvider";
     private static final UriMatcher ms_uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -107,20 +53,24 @@ public class PumpContentProvider extends ContentProvider {
     private static final int ACTIVITIES = 4;
     private static final int ACTIVITY   = 5;
     private static final int FEED       = 6;
+    private static final int OUTBOX     = 7;
+    private static final int OUTBOX_ENTRY = 8;
 
     private static void addStateProjections(Map<String, String> proj, String idField) {
-        proj.put("replies",     "(SELECT COUNT(*) from objects as _rob WHERE _rob.inReplyTo=" + idField +")");
-        proj.put("likes",       "(SELECT COUNT(*) from activities as _lac WHERE _lac.object=" + idField + " AND _lac.verb IN ('like', 'favorite'))");
-        proj.put("shares",      "(SELECT COUNT(*) from activities as _sac WHERE _sac.object=" + idField + " AND _sac.verb='share')");
+        proj.put("replies", "(SELECT COUNT(*) from objects as _rob WHERE _rob.inReplyTo=" + idField + ")");
+        proj.put("likes", "(SELECT COUNT(*) from activities as _lac WHERE _lac.object=" + idField + " AND _lac.verb IN ('like', 'favorite'))");
+        proj.put("shares", "(SELECT COUNT(*) from activities as _sac WHERE _sac.object=" + idField + " AND _sac.verb='share')");
     }
 
     static {
-        ms_uriMatcher.addURI(AUTHORITY, "*/object",             OBJECTS);
-        ms_uriMatcher.addURI(AUTHORITY, "*/object/#",           OBJECT);
-        ms_uriMatcher.addURI(AUTHORITY, "*/object/#/replies",   REPLIES);
-        ms_uriMatcher.addURI(AUTHORITY, "*/activity",           ACTIVITIES);
-        ms_uriMatcher.addURI(AUTHORITY, "*/activity/#",         ACTIVITY);
-        ms_uriMatcher.addURI(AUTHORITY, "*/feed",               FEED);
+        ms_uriMatcher.addURI(Content.AUTHORITY, "*/object",             OBJECTS);
+        ms_uriMatcher.addURI(Content.AUTHORITY, "*/object/#",           OBJECT);
+        ms_uriMatcher.addURI(Content.AUTHORITY, "*/object/#/replies",   REPLIES);
+        ms_uriMatcher.addURI(Content.AUTHORITY, "*/activity",           ACTIVITIES);
+        ms_uriMatcher.addURI(Content.AUTHORITY, "*/activity/#",         ACTIVITY);
+        ms_uriMatcher.addURI(Content.AUTHORITY, "*/feed",               FEED);
+        ms_uriMatcher.addURI(Content.AUTHORITY, "*/outbox",             OUTBOX);
+        ms_uriMatcher.addURI(Content.AUTHORITY, "*/outbox/#",           OUTBOX_ENTRY);
 
         ms_objectProjection.put("_ID", "_ID");
         ms_objectProjection.put("id", "id");
@@ -167,6 +117,21 @@ public class PumpContentProvider extends ContentProvider {
         return true;
     }
 
+    private int getAccountId(SQLiteDatabase db, Account acct) {
+        // Get the account ID
+        Cursor c = db.query("accounts", new String[] {"_ID"},
+                "name=?", new String[] {acct.name}, null, null, null);
+        try {
+            c.moveToFirst();
+            return c.getInt(0);
+        } catch(CursorIndexOutOfBoundsException ex) {
+            Log.e(TAG, "Missing user account " + acct.name, ex);
+            throw ex;
+        } finally {
+            c.close();
+        }
+    }
+
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
@@ -177,7 +142,7 @@ public class PumpContentProvider extends ContentProvider {
             qb.setStrict(true);
 
         List<String> uriSegments = uri.getPathSegments();
-        Uris uris;
+        Content.Uris uris;
 
         // Placate the IDE...
         String strId = "";
@@ -187,7 +152,7 @@ public class PumpContentProvider extends ContentProvider {
             throw new IllegalArgumentException("Bad path");
         } else {
             Account acct = new Account(uriSegments.get(0), Authenticator.ACCOUNT_TYPE);
-            uris = Uris.get(acct);
+            uris = Content.Uris.get(acct);
 
             if(uriSegments.size() >= 3) {
                 strId = uriSegments.get(2);
@@ -254,6 +219,14 @@ public class PumpContentProvider extends ContentProvider {
                 Log.i(TAG, "Feed " + qb.buildQuery(projection, selection, null, null, sortOrder, null));
                 return qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
 
+            case OUTBOX:
+                qb.appendWhere("outbox.account=(SELECT _ID FROM accounts WHERE name=");
+                qb.appendWhereEscapeString(uris.account.name);
+                qb.appendWhere(")");
+                qb.setTables("outbox");
+                Log.i(TAG, "Outbox " + qb.buildQuery(projection, selection, null, null, sortOrder, null));
+                return qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+
             default:
                 throw new IllegalArgumentException("Bad URI");
         }
@@ -267,6 +240,8 @@ public class PumpContentProvider extends ContentProvider {
             case OBJECT:        return "vnd.android.cursor.item/vnd.e43.impeller.object";
             case OBJECTS:       return "vnd.android.cursor.dir/vnd.e43.impeller.object";
             case FEED:          return "vnd.android.cursor.dir/vnd.e43.impeller.activity";
+            case OUTBOX:        return "vnd.android.cursor.dir/vnd.e43.impeller.activity";
+            case OUTBOX_ENTRY:  return "vnd.android.cursor.item/vnd.e43.impeller.activity";
             default: return null;
         }
     }
@@ -278,7 +253,7 @@ public class PumpContentProvider extends ContentProvider {
             throw new IllegalArgumentException("Must provide JSON version");
 
         List<String> uriSegments = uri.getPathSegments();
-        Uris uris;
+        Content.Uris uris;
 
         // Assign "default" values to placate the ID
         String strId = null;
@@ -289,20 +264,9 @@ public class PumpContentProvider extends ContentProvider {
             throw new IllegalArgumentException("Bad path");
         } else {
             Account acct = new Account(uriSegments.get(0), Authenticator.ACCOUNT_TYPE);
-            uris = Uris.get(acct);
+            uris = Content.Uris.get(acct);
 
-            // Get the account ID
-            Cursor c = db.query("accounts", new String[] {"_ID"},
-                    "name=?", new String[] {acct.name}, null, null, null);
-            try {
-                c.moveToFirst();
-                accountId = c.getInt(0);
-            } catch(CursorIndexOutOfBoundsException ex) {
-                Log.e(TAG, "Missing user account " + acct.name, ex);
-                throw ex;
-            } finally {
-                c.close();
-            }
+            accountId = getAccountId(db, acct);
 
             if(uriSegments.size() >= 3) {
                 strId = uriSegments.get(2);
@@ -352,6 +316,11 @@ public class PumpContentProvider extends ContentProvider {
 
                     break;
 
+                case OUTBOX:
+                    String mediaType = contentValues.getAsString("mediaType");
+                    int    status    = contentValues.getAsInteger("status");
+                    return insertOutboxEntry(db, uris, accountId, obj, mediaType, status);
+
                 default: throw new IllegalArgumentException("Bad URI");
             }
 
@@ -363,6 +332,80 @@ public class PumpContentProvider extends ContentProvider {
         } finally {
             db.endTransaction();
         }
+    }
+
+    @Override
+    public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
+        SQLiteDatabase db = m_mgr.getWritableDatabase();
+        ContentResolver res = getContext().getContentResolver();
+        Account acct = new Account(uri.getPathSegments().get(0), Authenticator.ACCOUNT_TYPE);
+        Content.Uris uris = Content.Uris.get(acct);
+
+        int accountId = getAccountId(db, acct);
+
+        int rv = 0;
+        switch(ms_uriMatcher.match(uri)) {
+            case OUTBOX_ENTRY:
+                rv = db.update("outbox", contentValues, "accountId == ? && id == ?", new String[] {
+                        Integer.toString(accountId),
+                        uri.getLastPathSegment()
+                });
+
+                res.notifyChange(uri, null);
+                res.notifyChange(uris.outboxUri, null, true);
+
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+
+        return rv;
+    }
+
+    @Override
+    public int delete(Uri uri, String s, String[] strings) {
+        SQLiteDatabase db = m_mgr.getWritableDatabase();
+        ContentResolver res = getContext().getContentResolver();
+        Account acct = new Account(uri.getPathSegments().get(0), Authenticator.ACCOUNT_TYPE);
+        Content.Uris uris = Content.Uris.get(acct);
+
+        int accountId = getAccountId(db, acct);
+
+        int rv = 0;
+        switch(ms_uriMatcher.match(uri)) {
+            case OUTBOX_ENTRY:
+                db.delete("outbox", "accountId == ? && id == ?", new String[] {
+                        Integer.toString(accountId),
+                        uri.getLastPathSegment()
+                });
+
+                res.notifyChange(uri, null);
+                res.notifyChange(uris.outboxUri, null);
+
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+
+        return rv;
+    }
+
+    private Uri insertOutboxEntry(SQLiteDatabase db, Content.Uris uris, int accountId, JSONObject obj, String mediaType, int status) {
+        ContentValues vals = new ContentValues();
+        vals.put("account",   accountId);
+        vals.put("_json",     obj.toString());
+        vals.put("mediaType", mediaType);
+        vals.put("status",    status);
+
+        int id = (int) db.insertOrThrow("outbox", null, vals);
+        Uri uri = uris.outboxEntry(id);
+
+        ContentResolver res = getContext().getContentResolver();
+        res.notifyChange(uri, null);
+        res.notifyChange(uris.outboxUri, null, true);
+
+
+        return uri;
     }
 
     private void insertFeedEntry(SQLiteDatabase db, int id, int account) {
@@ -462,7 +505,7 @@ public class PumpContentProvider extends ContentProvider {
             int _id = ensureObject(db, act, account);
 
             db.delete("recipients", "activity=?", new String[] { Integer.toString(_id) });
-            String[] keys = PumpContentProvider.RECIPIENT_KEYS;
+            String[] keys = Content.RECIPIENT_KEYS;
             for(int i = 0; i < keys.length; i++) {
                 JSONArray list = act.optJSONArray(keys[i]);
                 if(list != null) for(int j = 0; j < list.length(); j++) {
@@ -594,15 +637,5 @@ public class PumpContentProvider extends ContentProvider {
         } finally {
             db.endTransaction();
         }
-    }
-
-    @Override
-    public int delete(Uri uri, String s, String[] strings) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
-        throw new UnsupportedOperationException();
     }
 }

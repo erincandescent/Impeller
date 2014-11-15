@@ -1,21 +1,13 @@
 package eu.e43.impeller.uikit;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.accounts.OnAccountsUpdateListener;
 import android.content.Context;
-import android.database.DataSetObserver;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.CheckedTextView;
 import android.widget.TextView;
 
-import eu.e43.impeller.Constants;
-import eu.e43.impeller.R;
-import eu.e43.impeller.account.Authenticator;
-import eu.e43.impeller.activity.ActivityWithAccount;
+import eu.e43.impeller.api.Constants;
 
 /**
  * Created by oshepherd on 28/02/14.

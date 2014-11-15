@@ -1,27 +1,49 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
-    android:layout_width="fill_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp"
-    android:background="@drawable/card_top_bg">
+    android:minHeight="48dp"
+    android:id="@+id/objectHeader">
 
     <eu.e43.impeller.uikit.AvatarView
-            android:id="@+id/actorImage"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_weight="0" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/objectCaption"
+        android:id="@+id/authorAvatar"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="8dp"
+        android:maxHeight="48dp"
+        android:maxWidth="48dp"
         android:layout_marginLeft="8dp"
-        android:layout_weight="1" />
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp" />
 
-    <eu.e43.impeller.uikit.ToolbarView
-        android:id="@+id/objectToolbar"
-        android:layout_width="wrap_content"
-        android:layout_height="@android:dimen/app_icon_size"
-        android:layout_weight="0"/>
-</LinearLayout>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="false"
+        android:layout_alignParentRight="false"
+        android:layout_toRightOf="@+id/authorAvatar"
+        android:layout_centerVertical="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="User Name"
+            android:id="@+id/authorName"
+            android:layout_toEndOf="@+id/authorAvatar"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/authorAvatar" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Time"
+            android:id="@+id/objectDetails"
+            android:layout_below="@+id/title"
+            android:layout_alignLeft="@+id/title"
+            android:layout_alignStart="@+id/title" />
+    </LinearLayout>
+</RelativeLayout>

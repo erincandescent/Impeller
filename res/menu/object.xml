@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_like"
         android:title="@string/action_like"
         android:checkable="true"
-        android:icon="@drawable/ic_like" />
+        android:icon="@drawable/ic_like_24dp"
+        app:showAsAction="always"/>
 
     <item android:title="@string/action_reply"
-          android:icon="@drawable/ic_action_reply">
+          android:icon="@drawable/ic_reply_white_24dp"
+          app:showAsAction="ifRoom">
         <menu>
             <item
                 android:id="@+id/action_replyNote"
@@ -23,7 +27,8 @@
     <item
         android:id="@+id/action_share"
         android:title="@string/action_share"
-        android:icon="@drawable/ic_action_share" />
+        android:icon="@drawable/ic_share_white_24dp"
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/action_viewInBrowser"

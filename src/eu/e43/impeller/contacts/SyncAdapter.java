@@ -75,6 +75,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
+
+
     @Override
     public void onPerformSync(Account account,
                               Bundle bundle,

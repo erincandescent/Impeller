@@ -7,7 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.api.Constants;
 import eu.e43.impeller.account.Authenticator;
 
 public class FeedNotificationReceiver extends BroadcastReceiver {

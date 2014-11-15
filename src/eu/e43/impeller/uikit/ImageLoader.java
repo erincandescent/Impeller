@@ -71,7 +71,7 @@ public class ImageLoader {
 	
 	// Utility Functions
 	
-	public void setImage(final ImageView view, URI uri) {
+	public void setImage(final ImageView view, URI uri, final Listener l) {
 		view.setImageDrawable(m_ctx.getResources().getDrawable(R.drawable.ic_image_loading));
 		ms_viewUris.put(view,  uri);
 		load(new Listener() {
@@ -81,6 +81,7 @@ public class ImageLoader {
 					view.setImageDrawable(dr);
 					ms_viewUris.remove(uri);
 				}
+                if(l != null) l.loaded(dr, uri);
 			}
 
 			@Override
@@ -90,21 +91,30 @@ public class ImageLoader {
 					view.setImageDrawable(m_ctx.getResources().getDrawable(R.drawable.ic_image_broken));
 					ms_viewUris.remove(uri);
 				}
+                if(l != null) l.error(uri);
 			}
 		}, uri);
 	}
-	
-	public void setImage(ImageView view, String imageUrl) {
+
+    public void setImage(final ImageView view, URI uri) {
+        setImage(view, uri, null);
+    }
+
+	public void setImage(ImageView view, String imageUrl, final Listener l) {
 		URI uri;
 		try {
 			uri = new URI(imageUrl);
 		} catch(Exception e) {
 			uri = null;
 		}
-		setImage(view, uri);
+		setImage(view, uri, l);
 	}
 
-    public void setImage(final AvatarView view, URI uri) {
+    public void setImage(ImageView view, String imageUrl) {
+        setImage(view, imageUrl, null);
+    }
+
+    public void setImage(final AvatarView view, URI uri, final Listener l) {
         ms_viewUris.put(view,  uri);
         view.setAvatar(null);
         load(new Listener() {
@@ -115,6 +125,8 @@ public class ImageLoader {
                     view.setAvatar(dr.getBitmap());
                     ms_viewUris.remove(uri);
                 }
+
+                if(l != null) l.loaded(dr, uri);
             }
 
             @Override
@@ -123,18 +135,28 @@ public class ImageLoader {
                 if (viewUri != null && uri != null && uri.equals(viewUri)) {
                     ms_viewUris.remove(uri);
                 }
+
+                if(l != null) l.error(uri);
             }
         }, uri);
     }
 
-    public void setImage(AvatarView view, String imageUrl) {
+    public void setImage(final AvatarView view, URI uri) {
+        setImage(view, uri, null);
+    }
+
+    public void setImage(AvatarView view, String imageUrl, Listener l) {
         URI uri;
         try {
             uri = new URI(imageUrl);
         } catch(Exception e) {
             uri = null;
         }
-        setImage(view, uri);
+        setImage(view, uri, l);
+    }
+
+    public void setImage(AvatarView view, String imageUrl) {
+        setImage(view, imageUrl, null);
     }
 
     public void setBackground(final View view, URI uri) {
@@ -207,13 +229,24 @@ public class ImageLoader {
 
         FetchTask task = ms_tasks.get(uri);
         if(task == null) {
+            int largestEdge;
+            if(m_ctx instanceof Activity) {
+                Point size = new Point();
+                ((Activity) m_ctx).getWindowManager().getDefaultDisplay().getRealSize(size);
+
+                largestEdge = size.x > size.y ? size.x : size.y;
+            } else {
+                // Background - just needs to be big enough for flinging to Android Wear
+                largestEdge = 512;
+            }
+
             task = new FetchTask();
             ms_tasks.put(uri,  task);
             task.m_listeners.add(l);
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-                task.executeOnExecutor(ms_threadpool, uri);
+                task.executeOnExecutor(ms_threadpool, uri, largestEdge);
             else
-                task.execute(uri);
+                task.execute(uri, largestEdge);
         } else {
             task.m_listeners.add(l);
         }
@@ -234,10 +267,13 @@ public class ImageLoader {
 	class FetchTask extends AsyncTask<Object, Void, BitmapDrawable> {
 		private URI 			   m_uri;
 		public ArrayList<Listener> m_listeners = new ArrayList<Listener>();
-		
-		@Override
+        private int m_largestEdge;
+
+        @Override
 		protected BitmapDrawable doInBackground(Object... params) {
-			m_uri  = (URI) params[0];
+			m_uri         = (URI) params[0];
+            m_largestEdge = (Integer) params[1];
+
 			try {
 				URL url = m_uri.toURL();
 			
@@ -254,8 +290,8 @@ public class ImageLoader {
                 BitmapFactory.decodeStream(in, null, opts);
 
                 // Compute appropriate scale factor
-                //int largestEdge = opts.outWidth > opts.outHeight ? opts.outWidth : opts.outHeight;
-                //opts.inSampleSize = largestEdge / m_largestEdge;
+                int largestEdge = opts.outWidth > opts.outHeight ? opts.outWidth : opts.outHeight;
+                opts.inSampleSize = largestEdge / m_largestEdge;
                 opts.inJustDecodeBounds = false;
 
                 // Decode image. If we get OOM, try doubling the scale factor (blurry images are

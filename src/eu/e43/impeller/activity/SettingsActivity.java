@@ -10,30 +10,57 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
+import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 
-import eu.e43.impeller.AccountUtils;
+import com.github.machinarius.preferencefragment.PreferenceFragment;
+
+import eu.e43.impeller.api.Content;
 import eu.e43.impeller.R;
 import eu.e43.impeller.account.Authenticator;
-import eu.e43.impeller.content.PumpContentProvider;
 
-/**
- * A {@link PreferenceActivity} that presents a set of application settings. On
- * handset devices, settings are presented as a single list. On tablets,
- * settings are split by category, with category headers shown to the left of
- * the list of settings.
- * <p>
- * See <a href="http://developer.android.com/design/patterns/settings.html">
- * Android Design: Settings</a> for design guidelines and the <a
- * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
- * API Guide</a> for more information on developing a Settings UI.
- */
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends ActionBarActivity {
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(android.R.id.content, new SettingsFragment())
+                .commit();
+    }
+
+    public class SettingsFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+
+            // In the simplified UI, fragments are not used at all and we instead
+            // use the older PreferenceActivity APIs.
+
+            // Add 'general' preferences.
+            addPreferencesFromResource(R.xml.pref_general);
+
+            // Add 'notifications' preferences, and a corresponding header.
+            //PreferenceCategory fakeHeader = new PreferenceCategory(this);
+            //fakeHeader.setTitle(R.string.pref_header_notifications);
+            //getPreferenceScreen().addPreference(fakeHeader);
+            //addPreferencesFromResource(R.xml.pref_notification);
+
+            // Add 'data and sync' preferences, and a corresponding header.
+            PreferenceCategory fakeHeader = new PreferenceCategory(getActivity());
+            fakeHeader.setTitle(R.string.pref_header_data_sync);
+            getPreferenceScreen().addPreference(fakeHeader);
+            addPreferencesFromResource(R.xml.pref_data_sync);
+
+            // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
+            // their values. When their values change, their summaries are updated
+            // to reflect the new value, per the Android Design guidelines.
+            bindPreferenceSummaryToValue(findPreference("my_location"));
+            bindPreferenceToListener(findPreference("sync_frequency"), sSyncFrequencyListener);
+        }
     }
 
     @Override
@@ -44,35 +71,6 @@ public class SettingsActivity extends PreferenceActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-
-        // In the simplified UI, fragments are not used at all and we instead
-        // use the older PreferenceActivity APIs.
-
-        // Add 'general' preferences.
-        addPreferencesFromResource(R.xml.pref_general);
-
-        // Add 'notifications' preferences, and a corresponding header.
-        //PreferenceCategory fakeHeader = new PreferenceCategory(this);
-        //fakeHeader.setTitle(R.string.pref_header_notifications);
-        //getPreferenceScreen().addPreference(fakeHeader);
-        //addPreferencesFromResource(R.xml.pref_notification);
-
-        // Add 'data and sync' preferences, and a corresponding header.
-        PreferenceCategory fakeHeader = new PreferenceCategory(this);
-        fakeHeader.setTitle(R.string.pref_header_data_sync);
-        getPreferenceScreen().addPreference(fakeHeader);
-        addPreferencesFromResource(R.xml.pref_data_sync);
-
-        // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
-        // their values. When their values change, their summaries are updated
-        // to reflect the new value, per the Android Design guidelines.
-        bindPreferenceSummaryToValue(findPreference("my_location"));
-        bindPreferenceToListener(findPreference("sync_frequency"), sSyncFrequencyListener);
     }
 
     /**
@@ -115,10 +113,10 @@ public class SettingsActivity extends PreferenceActivity {
             for(Account acct : mgr.getAccountsByType(Authenticator.ACCOUNT_TYPE)) {
                 Bundle empty = new Bundle();
                 if(newValInt > 0) {
-                    res.addPeriodicSync(acct, PumpContentProvider.AUTHORITY, empty, 60 * newValInt);
+                    res.addPeriodicSync(acct, Content.AUTHORITY, empty, 60 * newValInt);
                     res.addPeriodicSync(acct, ContactsContract.AUTHORITY, empty, 60 * newValInt);
                 } else {
-                    res.removePeriodicSync(acct, PumpContentProvider.AUTHORITY, empty);
+                    res.removePeriodicSync(acct, Content.AUTHORITY, empty);
                     res.removePeriodicSync(acct, ContactsContract.AUTHORITY, empty);
                 }
             }

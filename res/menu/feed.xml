@@ -5,7 +5,7 @@
         android:id="@+id/action_post"
         android:menuCategory="secondary"
         android:title="@string/action_post_note"
-        android:icon="@drawable/ic_note"
+        android:icon="@drawable/ic_message_white_24dp"
         android:checked="false"
         android:enabled="true"
         android:visible="true"
@@ -14,7 +14,7 @@
     <item
         android:id="@+id/action_post_image"
         android:menuCategory="secondary"
-        android:icon="@drawable/ic_picture"
+        android:icon="@drawable/ic_image_white_24dp"
         android:title="@string/action_post_image"
         android:checked="false"
         android:enabled="true"

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="0dp"
+    android:padding="0dp">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/image"
+        android:layout_gravity="center"
+        android:scaleType="centerCrop"
+        android:maxHeight="256dp"
+        android:adjustViewBounds="true"/>
+
+    <ImageView
+        android:id="@+id/video_prompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:background="@drawable/location_bg"
+        android:src="@drawable/ic_movie_black_36dp"
+        android:padding="4dp"
+        android:visibility="invisible"/>
+
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/title_container"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:background="@drawable/scrim_bottom"
+        android:layout_gravity="bottom">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse"
+            android:text="Large Text"
+            android:id="@+id/title"
+            android:textColor="@android:color/white"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </android.support.v7.widget.Toolbar>
+</FrameLayout>

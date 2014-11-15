@@ -7,6 +7,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
@@ -17,6 +18,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import eu.e43.impeller.api.Content;
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
 import eu.e43.impeller.account.Authenticator;
@@ -29,11 +31,18 @@ public class PumpDatabaseManager extends SQLiteOpenHelper {
     private static final String NOTIFICATION_TAG = "eu.e43.impeller.content.DatabaseUpgrade";
 
     PumpContentProvider m_context;
-    static final int CURRENT_VERSION = 6;
+    static final int CURRENT_VERSION = 7;
 
     protected PumpDatabaseManager(PumpContentProvider context) {
         super(context.getContext(), "eu.e43.impeller.content", null, CURRENT_VERSION);
         m_context = context;
+        if(Build.VERSION.SDK_INT >= 16)
+            setWriteAheadLoggingEnabled(true);
+    }
+
+    @Override
+    public void onConfigure(SQLiteDatabase db) {
+        db.enableWriteAheadLogging();
     }
 
     private void runQueryFile(SQLiteDatabase db, int resource) {
@@ -123,7 +132,7 @@ public class PumpDatabaseManager extends SQLiteOpenHelper {
                         String actJSON = c.getString(2);
 
                         JSONObject act = new JSONObject(actJSON);
-                        String[] keys = PumpContentProvider.RECIPIENT_KEYS;
+                        String[] keys = Content.RECIPIENT_KEYS;
                         for(int i = 0; i < keys.length; i++) {
                             JSONArray list = act.optJSONArray(keys[i]);
                             if(list != null) for(int j = 0; j < list.length(); j++) {
@@ -150,6 +159,10 @@ public class PumpDatabaseManager extends SQLiteOpenHelper {
             case 5:
                 Log.i(TAG, "Performing database migration to v6");
                 runQueryFile(db, R.raw.migrate_v6);
+
+            case 6:
+                Log.i(TAG, "Performing database migration to v7");
+                runQueryFile(db, R.raw.migrate_v7);
 
                 break;
             default:

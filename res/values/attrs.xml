@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Caligraphy -->
+    <attr name="fontPath" format="string"/>
+
     <declare-styleable name="TabWidget">
 
         <!-- Drawable used to draw the divider between tabs. -->

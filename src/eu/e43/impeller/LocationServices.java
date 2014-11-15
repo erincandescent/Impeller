@@ -8,7 +8,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -103,7 +102,7 @@ public class LocationServices implements LocationListener {
             } catch(RuntimeException e) {
                 Toast.makeText(m_context, "Your device firmware is non-conforming. Location services disabled.", 15);
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(m_context);
-                prefs.edit().putString(Constants.PREF_MY_LOCATION, "0").apply();
+                prefs.edit().putString(AppConstants.PREF_MY_LOCATION, "0").apply();
                 m_mainHandler.post(m_dispatchLocationUpdates);
                 return;
             }

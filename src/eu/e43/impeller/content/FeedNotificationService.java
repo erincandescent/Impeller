@@ -3,11 +3,9 @@ package eu.e43.impeller.content;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -19,7 +17,6 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.text.Html;
-import android.text.SpannableStringBuilder;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
@@ -30,7 +27,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.api.Constants;
+import eu.e43.impeller.api.Content;
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
 import eu.e43.impeller.activity.MainActivity;
@@ -91,7 +89,7 @@ public class FeedNotificationService extends Service {
         Account acct = intent.getParcelableExtra(Constants.EXTRA_ACCOUNT);
         String acctId = AccountManager.get(this).getUserData(acct, "id");
 
-        PumpContentProvider.Uris uris = PumpContentProvider.Uris.get(acct);
+        Content.Uris uris = Content.Uris.get(acct);
         SharedPreferences prefs = getSharedPreferences("notifications", MODE_PRIVATE);
 
         String notifiedKey = "notified:" + acct.name;
@@ -302,7 +300,7 @@ public class FeedNotificationService extends Service {
             replyIntent.putExtra(Constants.EXTRA_IN_REPLY_TO, m_activity.optJSONObject("object").toString());
 
             m_builder.setContentIntent(PendingIntent.getActivity(FeedNotificationService.this, 0, showIntent, 0));
-            m_builder.addAction(R.drawable.ic_action_reply, "Reply",
+            m_builder.addAction(R.drawable.ic_reply_white_36dp, "Reply",
                     PendingIntent.getActivity(FeedNotificationService.this, 0, replyIntent, 0));
             if(m_grouped)
                 m_builder.setGroup(tag);

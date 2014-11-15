@@ -8,11 +8,8 @@ import android.net.Uri;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -24,10 +21,10 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.api.Constants;
+import eu.e43.impeller.api.Content;
 import eu.e43.impeller.PostTask;
 import eu.e43.impeller.R;
-import eu.e43.impeller.content.PumpContentProvider;
 import eu.e43.impeller.uikit.PeopleAdapter;
 import eu.e43.impeller.uikit.PersonTokenViewAdapter;
 
@@ -46,7 +43,7 @@ public class ShareActivity extends ActivityWithAccount implements
     protected void onCreateEx(Bundle savedInstanceState) {
         setContentView(R.layout.activity_share);
 
-        String objJSON = getIntent().getStringExtra(Constants.EXTRA_ACTIVITYSTREAMS_OBJECT);
+        String objJSON = getIntent().getStringExtra(Constants.EXTRA_AS_OBJECT);
         if(objJSON == null) {
             finishActivity(RESULT_CANCELED);
             return;
@@ -172,7 +169,7 @@ public class ShareActivity extends ActivityWithAccount implements
                 ContentValues cv = new ContentValues();
                 cv.put("_json", obj.toString());
                 getContentResolver().insert(getContentUris().activitiesUri, cv);
-                getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+                getContentResolver().requestSync(m_account, Content.AUTHORITY, new Bundle());
 
                 setResult(RESULT_OK);
                 finish();

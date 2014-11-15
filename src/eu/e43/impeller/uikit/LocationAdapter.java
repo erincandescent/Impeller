@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.AppConstants;
 import eu.e43.impeller.LocationServices;
 import eu.e43.impeller.R;
 
@@ -74,7 +74,7 @@ public class LocationAdapter extends ArrayAdapter<Address> implements LocationSe
         addAll(addresses);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        if(Integer.parseInt(prefs.getString(Constants.PREF_MY_LOCATION, "0")) >= Constants.MY_LOCATION_SET) {
+        if(Integer.parseInt(prefs.getString(AppConstants.PREF_MY_LOCATION, "0")) >= AppConstants.MY_LOCATION_SET) {
             if(addresses.size() >= 1) m_spin.setSelection(1);
         }
     }
