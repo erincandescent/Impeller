@@ -1,134 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="wrap_content"
-    android:layout_width="match_parent"
-    android:padding="4dp">
-    <LinearLayout
-        android:layout_width="match_parent"
+    android:layout_width="match_parent">
+    <android.support.v7.widget.CardView
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/card_bg">
-
-        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_margin="4dp"
+        app:cardElevation="4dp">
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/im_accent"
-            android:padding="8dp"
-            android:id="@+id/activityHeader">
+            android:orientation="vertical">
 
-            <eu.e43.impeller.uikit.AvatarView
-                android:id="@+id/actorAvatar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentTop="true"
-                android:layout_marginRight="8dp"
-                android:maxHeight="48dp"
-                android:maxWidth="48dp"/>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="fill_parent"
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="false"
-                android:layout_toRightOf="@+id/actorAvatar"
-                android:layout_centerVertical="true">
+                android:background="@color/im_accent"
+                android:padding="8dp"
+                android:id="@+id/activityHeader">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="User Name"
-                    android:id="@+id/actorName"
-                    android:layout_toEndOf="@+id/commentAuthorAvatar"
+                <eu.e43.impeller.uikit.AvatarView
+                    android:id="@+id/actorAvatar"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentLeft="true"
                     android:layout_alignParentTop="true"
-                    android:layout_toRightOf="@+id/commentAuthorAvatar" />
+                    android:layout_marginRight="8dp"
+                    android:padding="4dp"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="Verb'd - Time"
-                    android:id="@+id/activityDetails"
-                    android:layout_below="@+id/title"
-                    android:layout_alignLeft="@+id/title"
-                    android:layout_alignStart="@+id/title" />
-            </LinearLayout>
-        </RelativeLayout>
+                    android:layout_alignParentEnd="false"
+                    android:layout_toRightOf="@+id/actorAvatar"
+                    android:layout_centerVertical="true">
 
-        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:id="@+id/objectHeader">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:text="User Name"
+                        android:id="@+id/actorName"
+                        android:layout_toEndOf="@+id/commentAuthorAvatar"
+                        android:layout_alignParentTop="true"
+                        android:layout_toRightOf="@+id/commentAuthorAvatar" />
 
-            <eu.e43.impeller.uikit.AvatarView
-                android:id="@+id/authorAvatar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentTop="true"
-                android:layout_marginRight="8dp"
-                android:maxHeight="48dp"
-                android:maxWidth="48dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:text="Verb'd - Time"
+                        android:id="@+id/activityDetails"
+                        android:layout_below="@+id/title"
+                        android:layout_alignLeft="@+id/title"
+                        android:layout_alignStart="@+id/title" />
+                </LinearLayout>
+            </RelativeLayout>
 
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="fill_parent"
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="false"
-                android:layout_toRightOf="@+id/authorAvatar"
-                android:layout_centerVertical="true">
+                android:padding="8dp"
+                android:id="@+id/objectHeader">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Title"
-                    android:id="@+id/objectTitle"
-                    android:layout_toEndOf="@+id/commentAuthorAvatar"
+                <eu.e43.impeller.uikit.AvatarView
+                    android:id="@+id/authorAvatar"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentLeft="true"
                     android:layout_alignParentTop="true"
-                    android:layout_toRightOf="@+id/commentAuthorAvatar"
-                    android:textStyle="bold" />
+                    android:layout_marginRight="8dp"
+                    android:padding="4dp"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="User Name"
-                    android:id="@+id/authorName"
-                    android:layout_toEndOf="@+id/commentAuthorAvatar"
-                    android:layout_alignParentTop="true"
-                    android:layout_toRightOf="@+id/commentAuthorAvatar" />
+                    android:layout_alignParentEnd="false"
+                    android:layout_toRightOf="@+id/authorAvatar"
+                    android:layout_centerVertical="true">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="Time"
-                    android:id="@+id/objectDetails"
-                    android:layout_below="@+id/title"
-                    android:layout_alignLeft="@+id/title"
-                    android:layout_alignStart="@+id/title" />
-            </LinearLayout>
-        </RelativeLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:text="Title"
+                        android:id="@+id/objectTitle"
+                        android:layout_toEndOf="@+id/commentAuthorAvatar"
+                        android:layout_alignParentTop="true"
+                        android:layout_toRightOf="@+id/commentAuthorAvatar"
+                        android:textStyle="bold" />
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/image"
-            android:layout_gravity="center_horizontal"
-            android:src="@drawable/ic_launcher"
-            android:scaleType="fitCenter" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:text="User Name"
+                        android:id="@+id/authorName"
+                        android:layout_toEndOf="@+id/commentAuthorAvatar"
+                        android:layout_alignParentTop="true"
+                        android:layout_toRightOf="@+id/commentAuthorAvatar" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Body"
-            android:id="@+id/content"
-            android:padding="8dp"
-            android:typeface="normal" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:text="Time"
+                        android:id="@+id/objectDetails"
+                        android:layout_below="@+id/title"
+                        android:layout_alignLeft="@+id/title"
+                        android:layout_alignStart="@+id/title" />
+                </LinearLayout>
+            </RelativeLayout>
 
-    </LinearLayout>
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/image"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ic_launcher"
+                android:scaleType="fitCenter" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="Body"
+                android:id="@+id/content"
+                android:padding="8dp"
+                android:typeface="normal" />
+
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
 </FrameLayout>

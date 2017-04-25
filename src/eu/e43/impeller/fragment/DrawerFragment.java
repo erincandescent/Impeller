@@ -4,7 +4,6 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -18,7 +17,7 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.api.Constants;
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
 import eu.e43.impeller.activity.ActivityWithAccount;
@@ -100,6 +99,10 @@ public class DrawerFragment extends Fragment implements AdapterView.OnItemClickL
         Cursor c = getActivity().getContentResolver().query(
                 awa.getContentUris().objectsUri, new String[] { "_json" }, 
                 "id=?", new String[] { id }, null);
+
+        if(c == null)
+            return;
+
         try {
             if(c.moveToFirst()) {
                 JSONObject obj = new JSONObject(c.getString(0));

@@ -29,17 +29,17 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.ViewFlipper;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.api.Constants;
+import eu.e43.impeller.api.Content;
 import eu.e43.impeller.account.Authenticator;
 import eu.e43.impeller.content.FeedNotificationReceiver;
 import eu.e43.impeller.fragment.DrawerFragment;
@@ -47,38 +47,21 @@ import eu.e43.impeller.fragment.FeedFragment;
 import eu.e43.impeller.fragment.ObjectContainerFragment;
 import eu.e43.impeller.R;
 import eu.e43.impeller.fragment.SplashFragment;
-import eu.e43.impeller.content.PumpContentProvider;
-import eu.e43.impeller.uikit.NavigationDrawerAdapter;
 import eu.e43.impeller.uikit.OverlayController;
 
 public class MainActivity extends ActivityWithAccount implements DrawerFragment.DrawerActionListener {
 	static final String TAG = "MainActivity";
 
-    /** Time to do next feed fetch */
-	private Calendar        m_nextFetch     = null;
-
-    /** Tablet UI mode? */
-    private boolean         m_isTablet      = false;
-
-    /** Drawer toggle controller */
-    private ActionBarDrawerToggle m_drawerToggle = null;
-
-    /** Drawer layout */
-    private DrawerLayout m_drawerLayout = null;
-
-    /** Drawer fragment */
-    private DrawerFragment m_drawerFragment = null;
-
-    /** Pointer to the active feed fragment (if any) */
-    private FeedFragment m_feedFragment     = null;
-
-    /** Pointer to the active object fragment (if any) */
-    private ObjectContainerFragment m_objectFragment = null;
-
-    Mode m_displayMode = Mode.FEED;
-
-    /** Is there an intent pending until we have an account? */
-    private boolean m_pendingIntent = false;
+	private Calendar              m_nextFetch        = null;  // Time to do next feed fetch
+    private boolean               m_isTablet         = false; // Tablet UI mode?
+    private Toolbar               m_toolbar          = null;  // (Feed) toolbar
+    private ActionBarDrawerToggle m_drawerToggle     = null;  // Drawer controller
+    private DrawerLayout          m_drawerLayout     = null;  // Drawer layout
+    private DrawerFragment        m_drawerFragment   = null;  // Drawer fragment
+    private FeedFragment          m_feedFragment     = null;  // Pointer to the active feed fragment (if any)
+    private ObjectContainerFragment m_objectFragment = null;  // Pointer to the active object fragment (if any)
+    Mode                          m_displayMode      = Mode.FEED;
+    private boolean m_pendingIntent                  = false; // Is there an intent pending until we have an account?
 
     @Override
 	protected void onCreateEx(Bundle savedInstanceState) {
@@ -86,18 +69,23 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
         PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
         setContentView(R.layout.activity_main);
 
+        m_toolbar          = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(m_toolbar);
+        m_toolbar.inflateMenu(R.menu.main);
+
         m_drawerLayout     = (DrawerLayout) findViewById(R.id.drawer_layout);
         m_drawerFragment   = (DrawerFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
-        m_drawerToggle = new ActionBarDrawerToggle(
+        m_drawerToggle     = new ActionBarDrawerToggle(
                 this,
                 m_drawerLayout,
-                R.drawable.ic_navigation_drawer,
                 R.string.drawer_open,
                 R.string.drawer_close
         );
         m_drawerLayout.setDrawerListener(m_drawerToggle);
 
+
         m_isTablet = "two_pane".equals(findViewById(R.id.main_activity).getTag());
+        Log.v(TAG, "isTwoPane? " + (m_isTablet ? "YES" : "NO"));
 
         if(savedInstanceState == null) {
             getSupportActionBar().hide();
@@ -183,7 +171,7 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
         if(m_nextFetch == null || m_nextFetch.before(now) && m_account != null) {
             Log.v(TAG, "onStart() - requesting sync");
 
-            getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+            getContentResolver().requestSync(m_account, Content.AUTHORITY, new Bundle());
             now.add(Calendar.MINUTE, 5);
             m_nextFetch = now;
         }
@@ -202,8 +190,6 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
             .commit();
 
         getSupportActionBar().show();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
 
         if(m_feedFragment == null || !acct.equals(m_feedFragment.getAccount())) {
             FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
@@ -267,12 +253,6 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (m_drawerToggle.onOptionsItemSelected(item)) {
             return true;
@@ -298,8 +278,8 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
     }
 
     private void setDisplayMode(Mode m) {
-        View fdFrag = findViewById(R.id.feed_fragment);
-        View ctFrag = /*m_isTablet ? findViewById(R.id.content_container) :*/ findViewById(R.id.content_fragment);
+        View fdFrag = m_isTablet ? findViewById(R.id.feed_fragment)     : findViewById(R.id.feed_container);
+        View ctFrag = m_isTablet ? findViewById(R.id.content_container) : findViewById(R.id.content_fragment);
 
         Log.d(TAG, "Mode " + m_displayMode.toString() + " -> " + m.toString());
         if(m != m_displayMode)
@@ -309,19 +289,16 @@ public class MainActivity extends ActivityWithAccount implements DrawerFragment.
             case FEED:
                 fdFrag.setVisibility(View.VISIBLE);
                 ctFrag.setVisibility(View.GONE);
-                m_drawerToggle.setDrawerIndicatorEnabled(true);
                 break;
 
             case FEED_OBJECT:
                 fdFrag.setVisibility(m_isTablet ? View.VISIBLE : View.GONE);
                 ctFrag.setVisibility(View.VISIBLE);
-                m_drawerToggle.setDrawerIndicatorEnabled(false);
                 break;
 
             case OBJECT:
                 fdFrag.setVisibility(View.GONE);
                 ctFrag.setVisibility(View.VISIBLE);
-                m_drawerToggle.setDrawerIndicatorEnabled(false);
                 break;
         }
 

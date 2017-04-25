@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/objectFrame"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:background="@android:color/white">
+    <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="6dp"
-        android:clipToPadding="false" />
+        android:clipToPadding="false"
+        android:background="@null" />
+
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/objectToolbar"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+</FrameLayout>

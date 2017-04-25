@@ -5,10 +5,6 @@ DROP INDEX IF EXISTS ix_objects_inReplyTo;
 DROP INDEX IF EXISTS ix_replies;
 DROP INDEX IF EXISTS ix_feed_entries;
 
-ALTER TABLE activities   RENAME TO activities_old;
-ALTER TABLE objects      RENAME TO objects_old;
-ALTER TABLE feed_entries RENAME TO feed_entries_old;
-
 CREATE TABLE accounts (
     _ID         INTEGER PRIMARY KEY,
     name        TEXT UNIQUE

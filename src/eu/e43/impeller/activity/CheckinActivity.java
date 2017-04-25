@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.location.Address;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -15,10 +14,10 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import eu.e43.impeller.api.Content;
 import eu.e43.impeller.LocationServices;
 import eu.e43.impeller.PostTask;
 import eu.e43.impeller.R;
-import eu.e43.impeller.content.PumpContentProvider;
 import eu.e43.impeller.uikit.LocationAdapter;
 
 public class CheckinActivity extends ActivityWithAccount {
@@ -98,7 +97,7 @@ public class CheckinActivity extends ActivityWithAccount {
                 ContentValues cv = new ContentValues();
                 cv.put("_json", obj.toString());
                 getContentResolver().insert(getContentUris().activitiesUri, cv);
-                getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+                getContentResolver().requestSync(m_account, Content.AUTHORITY, new Bundle());
 
                 finish();
             }

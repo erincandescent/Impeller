@@ -22,7 +22,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
@@ -34,7 +33,6 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
@@ -50,7 +48,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import eu.e43.impeller.activity.ActivityWithAccount;
-import eu.e43.impeller.content.PumpContentProvider;
+import eu.e43.impeller.api.Content;
 
 public class Utils {
     public static Uri getHostUri(Context ctx, Account user, String... components) {
@@ -267,9 +265,15 @@ public class Utils {
         return ctx.getResources().getDisplayMetrics().densityDpi;
     }
 
-    public static int dip(Context ctx, int dip) {
+    public static int pxFromDip(Context ctx, int dip) {
         final float density = ctx.getResources().getDisplayMetrics().density;
         return (int) (density * dip + 0.5f);
+    }
+
+    public static int dipFromPx(Context ctx, int px) {
+        if(ctx == null) return px;
+        final float density = ctx.getResources().getDisplayMetrics().density;
+        return (int) (px / density + 0.5f);
     }
 
     public static String formatHtmlFragment(String fragment, Integer width) {
@@ -305,7 +309,7 @@ public class Utils {
 
     public static JSONObject findPost(
             Context ctx,
-            PumpContentProvider.Uris uris,
+            Content.Uris uris,
             JSONObject object) throws JSONException {
         Cursor res = ctx.getContentResolver().query(
                 uris.activitiesUri,
@@ -327,5 +331,19 @@ public class Utils {
         } finally {
             res.close();
         }
+    }
+
+    public static int mixColours(int first, int second, float mix) {
+        float inverseMix = 1 - mix;
+        int a = ((int)(((float)(first >> 24 & 0xff )*mix) +
+                ((float)(second >> 24 & 0xff ) * inverseMix))) & 0xff;
+        int r = ((int)(((float)(first >> 16 & 0xff ) * mix) +
+                ((float)(second >> 16 & 0xff ) * inverseMix))) & 0xff;
+        int g = ((int)(((float)(first >> 8 & 0xff ) * mix) +
+                ((float)(second >> 8 & 0xff ) * inverseMix))) & 0xff;
+        int b = ((int)(((float)(first & 0xff ) * mix) +
+                ((float)(second & 0xff ) * inverseMix))) & 0xff;
+
+        return a << 24 | r << 16 | g << 8 | b;
     }
 }

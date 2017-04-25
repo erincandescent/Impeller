@@ -1,6 +1,6 @@
 package eu.e43.impeller.fragment;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.api.Constants;
 import eu.e43.impeller.R;
 import eu.e43.impeller.activity.MainActivity;
 import eu.e43.impeller.content.ContentUpdateReceiver;

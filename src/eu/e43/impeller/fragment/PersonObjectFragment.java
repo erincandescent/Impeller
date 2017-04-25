@@ -4,26 +4,36 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.CursorLoader;
+import android.support.v7.graphics.Palette;
+import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.CompoundButton;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.lucasr.twowayview.TWView;
+import org.lucasr.twowayview.TwoWayLayoutManager;
+import org.lucasr.twowayview.widget.TwoWayView;
+import org.lucasr.twowayview.widget.ListLayoutManager;
+import org.lucasr.twowayview.widget.StaggeredGridLayoutManager;
 
-import eu.e43.impeller.Constants;
+import java.net.URI;
+
+import eu.e43.impeller.AppConstants;
+import eu.e43.impeller.api.Constants;
+import eu.e43.impeller.api.Content;
 import eu.e43.impeller.ImpellerApplication;
 import eu.e43.impeller.PostTask;
 import eu.e43.impeller.R;
@@ -31,7 +41,6 @@ import eu.e43.impeller.Utils;
 import eu.e43.impeller.activity.ActivityWithAccount;
 import eu.e43.impeller.activity.MainActivity;
 import eu.e43.impeller.content.ContentUpdateReceiver;
-import eu.e43.impeller.content.PumpContentProvider;
 import eu.e43.impeller.uikit.ActivityAdapter;
 import eu.e43.impeller.uikit.AvatarView;
 import eu.e43.impeller.uikit.ImageLoader;
@@ -48,6 +57,7 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
     }
 
     ActivityAdapter m_adapter;
+    Palette         m_palette;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,18 +79,21 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
 
 
 
-        TWView lv = new TWView(getActivity());
+        TwoWayView lv = new TwoWayView(getActivity());
         lv.setId(android.R.id.list);
         lv.setPadding(0, 0, 0, 0);
-        //lv.addHeaderView(header);
-        //lv.setDivider(null);
         m_adapter = new ActivityAdapter(getMainActivity());
         getLoaderManager().initLoader(0, null, this);
         lv.setAdapter(m_adapter);
-        //lv.setOnItemClickListener(this);
 
-        objectUpdated(getObject(), lv);
-        return lv;
+        lv.setLayoutManager(new ListLayoutManager(getActivity(), TwoWayLayoutManager.Orientation.VERTICAL));
+
+        LinearLayout root = new LinearLayout(getActivity());
+        root.addView(header);
+        root.addView(lv);
+
+        objectUpdated(getObject(), root);
+        return root;
     }
 
     public void objectUpdated(JSONObject obj) {
@@ -93,17 +106,23 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
         JSONObject pump_io = obj.optJSONObject("pump_io");
         if(pump_io == null) pump_io = new JSONObject();
 
-        AvatarView personAvatar      = (AvatarView)     root.findViewById(R.id.personImage);
-        TextView   personName        = (TextView)       root.findViewById(R.id.personName);
-        TextView   personDescription = (TextView)       root.findViewById(R.id.personDescription);
-        View       personLocationC   =                  root.findViewById(R.id.personLocationContainer);
-        TextView   personLocation    = (TextView)       root.findViewById(R.id.personLocation);
-        ToggleButton personFollowed  = (ToggleButton)   root.findViewById(R.id.personFollowToggle);
+        View       header             =                  root.findViewById(R.id.personHeader);
+        AvatarView personAvatar       = (AvatarView)     root.findViewById(R.id.personImage);
+        TextView   personName         = (TextView)       root.findViewById(R.id.personName);
+        TextView   personDescription  = (TextView)       root.findViewById(R.id.personDescription);
+        View       personLocationC    =                  root.findViewById(R.id.personLocationContainer);
+        TextView   personLocation     = (TextView)       root.findViewById(R.id.personLocation);
+        TextView   personLocationIcon = (TextView)       root.findViewById(R.id.personLocationIcon);
+        ToggleButton personFollowed   = (ToggleButton)   root.findViewById(R.id.personFollowToggle);
+
+        if(root != null && personAvatar == null) {
+            Log.e(TAG, "root != null but avatar == null?");
+        }
 
         JSONObject img = obj.optJSONObject("image");
         if(img != null) {
             ImageLoader ldr = getMainActivity().getImageLoader();
-            ldr.setImage(personAvatar, Utils.getImageUrl(getMainActivity(), img));
+            ldr.setImage(personAvatar, Utils.getImageUrl(getMainActivity(), img), m_paletteListener);
         }
 
         personName.setText(obj.optString("displayName"));
@@ -118,7 +137,35 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
         personFollowed.setChecked(pump_io.optBoolean("followed", false));
         personFollowed.setOnCheckedChangeListener(this);
 
+        if(m_palette != null) {
+            Palette.Swatch muted = m_palette.getVibrantSwatch();
+            if(muted != null) {
+                header.setBackgroundColor(muted.getRgb());
+                personName.setTextColor(muted.getTitleTextColor());
+                personDescription.setTextColor(muted.getBodyTextColor());
+                personLocation.setTextColor(muted.getBodyTextColor());
+                personLocationIcon.setTextColor(muted.getBodyTextColor());
+            }
+        }
+
     }
+
+    private ImageLoader.Listener m_paletteListener = new ImageLoader.Listener() {
+        @Override
+        public void loaded(BitmapDrawable dr, URI uri) {
+            Palette.generateAsync(dr.getBitmap(), new Palette.PaletteAsyncListener() {
+                @Override
+                public void onGenerated(Palette palette) {
+                    m_palette = palette;
+
+                    objectUpdated(getObject());
+                }
+            });
+        }
+
+        @Override
+        public void error(URI uri) {}
+    };
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -183,7 +230,7 @@ public class PersonObjectFragment extends ObjectFragment implements CompoundButt
                 activity.getContentResolver().insert(activity.getContentUris().activitiesUri, cv);
 
                 activity.getContentResolver().requestSync(
-                        activity.getAccount(), PumpContentProvider.AUTHORITY, new Bundle());
+                        activity.getAccount(), Content.AUTHORITY, new Bundle());
             } catch (JSONException e) {
                 Log.v(TAG, "Swallowing exception", e);
             }

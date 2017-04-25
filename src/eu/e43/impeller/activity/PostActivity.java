@@ -51,10 +51,11 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.AppConstants;
+import eu.e43.impeller.api.Constants;
+import eu.e43.impeller.api.Content;
 import eu.e43.impeller.LocationServices;
 import eu.e43.impeller.PostTask;
-import eu.e43.impeller.content.PumpContentProvider;
 import eu.e43.impeller.ogp.MetaElement;
 import eu.e43.impeller.ogp.OpenGraph;
 import eu.e43.impeller.uikit.LocationAdapter;
@@ -191,15 +192,15 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
         switch(m_type) {
             case TYPE_NOTE:
             case TYPE_COMMENT:
-                m_postType.setImageResource(R.drawable.ic_note);
+                m_postType.setImageResource(R.drawable.ic_message_black_36dp);
                 break;
 
             case TYPE_IMAGE:
-                m_postType.setImageResource(R.drawable.ic_picture);
+                m_postType.setImageResource(R.drawable.ic_image_black_36dp);
                 break;
 
             case TYPE_VIDEO:
-                m_postType.setImageResource(R.drawable.ic_video);
+                m_postType.setImageResource(R.drawable.ic_movie_black_36dp);
                 break;
         }
 
@@ -273,8 +274,8 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
         }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if(Integer.parseInt(prefs.getString(Constants.PREF_MY_LOCATION, "0"))
-                >= Constants.MY_LOCATION_FETCH) {
+        if(Integer.parseInt(prefs.getString(AppConstants.PREF_MY_LOCATION, "0"))
+                >= AppConstants.MY_LOCATION_FETCH) {
             m_locations = new LocationAdapter(this, m_location);
             m_location.setAdapter(m_locations);
         } else {
@@ -798,7 +799,7 @@ public class PostActivity extends ActivityWithAccount implements LoaderManager.L
                 ContentValues cv = new ContentValues();
                 cv.put("_json", obj.toString());
                 getContentResolver().insert(getContentUris().activitiesUri, cv);
-                getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+                getContentResolver().requestSync(m_account, Content.AUTHORITY, new Bundle());
 
 				setResult(RESULT_OK);
 				finish();

@@ -19,10 +19,11 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.AppConstants;
 import eu.e43.impeller.R;
 import eu.e43.impeller.activity.ActivityWithAccount;
 import eu.e43.impeller.activity.ShareActivity;
+import eu.e43.impeller.api.Constants;
 
 public class ShareFragment extends DialogFragment implements AdapterView.OnItemClickListener {
     private PackageManager    m_packageManager = null;

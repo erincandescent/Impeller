@@ -48,7 +48,7 @@ public class ToolbarView extends LinearLayout {
         m_overflowButton = new ImageButton(getContext());
         m_overflowButton.setBackgroundResource(android.R.color.transparent);
         m_overflowButton.setImageResource(
-                android.support.v7.appcompat.R.drawable.abc_ic_menu_moreoverflow_normal_holo_light);
+                android.support.v7.appcompat.R.drawable.abc_ic_menu_moreoverflow_mtrl_alpha);
         m_overflowButton.setOnClickListener(m_clickListener);
         m_popupMenu    = new PopupMenu(getContext(), this);
         m_overflowMenu = new PopupMenu(getContext(), m_overflowButton);

@@ -21,8 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
-import eu.e43.impeller.Constants;
-import eu.e43.impeller.content.PumpContentProvider;
+import eu.e43.impeller.AppConstants;
+import eu.e43.impeller.api.Content;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthProvider;
@@ -33,7 +33,6 @@ import org.json.JSONObject;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -247,12 +246,12 @@ public class LoginActivity extends AccountAuthenticatorActivity implements OnCli
 
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
                 long frequency =
-                        Long.parseLong(prefs.getString(Constants.PREF_SYNC_FREQUENCY, "30")) * 60;
+                        Long.parseLong(prefs.getString(AppConstants.PREF_SYNC_FREQUENCY, "30")) * 60;
                 if(frequency > 0) {
                     Bundle empty = new Bundle();
-                    getContentResolver().setSyncAutomatically(account, PumpContentProvider.AUTHORITY, true);
+                    getContentResolver().setSyncAutomatically(account, Content.AUTHORITY, true);
                     getContentResolver().setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
-                    getContentResolver().addPeriodicSync(account, PumpContentProvider.AUTHORITY,
+                    getContentResolver().addPeriodicSync(account, Content.AUTHORITY,
                             empty, frequency);
                     getContentResolver().addPeriodicSync(account, ContactsContract.AUTHORITY,
                             empty, frequency);

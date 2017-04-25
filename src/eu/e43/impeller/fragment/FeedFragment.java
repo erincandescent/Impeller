@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,26 +18,25 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
+import android.view.ViewTreeObserver;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 
 import org.json.JSONObject;
-import org.lucasr.twowayview.TWAbsLayoutManager;
-import org.lucasr.twowayview.TWItemClickListener;
-import org.lucasr.twowayview.TWView;
-import org.lucasr.twowayview.widget.TWGridLayoutManager;
-import org.lucasr.twowayview.widget.TWStaggeredGridLayoutManager;
+import org.lucasr.twowayview.ItemClickSupport;
+import org.lucasr.twowayview.widget.StaggeredGridLayoutManager;
+import org.lucasr.twowayview.widget.TwoWayView;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.api.Constants;
+import eu.e43.impeller.api.Content;
+import eu.e43.impeller.Utils;
 import eu.e43.impeller.activity.CheckinActivity;
 import eu.e43.impeller.uikit.ActivityAdapter;
 import eu.e43.impeller.R;
 import eu.e43.impeller.activity.MainActivity;
 import eu.e43.impeller.activity.PostActivity;
-import eu.e43.impeller.content.PumpContentProvider;
 
 /**
  * Created by OShepherd on 28/07/13.
@@ -46,7 +44,9 @@ import eu.e43.impeller.content.PumpContentProvider;
 public class FeedFragment
         extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor>,
-        SyncStatusObserver, SwipeRefreshLayout.OnRefreshListener, TWItemClickListener.OnItemClickListener {
+            SyncStatusObserver,
+            SwipeRefreshLayout.OnRefreshListener,
+            ItemClickSupport.OnItemClickListener, ViewTreeObserver.OnGlobalLayoutListener {
     Account             m_account;
     ActivityAdapter     m_adapter;
     Menu                m_menu              = null;
@@ -55,7 +55,7 @@ public class FeedFragment
     Object              m_statusHandle      = null;
     Constants.FeedID    m_feedId            = null;
     SwipeRefreshLayout  m_swipeRefreshView  = null;
-    RecyclerView        m_list              = null;
+    TwoWayView          m_list              = null;
 
     // Activity IDs
     private static final int ACTIVITY_SELECT_PHOTO = 1;
@@ -112,24 +112,32 @@ public class FeedFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_feed, null);
 
-        m_list = (RecyclerView) root.findViewById(android.R.id.list);
-        TWGridLayoutManager layout = new TWGridLayoutManager(getActivity(), null, 2, 2);
-        layout.setOrientation(TWAbsLayoutManager.Orientation.VERTICAL);
-        layout.setNumColumns(3);
+        m_list = (TwoWayView) root.findViewById(android.R.id.list);
+        m_swipeRefreshView = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefresh);
+        root.getViewTreeObserver().addOnGlobalLayoutListener(this);
+
+        StaggeredGridLayoutManager layout = new StaggeredGridLayoutManager(getActivity());
+        layout.setOrientation(StaggeredGridLayoutManager.Orientation.VERTICAL);
         m_list.setLayoutManager(layout);
-        //m_list.setLayoutManager(new LinearLayoutManager(getActivity()));
         m_list.setHasFixedSize(false);
         m_list.setItemAnimator(new DefaultItemAnimator());
+        onGlobalLayout();
+
         if(m_adapter != null)
             m_list.setAdapter(m_adapter);
 
-        TWItemClickListener l = TWItemClickListener.addTo(m_list);
-        l.setOnItemClickListener(this);
+        ItemClickSupport.addTo(m_list).setOnItemClickListener(this);
 
-        m_swipeRefreshView = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefresh);
         m_swipeRefreshView.setOnRefreshListener(this);
-        m_swipeRefreshView.setColorScheme(R.color.im_primary, R.color.im_pink, R.color.im_primary, R.color.im_pink);
+        m_swipeRefreshView.setColorSchemeResources(R.color.im_primary, R.color.im_accent, R.color.im_primary, R.color.im_accent);
         return root;
+    }
+
+    @Override
+    public void onGlobalLayout() {
+        int width = Utils.dipFromPx(getActivity(), m_list.getWidth());
+        StaggeredGridLayoutManager sglm = (StaggeredGridLayoutManager) m_list.getLayoutManager();
+        sglm.setNumColumns(width / 320);
     }
 
     public Constants.FeedID getFeedId() {
@@ -309,7 +317,7 @@ public class FeedFragment
 
                 if(getActivity() == null) return;
                 boolean syncing = getActivity().getContentResolver().isSyncActive(
-                        m_account, PumpContentProvider.AUTHORITY);
+                        m_account, Content.AUTHORITY);
 
                 m_swipeRefreshView.setRefreshing(syncing);
             }
@@ -318,7 +326,7 @@ public class FeedFragment
 
     @Override
     public void onRefresh() {
-        getActivity().getContentResolver().requestSync(m_account, PumpContentProvider.AUTHORITY, new Bundle());
+        getActivity().getContentResolver().requestSync(m_account, Content.AUTHORITY, new Bundle());
     }
 
     public Account getAccount() {

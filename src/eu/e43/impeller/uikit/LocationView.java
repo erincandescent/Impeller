@@ -1,18 +1,13 @@
 package eu.e43.impeller.uikit;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.location.Address;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -20,10 +15,9 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Formatter;
 import java.util.Locale;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.AppConstants;
 import eu.e43.impeller.ImpellerApplication;
 import eu.e43.impeller.R;
 import eu.e43.impeller.Utils;
@@ -53,9 +47,9 @@ public class LocationView extends FrameLayout implements View.OnClickListener {
         m_prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         LayoutInflater.from(context).inflate(R.layout.view_location, this);
-        setLayoutParams(new ListView.LayoutParams(LayoutParams.MATCH_PARENT, Utils.dip(m_activity, 64)));
+        setLayoutParams(new ListView.LayoutParams(LayoutParams.MATCH_PARENT, Utils.pxFromDip(m_activity, 64)));
         setBackgroundResource(R.drawable.card_middle_bg);
-        setPadding(0, 0, Utils.dip(m_activity, 1), 0);
+        setPadding(0, 0, Utils.pxFromDip(m_activity, 1), 0);
 
         m_mapDisplay        = (FrameLayout)     findViewById(R.id.map_display);
         m_globe             = (TextView)        findViewById(R.id.location_globe_icon);
@@ -87,7 +81,7 @@ public class LocationView extends FrameLayout implements View.OnClickListener {
 
         if(oldh != h && w != oldw) {
             try {
-                if(m_prefs.getBoolean(Constants.PREF_LOCATION_MAPS, true)) {
+                if(m_prefs.getBoolean(AppConstants.PREF_LOCATION_MAPS, true)) {
                     JSONObject pos = m_addr.getJSONObject("position");
                     double longitude = pos.getDouble("longitude");
                     double latitude  = pos.getDouble("latitude");

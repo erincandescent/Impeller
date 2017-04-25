@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.http.HttpResponseCache;
 import android.os.Build;
-import android.os.Debug;
 import android.os.StrictMode;
 import android.util.Log;
 
@@ -21,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import eu.e43.impeller.account.Authenticator;
-import eu.e43.impeller.content.PumpContentProvider;
+import eu.e43.impeller.api.Content;
 
 @ReportsCrashes(
         formKey = "",
@@ -35,6 +34,7 @@ public class ImpellerApplication extends Application {
     private static final String TAG = "ImpellerApplication";
 
     public static Typeface fontAwesome;
+    public static Typeface serif;
     public static int ms_versionCode;
 
     @Override
@@ -75,13 +75,14 @@ public class ImpellerApplication extends Application {
             AccountManager mgr = (AccountManager) getSystemService(ACCOUNT_SERVICE);
             Account[] accts = mgr.getAccountsByType(Authenticator.ACCOUNT_TYPE);
             for(Account a : accts) {
-                getContentResolver().setSyncAutomatically(a, PumpContentProvider.AUTHORITY, true);
+                getContentResolver().setSyncAutomatically(a, Content.AUTHORITY, true);
             }
         }
 
         prefs.edit().putInt("version", ms_versionCode).apply();
 
         fontAwesome = Typeface.createFromAsset(getAssets(), "FontAwesome.otf");
+        serif       = Typeface.createFromAsset(getAssets(), "RobotoSlab-Regular.ttf");
     }
 
     private void tryInstallResponseCache() {

@@ -16,14 +16,14 @@ import android.os.Bundle;
 import android.util.Log;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-import eu.e43.impeller.Constants;
+import eu.e43.impeller.api.Constants;
+import eu.e43.impeller.api.Content;
 import eu.e43.impeller.Utils;
 import eu.e43.impeller.account.OAuth;
 
@@ -81,7 +81,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
 
     private ResultData updateObject(Context context, Account acct, Uri uri) {
         Log.i(TAG, "updateObject: Starting update for object " + uri);
-        PumpContentProvider.Uris uris = PumpContentProvider.Uris.get(acct);
+        Content.Uris uris = Content.Uris.get(acct);
         ContentResolver res = context.getContentResolver();
         Cursor c = res.query(uris.objectsUri,
                 new String[] { "_json" },
@@ -134,7 +134,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
 
     private ResultData updateReplies(Context context, Account acct, Uri uri) {
         Log.i(TAG, "updateReplies: Starting update for object " + uri);
-        PumpContentProvider.Uris uris = PumpContentProvider.Uris.get(acct);
+        Content.Uris uris = Content.Uris.get(acct);
         ContentResolver res = context.getContentResolver();
         Cursor c = res.query(uris.objectsUri,
                 new String[] { "_json" },
@@ -186,7 +186,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
                         .withValue("_json", reply.toString())
                         .build());
             }
-            res.applyBatch(PumpContentProvider.AUTHORITY, operations);
+            res.applyBatch(Content.AUTHORITY, operations);
             Log.i(TAG, "updateReplies: Finished for object " + uri + " with " + items.length());
 
             return new ResultData(Activity.RESULT_OK);
@@ -201,7 +201,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
 
     private ResultData fetchUserFeed(Context context, Account acct, Uri uri) {
         Log.i(TAG, "fetchUserFeed: Fetch feed for user " + uri);
-        PumpContentProvider.Uris uris = PumpContentProvider.Uris.get(acct);
+        Content.Uris uris = Content.Uris.get(acct);
         ContentResolver res = context.getContentResolver();
         Cursor c = res.query(uris.objectsUri,
                 new String[] { "_json" },
@@ -251,7 +251,7 @@ public class ContentUpdateReceiver extends BroadcastReceiver {
                                 .withValue("_json", activity.toString())
                                 .build());
             }
-            res.applyBatch(PumpContentProvider.AUTHORITY, operations);
+            res.applyBatch(Content.AUTHORITY, operations);
             Log.i(TAG, "fetchUserFeed: Finished for " + uri);
 
             return new ResultData(Activity.RESULT_OK);

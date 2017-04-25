@@ -2,12 +2,11 @@ package eu.e43.impeller.content;
 
 import android.accounts.AccountManager;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import eu.e43.impeller.account.Authenticator;
+import eu.e43.impeller.api.Content;
 
 public class AccountNotificationReceiver extends BroadcastReceiver {
     private static final String TAG = "AccountNotificationReceiver";
@@ -19,6 +18,6 @@ public class AccountNotificationReceiver extends BroadcastReceiver {
             Log.w(TAG, "Unexpected intent " + intent);
         }
 
-        context.getContentResolver().call(PumpContentProvider.PROVIDER_URI, "updateAccounts", null, null);
+        context.getContentResolver().call(Content.PROVIDER_URI, "updateAccounts", null, null);
     }
 }

@@ -1,25 +1,18 @@
 package eu.e43.impeller.activity;
 
-import java.io.File;
-import java.io.IOException;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.net.http.HttpResponseCache;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
-import eu.e43.impeller.Constants;
-import eu.e43.impeller.content.PumpContentProvider;
+import eu.e43.impeller.api.Constants;
+import eu.e43.impeller.api.Content;
 import eu.e43.impeller.uikit.ImageLoader;
 import eu.e43.impeller.account.Authenticator;
-
-import static android.os.Build.*;
 
 public abstract class ActivityWithAccount extends ActionBarActivity {
 	public static final int LOGIN_REQUEST_CODE = 65535;
@@ -40,7 +33,7 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
         return m_account;
     }
 
-	protected abstract void onCreateEx(Bundle savedInstanceState);
+    protected abstract void onCreateEx(Bundle savedInstanceState);
     protected void onStartIntent(Intent startIntent) {}
 
 	@Override
@@ -154,10 +147,10 @@ public abstract class ActivityWithAccount extends ActionBarActivity {
 		return m_imageLoader;
 	}
 
-    private PumpContentProvider.Uris m_cachedUris;
-    public PumpContentProvider.Uris getContentUris() {
+    private Content.Uris m_cachedUris;
+    public Content.Uris getContentUris() {
         if(m_cachedUris == null || m_cachedUris.account != m_account) {
-            m_cachedUris = PumpContentProvider.Uris.get(m_account);
+            m_cachedUris = Content.Uris.get(m_account);
         }
         return m_cachedUris;
     }
