@@ -602,6 +602,11 @@ public class StandardObjectFragment
                 break;
             }
 
+            case R.id.action_share: {
+                new DoShare(getObject());
+                break;
+            }
+
             case R.id.action_replyImage: {
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                 photoPickerIntent.setType("image/*");
@@ -729,6 +734,43 @@ public class StandardObjectFragment
             m_appContext.getContentResolver().insert(getMainActivity().getContentUris().activitiesUri, cv);
 		}
 	}
+
+    private class DoShare implements PostTask.Callback {
+        private JSONObject m_object;
+
+        public DoShare(JSONObject object) {
+            try {
+                m_object = Utils.buildStubObject(object);
+
+                JSONObject obj = new JSONObject();
+
+                obj.put("verb", "share");
+                obj.put("object", object);
+
+                PostTask task = new PostTask((ActivityWithAccount) getActivity(), this);
+                task.execute(obj.toString());
+            } catch(JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void call(JSONObject act) {
+            if(act == null) return;
+
+            try {
+                Log.v(TAG, "Returned verb '" + act.optString("verb") + "'");
+                Log.v(TAG, "Inserting " + act.toString(0));
+            } catch(JSONException e) {
+                Log.e(TAG, "Swallowing exception", e);
+            }
+
+            ContentValues cv = new ContentValues();
+            cv.put("_json", act.toString());
+
+            m_appContext.getContentResolver().insert(Uri.parse(PumpContentProvider.ACTIVITY_URL), cv);
+        }
+    }
 
     private class PostReply implements PostTask.Callback {
         private JSONObject m_object;

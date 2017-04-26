@@ -10,6 +10,10 @@
         android:icon="@drawable/ic_like_24dp"
         app:showAsAction="always"/>
 
+    <item
+        android:id="@+id/action_share"
+        android:title="@string/action_share" />
+
     <item android:title="@string/action_reply"
           android:icon="@drawable/ic_reply_white_24dp"
           app:showAsAction="ifRoom">
